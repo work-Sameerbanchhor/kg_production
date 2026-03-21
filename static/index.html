@@ -720,7 +720,7 @@ body {
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Admission Date</label>
-                                <input type="text" class="form-input" name="admission_date" placeholder="DD-MM-YYYY">
+                                <input type="date" class="form-input" name="admission_date" placeholder="DD-MM-YYYY">
                             </div>
 
                             <div class="form-section-title"><i class="ph ph-users-three"></i> Family Information</div>
@@ -736,7 +736,7 @@ body {
                             <div class="form-section-title"><i class="ph ph-identification-card"></i> Personal Details</div>
                             <div class="form-group">
                                 <label class="form-label">Date of Birth</label>
-                                <input type="text" class="form-input" name="dob" placeholder="DD-MM-YYYY">
+                                <input type="date" class="form-input" name="dob" placeholder="DD-MM-YYYY">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Gender</label>
@@ -1251,8 +1251,22 @@ async function editStudent(id) {
         s.year_of_passing = s.last_exam_year;
         s.roll_no = s.last_roll_no;
 
+        // Helper to format dates like DD-MM-YYYY to YYYY-MM-DD for date picker
+        const formatDate = (val) => {
+            if (!val) return '';
+            const p = val.split(/[/-]/);
+            if (p.length === 3 && p[2].length === 4) return `${p[2]}-${p[1]}-${p[0]}`;
+            return val;
+        };
+
         for (const key in s) {
-            if (form.elements[key]) form.elements[key].value = s[key] || '';
+            if (form.elements[key]) {
+                if (key === 'admission_date' || key === 'dob') {
+                    form.elements[key].value = formatDate(s[key] || '');
+                } else {
+                    form.elements[key].value = s[key] || '';
+                }
+            }
         }
         document.getElementById('submit-btn').innerHTML = '<i class="ph ph-floppy-disk"></i> Update Student';
     } catch(e){}
