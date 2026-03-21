@@ -5,437 +5,906 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalyan College Management System</title>
     <meta name="description" content="Admission and Fee Management System for Kalyan Post Graduate College, Bhilai Nagar">
-    <link rel="stylesheet" href="/static/style.css?v=8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script>
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   Kalyan College — Forest & Ivory Theme
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+    --forest-900: #1a2e1a;
+    --forest-800: #243524;
+    --forest-700: #2d4a2d;
+    --forest-600: #3a5c3a;
+    --forest-500: #4a7c4a;
+    --forest-400: #6b9e6b;
+    --forest-300: #8fb88f;
+    --forest-200: #b5d3b5;
+    --forest-100: #dceadc;
+    --forest-50:  #f0f7f0;
+
+    --ivory-100: #faf8f4;
+    --ivory-200: #f5f1ea;
+    --ivory-300: #ede8df;
+    --ivory-400: #ddd6c9;
+    --ivory-500: #c4baa8;
+
+    --gold-500: #b8944a;
+    --gold-400: #d4aa5c;
+    --gold-300: #e8c882;
+
+    --text-dark: #1a2e1a;
+    --text-body: #3d4f3d;
+    --text-muted: #7a8c7a;
+    --text-light: #a3b0a3;
+    --text-on-dark: #e8eee8;
+    --text-on-dark-muted: #a3b8a3;
+
+    --danger: #c0392b;
+    --danger-bg: rgba(192,57,43,0.1);
+    --success: #27ae60;
+    --success-bg: rgba(39,174,96,0.1);
+    --warning: #d4a017;
+    --warning-bg: rgba(212,160,23,0.1);
+    --info: #2980b9;
+    --info-bg: rgba(41,128,185,0.1);
+
+    --sidebar-w: 260px;
+    --sidebar-w-collapsed: 72px;
+    --header-h: 64px;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --shadow-sm: 0 1px 3px rgba(26,46,26,0.06);
+    --shadow-md: 0 4px 16px rgba(26,46,26,0.08);
+    --shadow-lg: 0 8px 32px rgba(26,46,26,0.12);
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:14px; scroll-behavior:smooth; }
+body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--ivory-200);
+    color: var(--text-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* ─── App Layout ────────────────────────────────────── */
+.app { display:flex; min-height:100vh; }
+
+/* ─── Sidebar ───────────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--forest-900);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: width .3s var(--ease);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:99px; }
+
+.sidebar-header {
+    padding: 20px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+}
+
+.sidebar-logo {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--forest-500), var(--gold-400));
+    border-radius: 10px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 1.2rem;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+
+.sidebar-brand-text { white-space:nowrap; overflow:hidden; transition: opacity .2s var(--ease); }
+.sidebar-brand-text h1 { font-family:'DM Serif Display',serif; font-size:1.05rem; color:#fff; font-weight:400; letter-spacing:.01em; }
+.sidebar-brand-text p { font-size:.68rem; color:var(--text-on-dark-muted); margin-top:1px; }
+
+.sidebar-nav { padding:12px 8px; flex:1; }
+
+.nav-group-label {
+    font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em;
+    color: var(--text-on-dark-muted); padding:18px 14px 6px; white-space:nowrap;
+}
+
+.nav-item {
+    display:flex; align-items:center; gap:12px;
+    padding:9px 14px; border-radius:var(--radius-sm);
+    color:var(--text-on-dark-muted); cursor:pointer;
+    transition: all .2s var(--ease);
+    font-size:.85rem; font-weight:500; margin-bottom:1px;
+    user-select:none; white-space:nowrap; position:relative;
+}
+
+.nav-item .icon { font-size:1.2rem; width:22px; text-align:center; flex-shrink:0; }
+
+.nav-item:hover { background:rgba(255,255,255,.07); color:#fff; }
+.nav-item.active {
+    background: linear-gradient(135deg, rgba(74,124,74,.35), rgba(74,124,74,.15));
+    color: #fff;
+    box-shadow: inset 3px 0 0 var(--gold-400);
+}
+
+/* Sidebar toggle btn */
+.sidebar-toggle {
+    position:absolute; top:22px; right:-14px;
+    width:28px; height:28px;
+    background:var(--forest-800); border:2px solid var(--ivory-200);
+    color:#fff; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:.8rem; z-index:101;
+    transition: all .2s var(--ease);
+    box-shadow: var(--shadow-sm);
+}
+.sidebar-toggle:hover { background:var(--forest-600); transform:scale(1.1); }
+
+/* Collapsed */
+.sidebar.collapsed { width: var(--sidebar-w-collapsed); }
+.sidebar.collapsed .sidebar-brand-text { opacity:0; width:0; pointer-events:none; }
+.sidebar.collapsed .nav-group-label span { display:none; }
+.sidebar.collapsed .nav-group-label::after { content:'···'; display:block; text-align:center; }
+.sidebar.collapsed .nav-item span:not(.icon) { display:none; }
+.sidebar.collapsed .nav-item { justify-content:center; padding:10px 0; }
+.sidebar.collapsed .sidebar-header { justify-content:center; padding:20px 10px; }
+.sidebar.collapsed ~ .main { margin-left: var(--sidebar-w-collapsed); }
+
+/* ─── Main Area ─────────────────────────────────────── */
+.main {
+    margin-left: var(--sidebar-w);
+    flex:1; min-height:100vh;
+    transition: margin-left .3s var(--ease);
+    display: flex; flex-direction: column;
+}
+
+/* ─── Top Header ────────────────────────────────────── */
+.top-header {
+    height: var(--header-h);
+    background: var(--ivory-100);
+    border-bottom: 1px solid var(--ivory-300);
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 28px;
+    position:sticky; top:0; z-index:50;
+    backdrop-filter: blur(12px);
+}
+
+.top-header h2 {
+    font-family:'DM Serif Display',serif;
+    font-size:1.35rem; font-weight:400; color:var(--text-dark);
+}
+
+.header-actions { display:flex; align-items:center; gap:10px; }
+
+.search-global {
+    display:flex; align-items:center; gap:8px;
+    background:var(--ivory-200); border:1px solid var(--ivory-300);
+    border-radius:99px; padding:7px 16px;
+    transition: all .2s var(--ease); min-width:220px;
+}
+.search-global:focus-within { border-color:var(--forest-400); box-shadow:0 0 0 3px rgba(74,124,74,.12); background:#fff; }
+.search-global i { color:var(--text-muted); font-size:1rem; }
+.search-global input { border:none; background:none; outline:none; font-family:inherit; font-size:.82rem; color:var(--text-dark); width:100%; }
+.search-global input::placeholder { color:var(--text-light); }
+
+.header-btn {
+    width:36px; height:36px; border-radius:50%;
+    border:1px solid var(--ivory-300); background:var(--ivory-100);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .2s var(--ease);
+    color:var(--text-muted); font-size:1.1rem;
+}
+.header-btn:hover { background:var(--forest-50); border-color:var(--forest-300); color:var(--forest-700); }
+
+/* ─── Content Area ──────────────────────────────────── */
+.content { padding:24px 28px; flex:1; }
+
+.page-intro { margin-bottom:24px; }
+.page-intro p { color:var(--text-muted); font-size:.85rem; margin-top:2px; }
+
+/* ─── Section Toggle ────────────────────────────────── */
+.section { display:none; animation: fadeUp .35s var(--ease); }
+.section.active { display:block; }
+
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+}
+
+/* ─── Stat Cards ────────────────────────────────────── */
+.stats-row {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap:16px; margin-bottom:24px;
+}
+
+.stat-card {
+    background:#fff;
+    border:1px solid var(--ivory-300);
+    border-radius:var(--radius);
+    padding:20px;
+    display:flex; align-items:flex-start; gap:14px;
+    transition: all .25s var(--ease);
+    position:relative; overflow:hidden;
+}
+.stat-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--forest-500), var(--gold-400));
+    opacity:0; transition: opacity .25s var(--ease);
+}
+.stat-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+.stat-card:hover::before { opacity:1; }
+
+.stat-icon {
+    width:44px; height:44px;
+    background:linear-gradient(135deg, var(--forest-100), var(--forest-50));
+    border-radius:var(--radius-sm);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; color:var(--forest-600); flex-shrink:0;
+}
+.stat-info { flex:1; }
+.stat-value { font-size:1.55rem; font-weight:800; color:var(--text-dark); letter-spacing:-.02em; line-height:1.2; }
+.stat-label { font-size:.72rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
+
+/* ─── Cards ─────────────────────────────────────────── */
+.card {
+    background:#fff;
+    border:1px solid var(--ivory-300);
+    border-radius:var(--radius);
+    padding:24px;
+    transition: all .2s var(--ease);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card-title {
+    font-family:'DM Serif Display',serif;
+    font-size:1.05rem; color:var(--text-dark); margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+}
+.card-title i { color:var(--forest-500); font-size:1.15rem; }
+
+/* ─── Distribution Grid ─────────────────────────────── */
+.dist-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap:16px; margin-top:20px;
+}
+
+.dist-item {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid var(--ivory-200); font-size:.82rem;
+    transition: all .15s var(--ease);
+}
+.dist-item:last-child { border-bottom:none; }
+.dist-item:hover { padding-left:6px; }
+.dist-item .name { color:var(--text-body); }
+.dist-item .count {
+    font-weight:700; color:var(--forest-700);
+    background:var(--forest-50); padding:2px 10px;
+    border-radius:99px; font-size:.75rem;
+}
+.dist-item:hover .count { background:var(--forest-100); }
+
+/* ─── Forms ─────────────────────────────────────────── */
+.form-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+    gap:16px;
+}
+.form-section-title {
+    grid-column:1/-1; font-family:'DM Serif Display',serif;
+    font-size:.95rem; color:var(--forest-700); padding:12px 0 4px;
+    border-bottom:1px solid var(--ivory-300); margin-bottom:4px;
+    display:flex; align-items:center; gap:8px;
+}
+.form-section-title i { color:var(--forest-400); }
+.form-group { display:flex; flex-direction:column; }
+.form-group.full-width { grid-column:1/-1; }
+.form-label { font-size:.75rem; font-weight:600; color:var(--text-muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+
+.form-input, .form-select, .form-textarea {
+    font-family:inherit; font-size:.88rem; color:var(--text-dark);
+    background:var(--ivory-100); border:1px solid var(--ivory-300);
+    border-radius:var(--radius-xs); padding:10px 14px;
+    transition: all .2s var(--ease); outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color:var(--forest-400);
+    box-shadow:0 0 0 3px rgba(74,124,74,.1);
+    background:#fff;
+}
+.form-textarea { min-height:80px; resize:vertical; }
+.form-select { cursor:pointer; }
+
+/* ─── Buttons ───────────────────────────────────────── */
+.btn {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:inherit; font-size:.84rem; font-weight:600;
+    padding:10px 20px; border-radius:var(--radius-xs);
+    border:none; cursor:pointer; transition:all .2s var(--ease);
+    text-decoration:none;
+}
+.btn-primary {
+    background:linear-gradient(135deg, var(--forest-700), var(--forest-800));
+    color:#fff; box-shadow:0 2px 8px rgba(26,46,26,.18);
+}
+.btn-primary:hover { background:linear-gradient(135deg, var(--forest-600), var(--forest-700)); transform:translateY(-1px); box-shadow:0 4px 12px rgba(26,46,26,.22); }
+.btn-secondary {
+    background:var(--ivory-200); color:var(--text-body); border:1px solid var(--ivory-400);
+}
+.btn-secondary:hover { background:var(--ivory-300); }
+.btn-sm { padding:6px 14px; font-size:.78rem; }
+.btn-group { display:flex; gap:8px; margin-top:20px; flex-wrap:wrap; }
+
+/* ─── Search Bar ────────────────────────────────────── */
+.search-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.search-input-wrapper { position:relative; }
+.search-input-wrapper .search-icon {
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:var(--text-light); font-size:1rem;
+}
+.search-input-wrapper .form-input { padding-left:36px; width:100%; }
+
+/* ─── Table ─────────────────────────────────────────── */
+.table-wrapper { overflow-x:auto; margin-top:8px; border-radius:var(--radius-sm); border:1px solid var(--ivory-300); }
+.data-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.data-table thead { background:var(--forest-900); }
+.data-table th {
+    padding:10px 14px; text-align:left;
+    font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-on-dark-muted); white-space:nowrap;
+}
+.data-table td { padding:10px 14px; border-bottom:1px solid var(--ivory-200); color:var(--text-body); }
+.data-table tbody tr { transition:background .15s var(--ease); }
+.data-table tbody tr:hover { background:var(--forest-50); }
+.data-table tbody tr:last-child td { border-bottom:none; }
+
+.fee-highlight { font-weight:700; color:var(--forest-700); }
+
+/* ─── Tabs ──────────────────────────────────────────── */
+.tabs { display:flex; gap:2px; border-bottom:2px solid var(--ivory-300); margin-bottom:20px; }
+.tab-btn {
+    padding:10px 20px; background:none; border:none;
+    font-family:inherit; font-size:.82rem; font-weight:600; color:var(--text-muted);
+    cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;
+    transition: all .2s var(--ease); white-space:nowrap;
+}
+.tab-btn:hover { color:var(--forest-600); }
+.tab-btn.active { color:var(--forest-700); border-bottom-color:var(--forest-600); }
+
+/* ─── File Upload ───────────────────────────────────── */
+.upload-zone {
+    border:2px dashed var(--ivory-400);
+    border-radius:var(--radius); padding:48px 20px;
+    text-align:center; cursor:pointer;
+    transition:all .25s var(--ease); background:var(--ivory-100);
+}
+.upload-zone:hover { border-color:var(--forest-400); background:var(--forest-50); transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.upload-zone .icon { font-size:2.5rem; color:var(--forest-400); margin-bottom:10px; opacity:.6; transition:all .25s var(--ease); }
+.upload-zone:hover .icon { opacity:1; transform:scale(1.1); }
+.upload-zone p { color:var(--text-muted); font-size:.85rem; }
+.upload-zone input[type="file"] { display:none; }
+
+/* ─── Empty State ───────────────────────────────────── */
+.empty-state { text-align:center; padding:48px 20px; color:var(--text-muted); }
+.empty-state .icon { font-size:2.8rem; margin-bottom:12px; opacity:.35; }
+.empty-state p { font-size:.88rem; }
+
+/* ─── Toasts ────────────────────────────────────────── */
+.toast-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast {
+    background:#fff; border:1px solid var(--ivory-300);
+    padding:12px 18px; border-radius:var(--radius-sm);
+    box-shadow:var(--shadow-lg); font-size:.84rem;
+    display:flex; align-items:center; gap:8px;
+    animation: slideIn .3s var(--ease);
+    max-width:360px;
+}
+.toast.success { border-left:3px solid var(--success); }
+.toast.error { border-left:3px solid var(--danger); }
+.toast.info { border-left:3px solid var(--info); }
+@keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+
+/* ─── Modal ─────────────────────────────────────────── */
+.modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(26,46,26,.5);
+    z-index:500; align-items:center; justify-content:center;
+    backdrop-filter:blur(4px);
+}
+.modal-overlay.active { display:flex; }
+.modal {
+    background:#fff; border-radius:var(--radius);
+    width:min(90vw,720px); max-height:85vh; overflow-y:auto;
+    padding:28px; box-shadow:var(--shadow-lg);
+    animation: modalIn .3s var(--ease);
+}
+@keyframes modalIn { from { opacity:0; transform:scale(.96) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.modal-header h3 { font-family:'DM Serif Display',serif; font-size:1.15rem; color:var(--text-dark); }
+.modal-close { background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer; padding:4px; transition:all .2s var(--ease); }
+.modal-close:hover { color:var(--danger); }
+
+/* ─── Badges ────────────────────────────────────────── */
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:99px; font-size:.7rem; font-weight:600; letter-spacing:.02em; }
+.badge-success { background:var(--success-bg); color:var(--success); }
+.badge-warning { background:var(--warning-bg); color:var(--warning); }
+.badge-danger { background:var(--danger-bg); color:var(--danger); }
+.badge-info { background:var(--info-bg); color:var(--info); }
+
+/* ─── Fee Summary ───────────────────────────────────── */
+.fee-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+.fee-summary-item {
+    padding:20px; background:#fff; border-radius:var(--radius);
+    border:1px solid var(--ivory-300); border-left:4px solid var(--ivory-400);
+    transition:all .25s var(--ease); overflow:hidden;
+}
+.fee-summary-item:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+.fee-summary-item .fee-icon { font-size:1.5rem; margin-bottom:10px; opacity:.6; display:block; }
+.fee-summary-item .label { font-size:.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin-bottom:4px; }
+.fee-summary-item .value { font-size:1.55rem; font-weight:800; letter-spacing:-.02em; }
+.fee-summary-item.total-card { border-left-color:var(--info); }
+.fee-summary-item.total-card .fee-icon { color:var(--info); }
+.fee-summary-item .value.total { color:var(--info); }
+.fee-summary-item.paid-card { border-left-color:var(--success); }
+.fee-summary-item.paid-card .fee-icon { color:var(--success); }
+.fee-summary-item .value.paid { color:var(--success); }
+.fee-summary-item.balance-card { border-left-color:var(--warning); }
+.fee-summary-item.balance-card .fee-icon { color:var(--warning); }
+.fee-summary-item .value.balance { color:var(--warning); }
+
+/* ─── Spinner ───────────────────────────────────────── */
+.spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--ivory-400); border-top-color:var(--forest-600); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-overlay { display:flex; align-items:center; justify-content:center; padding:48px; color:var(--text-muted); gap:10px; font-size:.85rem; }
+
+/* ─── Actions ───────────────────────────────────────── */
+.action-btns { display:flex; gap:5px; }
+.action-btn {
+    background:none; border:1px solid var(--ivory-300); color:var(--text-muted);
+    padding:4px 8px; border-radius:var(--radius-xs); cursor:pointer; font-size:.85rem;
+    transition:all .2s var(--ease);
+}
+.action-btn:hover { transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+.action-btn.edit:hover { color:var(--info); background:var(--info-bg); border-color:rgba(41,128,185,.2); }
+.action-btn.delete:hover { color:var(--danger); background:var(--danger-bg); border-color:rgba(192,57,43,.2); }
+.action-btn.fee:hover { color:var(--success); background:var(--success-bg); border-color:rgba(39,174,96,.2); }
+
+/* ─── Mobile Sidebar Overlay ────────────────────────── */
+.sidebar-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(26,46,26,.45); z-index:99;
+    backdrop-filter:blur(2px);
+}
+.sidebar-overlay.active { display:block; }
+
+/* ─── Mobile Toggle ─────────────────────────────────── */
+.mobile-toggle {
+    display:none; width:36px; height:36px; border-radius:var(--radius-xs);
+    background:var(--forest-800); color:#fff; border:none;
+    align-items:center; justify-content:center;
+    cursor:pointer; font-size:1.2rem;
+}
+
+/* ─── Responsive ────────────────────────────────────── */
+@media (max-width:1024px) {
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .fee-summary { grid-template-columns:1fr; }
+}
+
+@media (max-width:768px) {
+    .sidebar {
+        transform:translateX(-100%);
+        box-shadow:var(--shadow-lg);
+    }
+    .sidebar.open { transform:translateX(0); }
+    .sidebar-toggle { display:none; }
+    .sidebar-overlay.active { display:block; }
+    .mobile-toggle { display:flex; }
+
+    .main { margin-left:0 !important; }
+    .content { padding:16px; }
+    .top-header { padding:0 16px; }
+
+    .form-grid { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .search-bar { flex-direction:column; }
+    .search-global { min-width:unset; }
+
+    .modal { width:95vw; padding:20px; }
+    .fee-summary { grid-template-columns:1fr; }
+    .dist-grid { grid-template-columns:1fr; }
+}
+
+@media (max-width:480px) {
+    .stats-row { grid-template-columns:1fr; }
+}
+
+/* ─── Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(26,46,26,.12); border-radius:99px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(26,46,26,.22); }
+</style>
 </head>
 <body>
-<div class="app-wrapper">
+<div class="app">
 
     <!-- ═══ SIDEBAR ═══ -->
     <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-content">
-                <h1><i class="ph-fill ph-books" style="margin-right:4px;"></i>Kalyan PG College</h1>
-                <p>Bhilai Nagar • Management System</p>
+        <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+            <i class="ph ph-caret-left" id="toggle-icon"></i>
+        </button>
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><i class="ph-fill ph-graduation-cap"></i></div>
+            <div class="sidebar-brand-text">
+                <h1>Kalyan PG College</h1>
+                <p>Bhilai Nagar</p>
             </div>
-            <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
-                <i class="ph ph-list"></i>
-            </button>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section-title"><span class="nav-text">Main</span></div>
+            <div class="nav-group-label"><span>Main</span></div>
             <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
-                <i class="ph ph-chart-line-up icon"></i> <span class="nav-text">Dashboard</span>
+                <i class="ph ph-squares-four icon"></i> <span>Dashboard</span>
             </div>
 
-            <div class="nav-section-title"><span class="nav-text">Admission</span></div>
+            <div class="nav-group-label"><span>Admission</span></div>
             <div class="nav-item" data-section="add-student" onclick="showSection('add-student')">
-                <i class="ph ph-user-plus icon"></i> <span class="nav-text">Add Student</span>
+                <i class="ph ph-user-plus icon"></i> <span>Add Student</span>
             </div>
             <div class="nav-item" data-section="search-students" onclick="showSection('search-students')">
-                <i class="ph ph-users icon"></i> <span class="nav-text">Search & View</span>
+                <i class="ph ph-users icon"></i> <span>Search & View</span>
             </div>
             <div class="nav-item" data-section="import-csv" onclick="showSection('import-csv')">
-                <i class="ph ph-file-csv icon"></i> <span class="nav-text">Import CSV</span>
+                <i class="ph ph-file-csv icon"></i> <span>Import CSV</span>
             </div>
 
-            <div class="nav-section-title"><span class="nav-text">Fees</span></div>
+            <div class="nav-group-label"><span>Fees</span></div>
             <div class="nav-item" data-section="fee-structure" onclick="showSection('fee-structure')">
-                <i class="ph ph-list-numbers icon"></i> <span class="nav-text">Fee Structure</span>
+                <i class="ph ph-list-numbers icon"></i> <span>Fee Structure</span>
             </div>
             <div class="nav-item" data-section="fee-payment" onclick="showSection('fee-payment')">
-                <i class="ph ph-currency-inr icon"></i> <span class="nav-text">Record Payment</span>
+                <i class="ph ph-currency-inr icon"></i> <span>Record Payment</span>
             </div>
             <div class="nav-item" data-section="fee-status" onclick="showSection('fee-status')">
-                <i class="ph ph-receipt icon"></i> <span class="nav-text">Fee Status</span>
+                <i class="ph ph-receipt icon"></i> <span>Fee Status</span>
             </div>
         </nav>
     </aside>
 
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <main class="main-content">
+    <!-- Sidebar mobile overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
-        <!-- Theme Toggle (top-right) -->
-        <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
-            <i class="ph ph-sun" id="theme-icon"></i>
-        </button>
-
-        <!-- ════ DASHBOARD ════ -->
-        <div class="section active" id="sec-dashboard">
-            <div class="page-header">
-                <h2>Dashboard</h2>
-                <p>Kalyan Post Graduate College management system</p>
+    <!-- ═══ MAIN ═══ -->
+    <div class="main">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="mobile-toggle" onclick="openMobileSidebar()"><i class="ph ph-list"></i></button>
+                <h2 id="page-title">Dashboard</h2>
             </div>
-            <div class="stats-grid" id="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ph-fill ph-graduation-cap"></i></div>
-                    <div class="stat-value" id="stat-students">—</div>
-                    <div class="stat-label">Total Students</div>
+            <div class="header-actions">
+                <div class="search-global">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" placeholder="Search anything..." id="global-search">
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ph-fill ph-books"></i></div>
-                    <div class="stat-value" id="stat-courses">32</div>
-                    <div class="stat-label">Courses Offered</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ph-fill ph-receipt"></i></div>
-                    <div class="stat-value" id="stat-fee-records">—</div>
-                    <div class="stat-label">Fee Records</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="ph-fill ph-currency-circle-dollar"></i></div>
-                    <div class="stat-value" id="stat-collected">—</div>
-                    <div class="stat-label">Fees Collected (₹)</div>
-                </div>
+                <button class="header-btn" onclick="toggleTheme()" title="Toggle Theme" id="theme-toggle-btn">
+                    <i class="ph ph-sun" id="theme-icon"></i>
+                </button>
             </div>
+        </header>
 
-            <div class="distribution-grid">
-                <div class="glass-card">
-                    <div class="card-title"><i class="ph-fill ph-chart-bar" style="font-size:1.2rem;"></i> Course Distribution</div>
-                    <div id="course-distribution"></div>
+        <div class="content">
+
+            <!-- ════ DASHBOARD ════ -->
+            <div class="section active" id="sec-dashboard">
+                <div class="page-intro">
+                    <p>Overview of Kalyan Post Graduate College management system</p>
                 </div>
-                <div class="glass-card">
-                    <div class="card-title"><i class="ph-fill ph-users" style="font-size:1.2rem;"></i> Gender Distribution</div>
-                    <div id="gender-distribution"></div>
-                </div>
-                <div class="glass-card">
-                    <div class="card-title"><i class="ph-fill ph-tag" style="font-size:1.2rem;"></i> Category Distribution</div>
-                    <div id="category-distribution"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ════ ADD STUDENT ════ -->
-        <div class="section" id="sec-add-student">
-            <div class="page-header">
-                <h2>Add New Student</h2>
-                <p>Fill in all the admission details for a new student</p>
-            </div>
-            <div class="glass-card">
-                <form id="student-form" onsubmit="submitStudent(event)">
-                    <div class="form-grid">
-
-                        <div class="form-section-title"><i class="ph ph-clipboard-text"></i> Basic Admission Details</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Admission No *</label>
-                            <input type="text" class="form-input" name="admission_no" required placeholder="e.g. 980/55125">
+                <div class="stats-row" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="ph-fill ph-graduation-cap"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-students">&mdash;</div>
+                            <div class="stat-label">Total Students</div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Student Name *</label>
-                            <input type="text" class="form-input" name="student_name" required placeholder="Full name">
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="ph-fill ph-books"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-courses">32</div>
+                            <div class="stat-label">Courses Offered</div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Mobile No</label>
-                            <input type="text" class="form-input" name="mobile_no" placeholder="10-digit number">
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="ph-fill ph-receipt"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-fee-records">&mdash;</div>
+                            <div class="stat-label">Fee Records</div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Course *</label>
-                            <select class="form-select" name="course" id="course-select" required>
-                                <option value="">Select Course</option>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="ph-fill ph-currency-circle-dollar"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-collected">&mdash;</div>
+                            <div class="stat-label">Fees Collected</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dist-grid">
+                    <div class="card">
+                        <div class="card-title"><i class="ph-fill ph-chart-bar"></i> Course Distribution</div>
+                        <div id="course-distribution"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="ph-fill ph-users"></i> Gender Distribution</div>
+                        <div id="gender-distribution"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="ph-fill ph-tag"></i> Category Distribution</div>
+                        <div id="category-distribution"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════ ADD STUDENT ════ -->
+            <div class="section" id="sec-add-student">
+                <div class="page-intro"><p>Fill in all the admission details for a new student</p></div>
+                <div class="card">
+                    <form id="student-form" onsubmit="submitStudent(event)">
+                        <div class="form-grid">
+                            <div class="form-section-title"><i class="ph ph-clipboard-text"></i> Basic Admission Details</div>
+                            <div class="form-group">
+                                <label class="form-label">Admission No *</label>
+                                <input type="text" class="form-input" name="admission_no" required placeholder="e.g. 980/55125">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Student Name *</label>
+                                <input type="text" class="form-input" name="student_name" required placeholder="Full name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mobile No</label>
+                                <input type="text" class="form-input" name="mobile_no" placeholder="10-digit number">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Course *</label>
+                                <select class="form-select" name="course" id="course-select" required>
+                                    <option value="">Select Course</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-input" name="subject" placeholder="e.g. ARTS, SCIENCE">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Admission Date</label>
+                                <input type="text" class="form-input" name="admission_date" placeholder="DD-MM-YYYY">
+                            </div>
+
+                            <div class="form-section-title"><i class="ph ph-users-three"></i> Family Information</div>
+                            <div class="form-group">
+                                <label class="form-label">Father Name</label>
+                                <input type="text" class="form-input" name="father_name" placeholder="Father's name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mother Name</label>
+                                <input type="text" class="form-input" name="mother_name" placeholder="Mother's name">
+                            </div>
+
+                            <div class="form-section-title"><i class="ph ph-identification-card"></i> Personal Details</div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="text" class="form-input" name="dob" placeholder="DD-MM-YYYY">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select class="form-select" name="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="MALE">Male</option>
+                                    <option value="FEMALE">Female</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" name="category">
+                                    <option value="">Select</option>
+                                    <option value="GEN">GEN</option>
+                                    <option value="OBC">OBC</option>
+                                    <option value="SC">SC</option>
+                                    <option value="ST">ST</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Religion</label>
+                                <input type="text" class="form-input" name="religion" placeholder="e.g. Hindu">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nationality</label>
+                                <input type="text" class="form-input" name="nationality" placeholder="e.g. Indian" value="INDIAN">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Aadhaar No</label>
+                                <input type="text" class="form-input" name="aadhar_no" placeholder="12-digit Aadhaar">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ABC ID</label>
+                                <input type="text" class="form-input" name="abc_id" placeholder="ABC ID">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" name="email" placeholder="student@email.com">
+                            </div>
+
+                            <div class="form-section-title"><i class="ph ph-map-pin"></i> Address</div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-textarea" name="address" placeholder="Full address"></textarea>
+                            </div>
+
+                            <div class="form-section-title"><i class="ph ph-exam"></i> Academic Details</div>
+                            <div class="form-group">
+                                <label class="form-label">Board/University</label>
+                                <input type="text" class="form-input" name="board_university" placeholder="e.g. CG BOARD">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Previous Class</label>
+                                <input type="text" class="form-input" name="class_passed" placeholder="e.g. 12th">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Year of Passing</label>
+                                <input type="text" class="form-input" name="year_of_passing" placeholder="e.g. 2024">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Roll No</label>
+                                <input type="text" class="form-input" name="roll_no" placeholder="Previous roll no">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Division</label>
+                                <select class="form-select" name="division">
+                                    <option value="">Select</option>
+                                    <option value="FIRST">FIRST</option>
+                                    <option value="SECOND">SECOND</option>
+                                    <option value="THIRD">THIRD</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Percentage (%)</label>
+                                <input type="text" class="form-input" name="percentage" placeholder="e.g. 84.0">
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Remark</label>
+                                <textarea class="form-textarea" name="remark" placeholder="Any remarks"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" id="submit-btn"><i class="ph ph-plus-circle"></i> Add Student</button>
+                            <button type="reset" class="btn btn-secondary"><i class="ph ph-arrow-counter-clockwise"></i> Reset Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ════ SEARCH & VIEW ════ -->
+            <div class="section" id="sec-search-students">
+                <div class="page-intro"><p>Search by name, admission number, mobile, father name, email, or Aadhaar</p></div>
+                <div class="card">
+                    <div class="search-bar">
+                        <div class="form-group" style="flex:2;">
+                            <label class="form-label">Search</label>
+                            <div class="search-input-wrapper">
+                                <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+                                <input type="text" class="form-input" id="search-input" placeholder="Type name, admission no, mobile..." oninput="debounceSearch()">
+                            </div>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Course Filter</label>
+                            <select class="form-select" id="search-course-filter" onchange="searchStudents()">
+                                <option value="">All Courses</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Subject</label>
-                            <input type="text" class="form-input" name="subject" placeholder="e.g. ARTS, SCIENCE">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Admission Date</label>
-                            <input type="text" class="form-input" name="admission_date" placeholder="DD-MM-YYYY">
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-users-three"></i> Family Information</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Father Name</label>
-                            <input type="text" class="form-input" name="father_name" placeholder="Father's name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Mother Name</label>
-                            <input type="text" class="form-input" name="mother_name" placeholder="Mother's name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Father Occupation</label>
-                            <input type="text" class="form-input" name="father_occupation" placeholder="e.g. ENGINEER, TEACHER">
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-user"></i> Personal Details</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Date of Birth</label>
-                            <input type="text" class="form-input" name="dob" placeholder="DD-MM-YYYY">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Gender</label>
-                            <select class="form-select" name="gender">
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
+                        <div class="form-group" style="flex:0.6;">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category">
-                                <option value="">Select</option>
+                            <select class="form-select" id="search-category-filter" onchange="searchStudents()">
+                                <option value="">All</option>
                                 <option value="GEN">GEN</option>
                                 <option value="OBC">OBC</option>
                                 <option value="SC">SC</option>
                                 <option value="ST">ST</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Subcast</label>
-                            <input type="text" class="form-input" name="subcast" placeholder="Subcast (if any)">
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-map-pin"></i> Address</div>
-
-                        <div class="form-group full-width">
-                            <label class="form-label">Permanent Address</label>
-                            <textarea class="form-textarea" name="permanent_address" placeholder="Full permanent address"></textarea>
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">Present Address</label>
-                            <textarea class="form-textarea" name="present_address" placeholder="Full present address"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">District</label>
-                            <input type="text" class="form-input" name="district" placeholder="e.g. DURG">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">State</label>
-                            <input type="text" class="form-input" name="state" placeholder="e.g. C.G.">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Domicile</label>
-                            <select class="form-select" name="domicile">
-                                <option value="">Select</option>
-                                <option value="YES">YES</option>
-                                <option value="NO">NO</option>
-                            </select>
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-identification-card"></i> Contact & ID</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" name="email" placeholder="email@example.com">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Aadhaar No</label>
-                            <input type="text" class="form-input" name="aadhaar_no" placeholder="12-digit Aadhaar">
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-book-open"></i> Additional Subjects</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Subject 4</label>
-                            <input type="text" class="form-input" name="subject_4" placeholder="Optional">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Subject 5</label>
-                            <input type="text" class="form-input" name="subject_5" placeholder="Optional">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Subject 6</label>
-                            <input type="text" class="form-input" name="subject_6" placeholder="Optional">
-                        </div>
-
-                        <div class="form-section-title"><i class="ph ph-exam"></i> Last Examination Details</div>
-
-                        <div class="form-group">
-                            <label class="form-label">Last Exam</label>
-                            <select class="form-select" name="last_exam">
-                                <option value="">Select</option>
-                                <option value="12TH">12TH</option>
-                                <option value="GRADUATION">GRADUATION</option>
-                                <option value="POST GRADUATION">POST GRADUATION</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Exam Year</label>
-                            <input type="text" class="form-input" name="last_exam_year" placeholder="e.g. 2024">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Subject</label>
-                            <input type="text" class="form-input" name="last_subject" placeholder="e.g. SCIENCE">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Roll No</label>
-                            <input type="text" class="form-input" name="last_roll_no" placeholder="Roll number">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Last Enroll No</label>
-                            <input type="text" class="form-input" name="last_enroll_no" placeholder="Enrolment number">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Board / University</label>
-                            <input type="text" class="form-input" name="board" placeholder="e.g. CBSE, HEMCHAND YADAV UNIVERSITY">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Total Marks</label>
-                            <input type="text" class="form-input" name="total_marks" placeholder="e.g. 500">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Obtained Marks</label>
-                            <input type="text" class="form-input" name="obtain_marks" placeholder="e.g. 420">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Division</label>
-                            <select class="form-select" name="division">
-                                <option value="">Select</option>
-                                <option value="FIRST">FIRST</option>
-                                <option value="SECOND">SECOND</option>
-                                <option value="THIRD">THIRD</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Percentage (%)</label>
-                            <input type="text" class="form-input" name="percentage" placeholder="e.g. 84.0">
-                        </div>
-                        <div class="form-group full-width">
-                            <label class="form-label">Remark</label>
-                            <textarea class="form-textarea" name="remark" placeholder="Any remarks"></textarea>
+                    </div>
+                    <div id="search-results">
+                        <div class="empty-state">
+                            <div class="icon"><i class="ph ph-magnifying-glass"></i></div>
+                            <p>Enter a search term or load all students</p>
                         </div>
                     </div>
-
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary" id="submit-btn"><i class="ph ph-plus-circle"></i> Add Student</button>
-                        <button type="reset" class="btn btn-secondary"><i class="ph ph-arrow-counter-clockwise"></i> Reset Form</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- ════ SEARCH & VIEW ════ -->
-        <div class="section" id="sec-search-students">
-            <div class="page-header">
-                <h2>Search & View Students</h2>
-                <p>Search by name, admission number, mobile, father name, email, or Aadhaar</p>
-            </div>
-            <div class="glass-card">
-                <div class="search-bar">
-                    <div class="form-group" style="flex:2;">
-                        <label class="form-label">Search</label>
-                        <div class="search-input-wrapper">
-                            <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
-                            <input type="text" class="form-input" id="search-input" placeholder="Type name, admission no, mobile..." oninput="debounceSearch()">
-                        </div>
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">Course Filter</label>
-                        <select class="form-select" id="search-course-filter" onchange="searchStudents()">
-                            <option value="">All Courses</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex:0.6;">
-                        <label class="form-label">Category</label>
-                        <select class="form-select" id="search-category-filter" onchange="searchStudents()">
-                            <option value="">All</option>
-                            <option value="GEN">GEN</option>
-                            <option value="OBC">OBC</option>
-                            <option value="SC">SC</option>
-                            <option value="ST">ST</option>
-                        </select>
+                    <div class="btn-group" style="margin-top:10px;">
+                        <button class="btn btn-secondary btn-sm" onclick="loadAllStudents()"><i class="ph ph-list-dashes"></i> Load All Students</button>
                     </div>
                 </div>
+            </div>
 
-                <div id="search-results">
-                    <div class="empty-state">
-                        <div class="icon"><i class="ph ph-magnifying-glass"></i></div>
-                        <p>Enter a search term or load all students</p>
+            <!-- ════ IMPORT CSV ════ -->
+            <div class="section" id="sec-import-csv">
+                <div class="page-intro"><p>Bulk import student records from the Kalyan 2024 admission CSV file</p></div>
+                <div class="card">
+                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('csv-file').click()">
+                        <div class="icon"><i class="ph ph-upload-simple"></i></div>
+                        <p><strong>Click to upload</strong> or drag and drop</p>
+                        <p style="font-size:.73rem;margin-top:4px;opacity:.7;">CSV files only &bull; Max 1000 records</p>
+                        <input type="file" id="csv-file" accept=".csv" onchange="handleCSVUpload(event)">
                     </div>
-                </div>
-
-                <div class="btn-group" style="margin-top:10px;">
-                    <button class="btn btn-secondary btn-sm" onclick="loadAllStudents()"><i class="ph ph-list-dashes"></i> Load All Students</button>
+                    <div id="import-result" style="margin-top:16px;"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- ════ IMPORT CSV ════ -->
-        <div class="section" id="sec-import-csv">
-            <div class="page-header">
-                <h2>Import CSV Data</h2>
-                <p>Bulk import student records from the Kalyan 2024 admission CSV file</p>
-            </div>
-            <div class="glass-card">
-                <div class="file-upload-zone" id="upload-zone" onclick="document.getElementById('csv-file').click()">
-                    <div class="icon"><i class="ph ph-upload-simple"></i></div>
-                    <p><strong>Click to upload</strong> or drag and drop</p>
-                    <p style="font-size:0.75rem; margin-top:4px;">CSV files only • Max 1000 records</p>
-                    <input type="file" id="csv-file" accept=".csv" onchange="handleCSVUpload(event)">
+            <!-- ════ FEE STRUCTURE ════ -->
+            <div class="section" id="sec-fee-structure">
+                <div class="page-intro"><p>Legacy 2024 fee structure for all courses at Kalyan College</p></div>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showFeeTab('ug')">UG Courses</button>
+                    <button class="tab-btn" onclick="showFeeTab('pg')">PG Courses</button>
+                    <button class="tab-btn" onclick="showFeeTab('detail')">Detailed Heads</button>
                 </div>
-                <div id="import-result" style="margin-top:16px;"></div>
-            </div>
-        </div>
-
-        <!-- ════ FEE STRUCTURE ════ -->
-        <div class="section" id="sec-fee-structure">
-            <div class="page-header">
-                <h2>Fee Structure</h2>
-                <p>Legacy 2024 fee structure for all courses at Kalyan College</p>
+                <div class="card" id="fee-tab-content"></div>
             </div>
 
-            <div class="tabs">
-                <button class="tab-btn active" onclick="showFeeTab('ug')">UG Courses</button>
-                <button class="tab-btn" onclick="showFeeTab('pg')">PG Courses</button>
-                <button class="tab-btn" onclick="showFeeTab('detail')">Detailed Heads</button>
-            </div>
-
-            <div class="glass-card" id="fee-tab-content">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-
-        <!-- ════ FEE PAYMENT ════ -->
-        <div class="section" id="sec-fee-payment">
-            <div class="page-header">
-                <h2>Record Fee Payment</h2>
-                <p>Search for a student and record their fee payment</p>
-            </div>
-            <div class="glass-card">
-                <div class="search-bar" style="margin-bottom:20px;">
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">Search Student</label>
-                        <input type="text" class="form-input" id="fee-student-search" placeholder="Admission No or Name" oninput="debounceStudentFeeSearch()">
+            <!-- ════ FEE PAYMENT ════ -->
+            <div class="section" id="sec-fee-payment">
+                <div class="page-intro"><p>Search for a student and record their fee payment</p></div>
+                <div class="card">
+                    <div class="search-bar" style="margin-bottom:20px;">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Search Student</label>
+                            <input type="text" class="form-input" id="fee-student-search" placeholder="Admission No or Name" oninput="debounceStudentFeeSearch()">
+                        </div>
                     </div>
+                    <div id="fee-student-select-list"></div>
+                    <div id="fee-payment-form-container" style="display:none;"></div>
                 </div>
-                <div id="fee-student-select-list"></div>
-                <div id="fee-payment-form-container" style="display:none;"></div>
             </div>
-        </div>
 
-        <!-- ════ FEE STATUS ════ -->
-        <div class="section" id="sec-fee-status">
-            <div class="page-header">
-                <h2>Fee Status</h2>
-                <p>Check fee payment status for a student</p>
-            </div>
-            <div class="glass-card">
-                <div class="search-bar" style="margin-bottom:20px;">
-                    <div class="form-group" style="flex:1;">
-                        <label class="form-label">Search Student</label>
-                        <input type="text" class="form-input" id="fee-status-search" placeholder="Admission No or Name" oninput="debounceStudentFeeStatusSearch()">
+            <!-- ════ FEE STATUS ════ -->
+            <div class="section" id="sec-fee-status">
+                <div class="page-intro"><p>Check fee payment status for a student</p></div>
+                <div class="card">
+                    <div class="search-bar" style="margin-bottom:20px;">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Search Student</label>
+                            <input type="text" class="form-input" id="fee-status-search" placeholder="Admission No or Name" oninput="debounceStudentFeeStatusSearch()">
+                        </div>
                     </div>
+                    <div id="fee-status-student-list"></div>
+                    <div id="fee-status-details" style="display:none;"></div>
                 </div>
-                <div id="fee-status-student-list"></div>
-                <div id="fee-status-details" style="display:none;"></div>
             </div>
-        </div>
 
-    </main>
+        </div>
+    </div>
 </div>
 
-<!-- ═══ TOAST CONTAINER ═══ -->
+<!-- Toasts -->
 <div class="toast-container" id="toast-container"></div>
 
-<!-- ═══ MODAL ═══ -->
+<!-- Modal -->
 <div class="modal-overlay" id="modal-overlay">
     <div class="modal" id="modal">
         <div class="modal-header">
@@ -446,6 +915,690 @@
     </div>
 </div>
 
-<script src="/static/app.js?v=3"></script>
+<script>
+/**
+ * Kalyan College Management System - Frontend Logic
+ */
+
+// ═══ GLOBAL STATE ═══
+let currentPage = 1;
+let searchDebounce = null;
+let editingStudentId = null;
+let coursesCache = [];
+
+const sectionTitles = {
+    'dashboard':'Dashboard',
+    'add-student':'Add Student',
+    'search-students':'Search & View',
+    'import-csv':'Import CSV',
+    'fee-structure':'Fee Structure',
+    'fee-payment':'Record Payment',
+    'fee-status':'Fee Status'
+};
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+    loadCourses();
+    loadDashboard();
+});
+
+// ═══ NAVIGATION ═══
+function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('sec-' + sectionId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+    if (navItem) navItem.classList.add('active');
+
+    document.getElementById('page-title').textContent = sectionTitles[sectionId] || 'Dashboard';
+
+    if (sectionId === 'dashboard') loadDashboard();
+    if (sectionId === 'fee-structure') showFeeTab('ug');
+
+    closeMobileSidebar();
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const icon = document.getElementById('toggle-icon');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+        if (sidebar.classList.contains('collapsed')) {
+            icon.className = 'ph ph-caret-right';
+        } else {
+            icon.className = 'ph ph-caret-left';
+        }
+    }
+}
+
+function openMobileSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('active');
+}
+function closeMobileSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('active');
+}
+
+function toggleTheme() {
+    // Simple dark toggle via filter (keeps the forest palette coherent)
+    document.body.classList.toggle('dark-mode');
+    const icon = document.getElementById('theme-icon');
+    if (document.body.classList.contains('dark-mode')) {
+        icon.className = 'ph-fill ph-sun';
+    } else {
+        icon.className = 'ph ph-sun';
+    }
+}
+
+// ═══ API HELPERS ═══
+async function api(url, options = {}) {
+    try {
+        const res = await fetch(url, {
+            headers: { 'Content-Type': 'application/json', ...options.headers },
+            ...options,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'API Error');
+        return data;
+    } catch (err) {
+        showToast(err.message, 'error');
+        throw err;
+    }
+}
+
+// ═══ TOASTS ═══
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = {
+        success:'<i class="ph-fill ph-check-circle" style="color:var(--success)"></i>',
+        error:'<i class="ph-fill ph-x-circle" style="color:var(--danger)"></i>',
+        info:'<i class="ph-fill ph-info" style="color:var(--info)"></i>'
+    };
+    toast.innerHTML = `<span>${icons[type]||icons.info}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// ═══ MODAL ═══
+function openModal(title, bodyHtml) {
+    document.getElementById('modal-title').innerHTML = title;
+    document.getElementById('modal-body').innerHTML = bodyHtml;
+    document.getElementById('modal-overlay').classList.add('active');
+}
+function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+}
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+});
+
+// ═══ COURSES ═══
+async function loadCourses() {
+    try {
+        const data = await api('/api/courses');
+        coursesCache = data.courses;
+        populateCourseDropdowns(data.courses);
+    } catch (e) {}
+}
+
+function populateCourseDropdowns(courses) {
+    ['course-select','search-course-filter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = id === 'search-course-filter'
+            ? '<option value="">All Courses</option>'
+            : '<option value="">Select Course</option>';
+        courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c; opt.textContent = c;
+            el.appendChild(opt);
+        });
+    });
+}
+
+// ═══ DASHBOARD ═══
+async function loadDashboard() {
+    try {
+        const data = await api('/api/dashboard');
+        document.getElementById('stat-students').textContent = data.total_students.toLocaleString();
+        document.getElementById('stat-courses').textContent = data.total_courses;
+        document.getElementById('stat-fee-records').textContent = data.total_fee_records.toLocaleString();
+        document.getElementById('stat-collected').textContent = '₹' + data.total_fees_collected.toLocaleString();
+        renderDistribution('course-distribution', data.course_distribution);
+        renderDistribution('gender-distribution', data.gender_distribution);
+        renderDistribution('category-distribution', data.category_distribution);
+    } catch (e) {}
+}
+
+function renderDistribution(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!data || Object.keys(data).length === 0) {
+        el.innerHTML = '<div class="empty-state"><p>No data yet</p></div>';
+        return;
+    }
+    const sorted = Object.entries(data).sort((a,b) => b[1]-a[1]);
+    el.innerHTML = sorted.map(([name,count]) =>
+        `<div class="dist-item"><span class="name">${name||'Unknown'}</span><span class="count">${count}</span></div>`
+    ).join('');
+}
+
+// ═══ STUDENT FORM ═══
+async function submitStudent(e) {
+    e.preventDefault();
+    const form = document.getElementById('student-form');
+    const formData = new FormData(form);
+    const data = {};
+    for (const [key, val] of formData.entries()) data[key] = val.trim();
+
+    // Map frontend names to backend names
+    if (data.aadhar_no !== undefined) { data.aadhaar_no = data.aadhar_no; delete data.aadhar_no; }
+    if (data.address !== undefined) { data.permanent_address = data.address; delete data.address; }
+    if (data.board_university !== undefined) { data.board = data.board_university; delete data.board_university; }
+    if (data.class_passed !== undefined) { data.last_exam = data.class_passed; delete data.class_passed; }
+    if (data.year_of_passing !== undefined) { data.last_exam_year = data.year_of_passing; delete data.year_of_passing; }
+    if (data.roll_no !== undefined) { data.last_roll_no = data.roll_no; delete data.roll_no; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+    try {
+        if (editingStudentId) {
+            await api(`/api/students/${editingStudentId}`, { method:'PUT', body:JSON.stringify(data) });
+            showToast('Student updated successfully!','success');
+            editingStudentId = null;
+            btn.innerHTML = '<i class="ph ph-plus-circle"></i> Add Student';
+        } else {
+            await api('/api/students', { method:'POST', body:JSON.stringify(data) });
+            showToast('Student added successfully!','success');
+        }
+        form.reset();
+    } catch(e) {} finally {
+        btn.disabled = false;
+        if (!editingStudentId) btn.innerHTML = '<i class="ph ph-plus-circle"></i> Add Student';
+    }
+}
+
+// ═══ SEARCH ═══
+function debounceSearch() {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(searchStudents, 400);
+}
+
+async function searchStudents() {
+    const q = document.getElementById('search-input').value.trim();
+    const course = document.getElementById('search-course-filter').value;
+    const category = document.getElementById('search-category-filter').value;
+    if (!q && !course && !category) {
+        document.getElementById('search-results').innerHTML = '<div class="empty-state"><div class="icon"><i class="ph ph-magnifying-glass"></i></div><p>Enter a search term or load all students</p></div>';
+        return;
+    }
+    let url = `/api/students/search?q=${encodeURIComponent(q)}&per_page=50`;
+    if (course) url += `&course=${encodeURIComponent(course)}`;
+    if (category) url += `&category=${encodeURIComponent(category)}`;
+    try {
+        const data = await api(url);
+        renderStudentTable(data.students);
+    } catch(e) {}
+}
+
+async function loadAllStudents() {
+    try {
+        const data = await api('/api/students/search?q=&per_page=100');
+        renderStudentTable(data.students);
+    } catch(e) {}
+}
+
+function renderStudentTable(students) {
+    const container = document.getElementById('search-results');
+    if (!students.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon"><i class="ph ph-user-minus"></i></div><p>No students found</p></div>';
+        return;
+    }
+    container.innerHTML = `
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead><tr>
+                <th>Adm No</th><th>Name</th><th>Course</th><th>Mobile</th><th>Category</th><th>Gender</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+                ${students.map(s => `<tr>
+                    <td><strong>${s.admission_no}</strong></td>
+                    <td>${s.student_name}</td>
+                    <td>${s.course||''}</td>
+                    <td>${s.mobile_no||''}</td>
+                    <td>${s.category ? `<span class="badge badge-info">${s.category}</span>` : ''}</td>
+                    <td>${s.gender||''}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn edit" title="Edit" onclick="editStudent(${s.id})"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="action-btn fee" title="Fee" onclick="goToFeePayment(${s.id})"><i class="ph ph-currency-circle-dollar"></i></button>
+                            <button class="action-btn delete" title="Delete" onclick="deleteStudent(${s.id})"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`).join('')}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+async function editStudent(id) {
+    try {
+        const data = await api(`/api/students/${id}`);
+        const s = data.student;
+        editingStudentId = id;
+        showSection('add-student');
+        document.getElementById('page-title').textContent = 'Edit Student';
+        const form = document.getElementById('student-form');
+        
+        // Map backend names back to frontend names
+        s.aadhar_no = s.aadhaar_no;
+        s.address = s.permanent_address;
+        s.board_university = s.board;
+        s.class_passed = s.last_exam;
+        s.year_of_passing = s.last_exam_year;
+        s.roll_no = s.last_roll_no;
+
+        for (const key in s) {
+            if (form.elements[key]) form.elements[key].value = s[key] || '';
+        }
+        document.getElementById('submit-btn').innerHTML = '<i class="ph ph-floppy-disk"></i> Update Student';
+    } catch(e){}
+}
+
+async function deleteStudent(id) {
+    if (!confirm('Delete this student? This cannot be undone.')) return;
+    try {
+        await api(`/api/students/${id}`,{method:'DELETE'});
+        showToast('Student deleted','success');
+        searchStudents();
+    } catch(e){}
+}
+
+// ═══ CSV IMPORT ═══
+async function handleCSVUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    document.getElementById('import-result').innerHTML = '<div class="loading-overlay"><span class="spinner"></span> Importing...</div>';
+    try {
+        const res = await fetch('/api/students/import-csv', {method:'POST', body:formData});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Import failed');
+        document.getElementById('import-result').innerHTML = `<div style="padding:16px;background:var(--success-bg);border-radius:var(--radius-sm);color:var(--success);font-weight:600;">
+            Imported ${data.imported} students successfully! ${data.skipped ? `(${data.skipped} skipped)` : ''}
+        </div>`;
+        showToast(`Imported ${data.imported} students!`,'success');
+    } catch(e){
+        document.getElementById('import-result').innerHTML = `<div style="padding:16px;background:var(--danger-bg);border-radius:var(--radius-sm);color:var(--danger);">Error: ${e.message}</div>`;
+    }
+}
+
+// ═══ FEE STRUCTURE ═══
+let feeStructureCache = null;
+
+async function loadFeeStructure() {
+    if (feeStructureCache) return feeStructureCache;
+    try {
+        const data = await api('/api/fee-structure');
+        feeStructureCache = data.structures;
+        return data.structures;
+    } catch (e) {
+        return [];
+    }
+}
+
+async function showFeeTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (typeof event !== 'undefined' && event.target) {
+        const btn = event.target.closest('.tab-btn');
+        if (btn) btn.classList.add('active');
+    }
+    const container = document.getElementById('fee-tab-content');
+    container.innerHTML = '<div class="loading-overlay"><span class="spinner"></span> Loading...</div>';
+    
+    const structures = await loadFeeStructure();
+    
+    if (tab === 'ug') {
+        const ug = structures.filter(s => !s.course.startsWith('M.') && !s.course.startsWith('PGDCA'));
+        renderFeeInstallmentTable(container, ug, 'UG Courses Fee Structure (2024)');
+    } else if (tab === 'pg') {
+        const pg = structures.filter(s => s.course.startsWith('M.') || s.course.startsWith('PGDCA'));
+        renderFeeInstallmentTable(container, pg, 'PG Courses Fee Structure (2024)');
+    } else if (tab === 'detail') {
+        renderFeeDetailTable(container, structures);
+    }
+}
+
+function renderFeeInstallmentTable(container, structures, title) {
+    if (!structures || structures.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No fee data available</p></div>';
+        return;
+    }
+    let html = `<div style="padding:20px;"><h3 style="margin-bottom:16px;color:var(--text-dark);">${title}</h3>
+    <div class="table-wrapper">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Various (A)</th>
+                <th>Tuition (A)</th>
+                <th>Practical (A)</th>
+                <th>1st Installment</th>
+                <th>Various (B)</th>
+                <th>Tuition (B)</th>
+                <th>Practical (B)</th>
+                <th>2nd Installment</th>
+                <th>Year Total</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    structures.forEach(s => {
+        const f = s.installments.first;
+        const sc = s.installments.second;
+        html += `<tr>
+            <td><strong>${s.course}</strong></td>
+            <td>₹${f.various.toLocaleString()}</td>
+            <td>₹${f.tuition.toLocaleString()}</td>
+            <td>${f.practical ? '₹' + f.practical.toLocaleString() : '—'}</td>
+            <td class="fee-highlight">₹${f.total.toLocaleString()}</td>
+            <td>₹${sc.various.toLocaleString()}</td>
+            <td>₹${sc.tuition.toLocaleString()}</td>
+            <td>${sc.practical ? '₹' + sc.practical.toLocaleString() : '—'}</td>
+            <td class="fee-highlight">₹${sc.total.toLocaleString()}</td>
+            <td class="fee-highlight" style="font-size:0.9rem;">₹${s.installments.year_total.toLocaleString()}</td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div></div>';
+    container.innerHTML = html;
+}
+
+function renderFeeDetailTable(container, structures) {
+    const heads = [
+        'Admission Fees', 'Amalgamated Fund', 'Library Development',
+        'Home Examination', 'Establishment Fund', 'Student Development',
+        'College Development', 'Cycle Stand', 'Caution Money (Ref.)',
+        'Seminar / Workshop', 'Computer Maint.', 'Physical Education',
+        'Non Aided Staff Fund', 'Gym Development', 'TOTAL'
+    ];
+
+    let html = '<div style="padding:20px;"><h3 style="margin-bottom:16px;color:var(--text-dark);">Detailed Fee Heads Breakdown</h3>';
+    html += '<div class="table-wrapper"><table class="data-table" style="font-size:0.75rem;"><thead><tr><th>Course</th>';
+    heads.forEach(h => { html += `<th>${h}</th>`; });
+    html += '</tr></thead><tbody>';
+
+    const seen = new Set();
+    structures.forEach(s => {
+        if (!s.detailed_heads || Object.keys(s.detailed_heads).length === 0) return;
+        const key = JSON.stringify(s.detailed_heads);
+        if (seen.has(key)) return;
+        seen.add(key);
+
+        html += `<tr><td style="white-space:normal;min-width:140px;"><strong>${s.course}</strong></td>`;
+        heads.forEach(h => {
+            const val = s.detailed_heads[h] || 0;
+            const isTotal = h === 'TOTAL';
+            html += `<td ${isTotal ? 'class="fee-highlight"' : ''}>${val ? '₹' + val.toLocaleString() : '—'}</td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div></div>';
+    container.innerHTML = html;
+}
+
+// ═══ FEE PAYMENT ═══
+let feeSearchDebounce = null;
+function debounceStudentFeeSearch() {
+    clearTimeout(feeSearchDebounce);
+    feeSearchDebounce = setTimeout(searchStudentsForFee, 400);
+}
+
+async function searchStudentsForFee() {
+    const q = document.getElementById('fee-student-search').value.trim();
+    if (!q) { document.getElementById('fee-student-select-list').innerHTML = ''; return; }
+    try {
+        const data = await api(`/api/students/search?q=${encodeURIComponent(q)}&per_page=10`);
+        const container = document.getElementById('fee-student-select-list');
+        if (data.students.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-muted);padding:10px;">No students found</p>';
+            return;
+        }
+        container.innerHTML = data.students.map(s =>
+            `<div class="dist-item" style="cursor:pointer;padding:10px;" onclick="selectStudentForFee(${s.id},'${(s.student_name||'').replace(/'/g,"\\'")}','${(s.admission_no||'').replace(/'/g,"\\'")}','${(s.course||'').replace(/'/g,"\\'")}')">
+                <span><strong>${s.student_name}</strong> — ${s.admission_no} (${s.course})</span>
+                <span class="badge badge-info">Select</span>
+            </div>`
+        ).join('');
+    } catch(e){}
+}
+
+async function selectStudentForFee(studentId, name, admNo, course) {
+    document.getElementById('fee-student-select-list').innerHTML = `<div style="padding:10px;background:var(--forest-50);border-radius:var(--radius-sm);margin-bottom:12px;">
+        <strong>${name}</strong> — ${admNo} (${course})
+        <button class="btn btn-secondary btn-sm" style="float:right;" onclick="clearFeeSelection()">Change</button>
+    </div>`;
+    const container = document.getElementById('fee-payment-form-container');
+    container.style.display = 'block';
+    container.innerHTML = '<div class="loading-overlay"><span class="spinner"></span> Loading fee structure...</div>';
+    try {
+        const structure = await api(`/api/fee-structure/${encodeURIComponent(course)}`).catch(() => null);
+        const firstTotal = structure ? structure.installments.first.total : 0;
+        const secondTotal = structure ? structure.installments.second.total : 0;
+        const safeName = (name||'').replace(/'/g,"\\'");
+        const safeAdmNo = (admNo||'').replace(/'/g,"\\'");
+        container.innerHTML = `
+        <form onsubmit="submitFeePayment(event,${studentId})">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Academic Year</label>
+                    <input type="text" class="form-input" name="academic_year" value="2024-25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Installment</label>
+                    <select class="form-select" name="installment" onchange="updateFeeAmount(this.value,${firstTotal},${secondTotal},'${safeName}','${safeAdmNo}')">
+                        <option value="FIRST">First Installment</option>
+                        <option value="SECOND">Second Installment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Amount (₹)</label>
+                    <input type="number" class="form-input" name="total_amount" id="fee-total-amount" value="${firstTotal}" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Mode</label>
+                    <select class="form-select" name="payment_mode" id="payment-mode-select" onchange="toggleUPIQR('${safeName}','${safeAdmNo}')">
+                        <option value="CASH">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="CHEQUE">Cheque</option>
+                        <option value="DD">DD</option>
+                        <option value="ONLINE">Online Transfer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Date</label>
+                    <input type="date" class="form-input" name="payment_date" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Period From</label>
+                    <input type="text" class="form-input" name="fee_period_from" placeholder="e.g. JUL 2024">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fee Period To</label>
+                    <input type="text" class="form-input" name="fee_period_to" placeholder="e.g. DEC 2024">
+                </div>
+                <div class="form-group full-width" id="upi-qr-container" style="display:none;text-align:center;">
+                    <p style="font-weight:600;margin-bottom:8px;">Scan to Pay ₹<span id="qr-amount-display">0</span></p>
+                    <img id="upi-qr-image" src="" style="max-width:200px;border-radius:8px;" alt="UPI QR">
+                </div>
+                <div class="form-section-title"><i class="ph ph-receipt"></i> Fee Breakup (Optional)</div>
+                <div class="form-group">
+                    <label class="form-label">Tuition</label>
+                    <input type="number" class="form-input" name="tuition" value="${structure ? structure.installments.first.tuition : 0}" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Practical</label>
+                    <input type="number" class="form-input" name="practical" value="${structure ? structure.installments.first.practical : 0}" step="0.01">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary"><i class="ph ph-currency-circle-dollar"></i> Record Payment</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>`;
+        setTimeout(() => updateUPIQRCode(firstTotal, safeName, safeAdmNo), 100);
+    } catch(e){ container.innerHTML = '<p style="color:var(--danger);">Could not load fee structure</p>'; }
+}
+
+function updateFeeAmount(installment, firstTotal, secondTotal, studentName, admNo) {
+    const input = document.getElementById('fee-total-amount');
+    input.value = installment === 'FIRST' ? firstTotal : installment === 'SECOND' ? secondTotal : 0;
+    updateUPIQRCode(input.value, studentName, admNo);
+}
+
+function toggleUPIQR(studentName, admissionNo) {
+    updateUPIQRCode(document.getElementById('fee-total-amount').value, studentName, admissionNo);
+}
+
+function updateUPIQRCode(amount, studentName, admissionNo) {
+    const qrContainer = document.getElementById('upi-qr-container');
+    const qrImg = document.getElementById('upi-qr-image');
+    const displayAmt = document.getElementById('qr-amount-display');
+    const paymentMode = document.getElementById('payment-mode-select');
+    if (!qrContainer || !qrImg || !displayAmt) return;
+    const amtNum = parseFloat(amount) || 0;
+    displayAmt.textContent = amtNum;
+    if (amtNum > 0 && paymentMode && paymentMode.value === 'UPI') {
+        const upiId = 'sameerbanchhor@upi';
+        const name = encodeURIComponent('Kalyan College');
+        const msg = encodeURIComponent(`Fee-${admissionNo}-${studentName}`);
+        const upiString = `upi://pay?pa=${upiId}&pn=${name}&am=${amtNum}&cu=INR&tn=${msg}`;
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiString)}&margin=10`;
+        qrContainer.style.display = 'block';
+    } else {
+        qrContainer.style.display = 'none';
+        qrImg.src = '';
+    }
+}
+
+function clearFeeSelection() {
+    document.getElementById('fee-student-select-list').innerHTML = '';
+    document.getElementById('fee-payment-form-container').style.display = 'none';
+    document.getElementById('fee-student-search').value = '';
+}
+
+async function submitFeePayment(e, studentId) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = { student_id: studentId };
+    for (const [key,val] of formData.entries()) data[key] = val;
+    const from = data.fee_period_from || '';
+    const to = data.fee_period_to || '';
+    data.fee_period = (from && to) ? `${from} TO ${to}` : from || to || '';
+    delete data.fee_period_from;
+    delete data.fee_period_to;
+    try {
+        const result = await api('/api/fees/pay', { method:'POST', body:JSON.stringify(data) });
+        showToast(`Payment recorded! Receipt No: ${result.receipt_no}`,'success');
+        clearFeeSelection();
+    } catch(e) {}
+}
+
+function goToFeePayment(studentId) {
+    showSection('fee-payment');
+    api(`/api/students/${studentId}`).then(data => {
+        const s = data.student;
+        document.getElementById('fee-student-search').value = s.student_name;
+        selectStudentForFee(s.id, s.student_name, s.admission_no, s.course);
+    });
+}
+
+// ═══ FEE STATUS ═══
+let feeStatusDebounce = null;
+function debounceStudentFeeStatusSearch() {
+    clearTimeout(feeStatusDebounce);
+    feeStatusDebounce = setTimeout(searchStudentsForFeeStatus, 400);
+}
+
+async function searchStudentsForFeeStatus() {
+    const q = document.getElementById('fee-status-search').value.trim();
+    if (!q) { document.getElementById('fee-status-student-list').innerHTML = ''; return; }
+    try {
+        const data = await api(`/api/students/search?q=${encodeURIComponent(q)}&per_page=10`);
+        const container = document.getElementById('fee-status-student-list');
+        if (data.students.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-muted);padding:10px;">No students found</p>';
+            return;
+        }
+        container.innerHTML = data.students.map(s =>
+            `<div class="dist-item" style="cursor:pointer;padding:10px;" onclick="loadFeeStatus(${s.id})">
+                <span><strong>${s.student_name}</strong> — ${s.admission_no} (${s.course})</span>
+                <span class="badge badge-success">View Status</span>
+            </div>`
+        ).join('');
+    } catch(e) {}
+}
+
+async function loadFeeStatus(studentId) {
+    try {
+        const data = await api(`/api/fees/student/${studentId}`);
+        const container = document.getElementById('fee-status-details');
+        container.style.display = 'block';
+        document.getElementById('fee-status-student-list').innerHTML = '';
+
+        let html = `
+        <div style="margin-bottom:16px;">
+            <h3 style="font-family:'DM Serif Display',serif;color:var(--text-dark);">${data.student_name} — ${data.admission_no}</h3>
+            <p style="color:var(--text-muted);">${data.course}</p>
+        </div>
+        <div class="fee-summary">
+            <div class="fee-summary-item total-card">
+                <i class="ph-fill ph-wallet fee-icon"></i>
+                <div class="label">Total Fee</div>
+                <div class="value total">₹${data.total_fee.toLocaleString()}</div>
+            </div>
+            <div class="fee-summary-item paid-card">
+                <i class="ph-fill ph-check-circle fee-icon"></i>
+                <div class="label">Total Paid</div>
+                <div class="value paid">₹${data.total_paid.toLocaleString()}</div>
+            </div>
+            <div class="fee-summary-item balance-card">
+                <i class="ph-fill ph-scales fee-icon"></i>
+                <div class="label">Balance Due</div>
+                <div class="value balance">₹${data.balance.toLocaleString()}</div>
+            </div>
+        </div>`;
+
+        if (data.records.length > 0) {
+            html += `<div class="table-wrapper"><table class="data-table">
+                <thead><tr><th>Receipt No</th><th>Date</th><th>Year</th><th>Installment</th><th>Amount</th><th>Mode</th><th>Status</th></tr></thead>
+                <tbody>`;
+            data.records.forEach(r => {
+                html += `<tr><td><strong>${r.receipt_no}</strong></td><td>${r.date}</td><td>${r.academic_year}</td>
+                    <td>${r.installment}</td><td class="fee-highlight">₹${r.total_amount.toLocaleString()}</td>
+                    <td>${r.payment_mode}</td><td><span class="badge badge-success">${r.payment_status}</span></td></tr>`;
+            });
+            html += '</tbody></table></div>';
+        } else {
+            html += '<div class="empty-state"><div class="icon"><i class="ph ph-mailbox"></i></div><p>No fee payments recorded yet</p></div>';
+        }
+        html += `<div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="goToFeePayment(${studentId})"><i class="ph ph-currency-circle-dollar"></i> Record Payment</button>
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fee-status-details').style.display='none';document.getElementById('fee-status-search').value='';">← Back</button>
+        </div>`;
+        container.innerHTML = html;
+    } catch(e){}
+}
+</script>
 </body>
 </html>
