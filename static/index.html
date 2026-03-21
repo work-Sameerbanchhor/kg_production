@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalyan College Management System</title>
+    <meta name="description" content="Admission and Fee Management System for Kalyan Post Graduate College, Bhilai Nagar">
+    <link rel="stylesheet" href="/static/style.css?v=8">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</head>
+<body>
+<div class="app-wrapper">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-content">
+                <h1><i class="ph-fill ph-books" style="margin-right:4px;"></i>Kalyan PG College</h1>
+                <p>Bhilai Nagar • Management System</p>
+            </div>
+            <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                <i class="ph ph-list"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title"><span class="nav-text">Main</span></div>
+            <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+                <i class="ph ph-chart-line-up icon"></i> <span class="nav-text">Dashboard</span>
+            </div>
+
+            <div class="nav-section-title"><span class="nav-text">Admission</span></div>
+            <div class="nav-item" data-section="add-student" onclick="showSection('add-student')">
+                <i class="ph ph-user-plus icon"></i> <span class="nav-text">Add Student</span>
+            </div>
+            <div class="nav-item" data-section="search-students" onclick="showSection('search-students')">
+                <i class="ph ph-users icon"></i> <span class="nav-text">Search & View</span>
+            </div>
+            <div class="nav-item" data-section="import-csv" onclick="showSection('import-csv')">
+                <i class="ph ph-file-csv icon"></i> <span class="nav-text">Import CSV</span>
+            </div>
+
+            <div class="nav-section-title"><span class="nav-text">Fees</span></div>
+            <div class="nav-item" data-section="fee-structure" onclick="showSection('fee-structure')">
+                <i class="ph ph-list-numbers icon"></i> <span class="nav-text">Fee Structure</span>
+            </div>
+            <div class="nav-item" data-section="fee-payment" onclick="showSection('fee-payment')">
+                <i class="ph ph-currency-inr icon"></i> <span class="nav-text">Record Payment</span>
+            </div>
+            <div class="nav-item" data-section="fee-status" onclick="showSection('fee-status')">
+                <i class="ph ph-receipt icon"></i> <span class="nav-text">Fee Status</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="main-content">
+
+        <!-- Theme Toggle (top-right) -->
+        <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+            <i class="ph ph-sun" id="theme-icon"></i>
+        </button>
+
+        <!-- ════ DASHBOARD ════ -->
+        <div class="section active" id="sec-dashboard">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Kalyan Post Graduate College management system</p>
+            </div>
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="ph-fill ph-graduation-cap"></i></div>
+                    <div class="stat-value" id="stat-students">—</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="ph-fill ph-books"></i></div>
+                    <div class="stat-value" id="stat-courses">32</div>
+                    <div class="stat-label">Courses Offered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="ph-fill ph-receipt"></i></div>
+                    <div class="stat-value" id="stat-fee-records">—</div>
+                    <div class="stat-label">Fee Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="ph-fill ph-currency-circle-dollar"></i></div>
+                    <div class="stat-value" id="stat-collected">—</div>
+                    <div class="stat-label">Fees Collected (₹)</div>
+                </div>
+            </div>
+
+            <div class="distribution-grid">
+                <div class="glass-card">
+                    <div class="card-title"><i class="ph-fill ph-chart-bar" style="font-size:1.2rem;"></i> Course Distribution</div>
+                    <div id="course-distribution"></div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-title"><i class="ph-fill ph-users" style="font-size:1.2rem;"></i> Gender Distribution</div>
+                    <div id="gender-distribution"></div>
+                </div>
+                <div class="glass-card">
+                    <div class="card-title"><i class="ph-fill ph-tag" style="font-size:1.2rem;"></i> Category Distribution</div>
+                    <div id="category-distribution"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ ADD STUDENT ════ -->
+        <div class="section" id="sec-add-student">
+            <div class="page-header">
+                <h2>Add New Student</h2>
+                <p>Fill in all the admission details for a new student</p>
+            </div>
+            <div class="glass-card">
+                <form id="student-form" onsubmit="submitStudent(event)">
+                    <div class="form-grid">
+
+                        <div class="form-section-title"><i class="ph ph-clipboard-text"></i> Basic Admission Details</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Admission No *</label>
+                            <input type="text" class="form-input" name="admission_no" required placeholder="e.g. 980/55125">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Student Name *</label>
+                            <input type="text" class="form-input" name="student_name" required placeholder="Full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mobile No</label>
+                            <input type="text" class="form-input" name="mobile_no" placeholder="10-digit number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Course *</label>
+                            <select class="form-select" name="course" id="course-select" required>
+                                <option value="">Select Course</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-input" name="subject" placeholder="e.g. ARTS, SCIENCE">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Admission Date</label>
+                            <input type="text" class="form-input" name="admission_date" placeholder="DD-MM-YYYY">
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-users-three"></i> Family Information</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Father Name</label>
+                            <input type="text" class="form-input" name="father_name" placeholder="Father's name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mother Name</label>
+                            <input type="text" class="form-input" name="mother_name" placeholder="Mother's name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father Occupation</label>
+                            <input type="text" class="form-input" name="father_occupation" placeholder="e.g. ENGINEER, TEACHER">
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-user"></i> Personal Details</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="text" class="form-input" name="dob" placeholder="DD-MM-YYYY">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select class="form-select" name="gender">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category">
+                                <option value="">Select</option>
+                                <option value="GEN">GEN</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="ST">ST</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subcast</label>
+                            <input type="text" class="form-input" name="subcast" placeholder="Subcast (if any)">
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-map-pin"></i> Address</div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">Permanent Address</label>
+                            <textarea class="form-textarea" name="permanent_address" placeholder="Full permanent address"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Present Address</label>
+                            <textarea class="form-textarea" name="present_address" placeholder="Full present address"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">District</label>
+                            <input type="text" class="form-input" name="district" placeholder="e.g. DURG">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-input" name="state" placeholder="e.g. C.G.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Domicile</label>
+                            <select class="form-select" name="domicile">
+                                <option value="">Select</option>
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-identification-card"></i> Contact & ID</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" name="email" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Aadhaar No</label>
+                            <input type="text" class="form-input" name="aadhaar_no" placeholder="12-digit Aadhaar">
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-book-open"></i> Additional Subjects</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Subject 4</label>
+                            <input type="text" class="form-input" name="subject_4" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subject 5</label>
+                            <input type="text" class="form-input" name="subject_5" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subject 6</label>
+                            <input type="text" class="form-input" name="subject_6" placeholder="Optional">
+                        </div>
+
+                        <div class="form-section-title"><i class="ph ph-exam"></i> Last Examination Details</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Last Exam</label>
+                            <select class="form-select" name="last_exam">
+                                <option value="">Select</option>
+                                <option value="12TH">12TH</option>
+                                <option value="GRADUATION">GRADUATION</option>
+                                <option value="POST GRADUATION">POST GRADUATION</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Exam Year</label>
+                            <input type="text" class="form-input" name="last_exam_year" placeholder="e.g. 2024">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Subject</label>
+                            <input type="text" class="form-input" name="last_subject" placeholder="e.g. SCIENCE">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Roll No</label>
+                            <input type="text" class="form-input" name="last_roll_no" placeholder="Roll number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Enroll No</label>
+                            <input type="text" class="form-input" name="last_enroll_no" placeholder="Enrolment number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Board / University</label>
+                            <input type="text" class="form-input" name="board" placeholder="e.g. CBSE, HEMCHAND YADAV UNIVERSITY">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Total Marks</label>
+                            <input type="text" class="form-input" name="total_marks" placeholder="e.g. 500">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Obtained Marks</label>
+                            <input type="text" class="form-input" name="obtain_marks" placeholder="e.g. 420">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Division</label>
+                            <select class="form-select" name="division">
+                                <option value="">Select</option>
+                                <option value="FIRST">FIRST</option>
+                                <option value="SECOND">SECOND</option>
+                                <option value="THIRD">THIRD</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Percentage (%)</label>
+                            <input type="text" class="form-input" name="percentage" placeholder="e.g. 84.0">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Remark</label>
+                            <textarea class="form-textarea" name="remark" placeholder="Any remarks"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="submit-btn"><i class="ph ph-plus-circle"></i> Add Student</button>
+                        <button type="reset" class="btn btn-secondary"><i class="ph ph-arrow-counter-clockwise"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ════ SEARCH & VIEW ════ -->
+        <div class="section" id="sec-search-students">
+            <div class="page-header">
+                <h2>Search & View Students</h2>
+                <p>Search by name, admission number, mobile, father name, email, or Aadhaar</p>
+            </div>
+            <div class="glass-card">
+                <div class="search-bar">
+                    <div class="form-group" style="flex:2;">
+                        <label class="form-label">Search</label>
+                        <div class="search-input-wrapper">
+                            <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
+                            <input type="text" class="form-input" id="search-input" placeholder="Type name, admission no, mobile..." oninput="debounceSearch()">
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Course Filter</label>
+                        <select class="form-select" id="search-course-filter" onchange="searchStudents()">
+                            <option value="">All Courses</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:0.6;">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="search-category-filter" onchange="searchStudents()">
+                            <option value="">All</option>
+                            <option value="GEN">GEN</option>
+                            <option value="OBC">OBC</option>
+                            <option value="SC">SC</option>
+                            <option value="ST">ST</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="search-results">
+                    <div class="empty-state">
+                        <div class="icon"><i class="ph ph-magnifying-glass"></i></div>
+                        <p>Enter a search term or load all students</p>
+                    </div>
+                </div>
+
+                <div class="btn-group" style="margin-top:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadAllStudents()"><i class="ph ph-list-dashes"></i> Load All Students</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ IMPORT CSV ════ -->
+        <div class="section" id="sec-import-csv">
+            <div class="page-header">
+                <h2>Import CSV Data</h2>
+                <p>Bulk import student records from the Kalyan 2024 admission CSV file</p>
+            </div>
+            <div class="glass-card">
+                <div class="file-upload-zone" id="upload-zone" onclick="document.getElementById('csv-file').click()">
+                    <div class="icon"><i class="ph ph-upload-simple"></i></div>
+                    <p><strong>Click to upload</strong> or drag and drop</p>
+                    <p style="font-size:0.75rem; margin-top:4px;">CSV files only • Max 1000 records</p>
+                    <input type="file" id="csv-file" accept=".csv" onchange="handleCSVUpload(event)">
+                </div>
+                <div id="import-result" style="margin-top:16px;"></div>
+            </div>
+        </div>
+
+        <!-- ════ FEE STRUCTURE ════ -->
+        <div class="section" id="sec-fee-structure">
+            <div class="page-header">
+                <h2>Fee Structure</h2>
+                <p>Legacy 2024 fee structure for all courses at Kalyan College</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showFeeTab('ug')">UG Courses</button>
+                <button class="tab-btn" onclick="showFeeTab('pg')">PG Courses</button>
+                <button class="tab-btn" onclick="showFeeTab('detail')">Detailed Heads</button>
+            </div>
+
+            <div class="glass-card" id="fee-tab-content">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- ════ FEE PAYMENT ════ -->
+        <div class="section" id="sec-fee-payment">
+            <div class="page-header">
+                <h2>Record Fee Payment</h2>
+                <p>Search for a student and record their fee payment</p>
+            </div>
+            <div class="glass-card">
+                <div class="search-bar" style="margin-bottom:20px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Search Student</label>
+                        <input type="text" class="form-input" id="fee-student-search" placeholder="Admission No or Name" oninput="debounceStudentFeeSearch()">
+                    </div>
+                </div>
+                <div id="fee-student-select-list"></div>
+                <div id="fee-payment-form-container" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- ════ FEE STATUS ════ -->
+        <div class="section" id="sec-fee-status">
+            <div class="page-header">
+                <h2>Fee Status</h2>
+                <p>Check fee payment status for a student</p>
+            </div>
+            <div class="glass-card">
+                <div class="search-bar" style="margin-bottom:20px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Search Student</label>
+                        <input type="text" class="form-input" id="fee-status-search" placeholder="Admission No or Name" oninput="debounceStudentFeeStatusSearch()">
+                    </div>
+                </div>
+                <div id="fee-status-student-list"></div>
+                <div id="fee-status-details" style="display:none;"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h3 id="modal-title">Modal</h3>
+            <button class="modal-close" onclick="closeModal()"><i class="ph ph-x"></i></button>
+        </div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script src="/static/app.js?v=3"></script>
+</body>
+</html>

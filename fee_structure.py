@@ -1,0 +1,396 @@
+"""
+Kalyan College Fee Structure (Legacy 2024).
+Hardcoded fee data as provided in the prompt.
+"""
+
+# ─── Courses List ──────────────────────────────────────────
+COURSES = [
+    "B.A.",
+    "B.Com.",
+    "B.Sc. (Biology)",
+    "B.Sc. (Mathematics)",
+    "B.Sc. Micro Biology",
+    "B.Sc. IT (Information Technology)",
+    "B.Sc. Computer Science",
+    "B.Sc. Electronics",
+    "B.Sc. Biotechnology",
+    "BBA (Bachelor of Business Administration)",
+    "BCA (Bachelor of Computer Applications)",
+    "B.Lib (Bachelor of Library Science)",
+    "BAJMC (Bachelor of Arts in Journalism & Mass Communication)",
+    "M.A. (Previous)",
+    "M.A. (Final)",
+    "M.Com. (Previous)",
+    "M.Com. (Final)",
+    "M.Sc. (Botany - Previous)",
+    "M.Sc. (Botany - Final)",
+    "M.Sc. (Chemistry - Previous)",
+    "M.Sc. (Chemistry - Final)",
+    "M.Sc. (Mathematics - Previous)",
+    "M.Sc. (Mathematics - Final)",
+    "M.Sc. (Physics - Previous)",
+    "M.Sc. (Physics - Final)",
+    "M.Sc. (Zoology - Previous)",
+    "M.Sc. (Zoology - Final)",
+    "M.Sc. (Computer Science - Previous)",
+    "M.Sc. (Computer Science - Final)",
+    "M.Sc. (Biotechnology - Previous)",
+    "M.Sc. (Biotechnology - Final)",
+    "PGDCA (Post Graduate Diploma in Computer Applications)",
+]
+
+
+# ─── Fee Structure: Installment-based ─────────────────────
+# Format: course_key -> {
+#   first: {various, tuition, practical, total},
+#   second: {various, tuition, practical, total},
+#   year_total
+# }
+
+FEE_INSTALLMENTS = {
+    "B.A.": {
+        "first": {"various": 3600, "tuition": 350, "practical": 0, "total": 3950},
+        "second": {"various": 2200, "tuition": 350, "practical": 0, "total": 2550},
+        "year_total": 6500,
+    },
+    "B.Com.": {
+        "first": {"various": 7400, "tuition": 450, "practical": 0, "total": 7850},
+        "second": {"various": 4000, "tuition": 450, "practical": 0, "total": 4450},
+        "year_total": 12300,
+    },
+    "B.Sc. (Biology)": {
+        "first": {"various": 8100, "tuition": 600, "practical": 150, "total": 8850},
+        "second": {"various": 5000, "tuition": 600, "practical": 150, "total": 5750},
+        "year_total": 14600,
+    },
+    "B.Sc. (Mathematics)": {
+        "first": {"various": 8100, "tuition": 600, "practical": 150, "total": 8850},
+        "second": {"various": 5000, "tuition": 600, "practical": 150, "total": 5750},
+        "year_total": 14600,
+    },
+    # B.Sc. MB/IT/CS/Ele group
+    "B.Sc. Micro Biology": {
+        "first": {"various": 8500, "tuition": 1350, "practical": 450, "total": 10300},
+        "second": {"various": 5000, "tuition": 1350, "practical": 450, "total": 6800},
+        "year_total": 17100,
+    },
+    "B.Sc. IT (Information Technology)": {
+        "first": {"various": 8500, "tuition": 1350, "practical": 450, "total": 10300},
+        "second": {"various": 5000, "tuition": 1350, "practical": 450, "total": 6800},
+        "year_total": 17100,
+    },
+    "B.Sc. Computer Science": {
+        "first": {"various": 8500, "tuition": 1350, "practical": 450, "total": 10300},
+        "second": {"various": 5000, "tuition": 1350, "practical": 450, "total": 6800},
+        "year_total": 17100,
+    },
+    "B.Sc. Electronics": {
+        "first": {"various": 8500, "tuition": 1350, "practical": 450, "total": 10300},
+        "second": {"various": 5000, "tuition": 1350, "practical": 450, "total": 6800},
+        "year_total": 17100,
+    },
+    "B.Sc. Biotechnology": {
+        "first": {"various": 9400, "tuition": 4500, "practical": 2700, "total": 16600},
+        "second": {"various": 4000, "tuition": 4500, "practical": 2700, "total": 11200},
+        "year_total": 27800,
+    },
+    "BBA (Bachelor of Business Administration)": {
+        "first": {"various": 11100, "tuition": 3000, "practical": 0, "total": 14100},
+        "second": {"various": 2800, "tuition": 6500, "practical": 0, "total": 9300},
+        "year_total": 23400,
+    },
+    "BCA (Bachelor of Computer Applications)": {
+        "first": {"various": 12000, "tuition": 2000, "practical": 1800, "total": 15800},
+        "second": {"various": 3600, "tuition": 5000, "practical": 1800, "total": 10400},
+        "year_total": 26200,
+    },
+    "B.Lib (Bachelor of Library Science)": {
+        "first": {"various": 8600, "tuition": 2000, "practical": 450, "total": 11050},
+        "second": {"various": 4800, "tuition": 2000, "practical": 450, "total": 7250},
+        "year_total": 18300,
+    },
+    "BAJMC (Bachelor of Arts in Journalism & Mass Communication)": {
+        "first": {"various": 5650, "tuition": 3000, "practical": 0, "total": 8650},
+        "second": {"various": 2000, "tuition": 3000, "practical": 600, "total": 5600},
+        "year_total": 14250,
+    },
+
+    # ─── PG Courses ────────────────────────────────────────
+    "M.A. (Previous)": {
+        "first": {"various": 4200, "tuition": 750, "practical": 0, "total": 4950},
+        "second": {"various": 2300, "tuition": 750, "practical": 0, "total": 3050},
+        "year_total": 8000,
+    },
+    "M.A. (Final)": {
+        "first": {"various": 4200, "tuition": 750, "practical": 0, "total": 4950},
+        "second": {"various": 2300, "tuition": 750, "practical": 0, "total": 3050},
+        "year_total": 8000,
+    },
+    "M.Com. (Previous)": {
+        "first": {"various": 7500, "tuition": 750, "practical": 0, "total": 8250},
+        "second": {"various": 4600, "tuition": 750, "practical": 0, "total": 5350},
+        "year_total": 13600,
+    },
+    "M.Com. (Final)": {
+        "first": {"various": 7500, "tuition": 750, "practical": 0, "total": 8250},
+        "second": {"various": 4600, "tuition": 750, "practical": 0, "total": 5350},
+        "year_total": 13600,
+    },
+    # M.Sc. Bot/Che/Maths/Phy/Zoo group
+    "M.Sc. (Botany - Previous)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Botany - Final)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Chemistry - Previous)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Chemistry - Final)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Mathematics - Previous)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Mathematics - Final)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Physics - Previous)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Physics - Final)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Zoology - Previous)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Zoology - Final)": {
+        "first": {"various": 11200, "tuition": 0, "practical": 500, "total": 11700},
+        "second": {"various": 3200, "tuition": 4000, "practical": 500, "total": 7700},
+        "year_total": 19400,
+    },
+    "M.Sc. (Computer Science - Previous)": {
+        "first": {"various": 10600, "tuition": 2000, "practical": 1200, "total": 13800},
+        "second": {"various": 3900, "tuition": 4000, "practical": 1200, "total": 9100},
+        "year_total": 22900,
+    },
+    "M.Sc. (Computer Science - Final)": {
+        "first": {"various": 10600, "tuition": 2000, "practical": 1200, "total": 13800},
+        "second": {"various": 3900, "tuition": 4000, "practical": 1200, "total": 9100},
+        "year_total": 22900,
+    },
+    "M.Sc. (Biotechnology - Previous)": {
+        "first": {"various": 8450, "tuition": 5150, "practical": 7500, "total": 21100},
+        "second": {"various": 4900, "tuition": 4500, "practical": 4500, "total": 13900},
+        "year_total": 35000,
+    },
+    "M.Sc. (Biotechnology - Final)": {
+        "first": {"various": 8450, "tuition": 5150, "practical": 7500, "total": 21100},
+        "second": {"various": 4900, "tuition": 4500, "practical": 4500, "total": 13900},
+        "year_total": 35000,
+    },
+    "PGDCA (Post Graduate Diploma in Computer Applications)": {
+        "first": {"various": 12350, "tuition": 1800, "practical": 0, "total": 14150},
+        "second": {"various": 1800, "tuition": 7500, "practical": 0, "total": 9300},
+        "year_total": 23450,
+    },
+}
+
+
+# ─── Detailed Fee Heads Breakdown (per course, annual) ────
+# From the detailed table in the prompt
+FEE_HEADS_DETAIL = {
+    "B.A.": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1000, "Student Development": 250,
+        "College Development": 650, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 2200, "Gym Development": 100, "TOTAL": 5800,
+    },
+    "B.Com.": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 6000, "Gym Development": 100, "TOTAL": 11400,
+    },
+    "B.Sc. (Biology)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 7700, "Gym Development": 100, "TOTAL": 13100,
+    },
+    "B.Sc. (Mathematics)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 7700, "Gym Development": 100, "TOTAL": 13100,
+    },
+    "B.Sc. IT (Information Technology)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8100, "Gym Development": 100, "TOTAL": 13500,
+    },
+    "B.Sc. Computer Science": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8100, "Gym Development": 100, "TOTAL": 13500,
+    },
+    "B.Sc. Electronics": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8100, "Gym Development": 100, "TOTAL": 13500,
+    },
+    "B.Sc. Micro Biology": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8100, "Gym Development": 100, "TOTAL": 13500,
+    },
+    "B.Sc. Biotechnology": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 0, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8000, "Gym Development": 100, "TOTAL": 13400,
+    },
+    "BBA (Bachelor of Business Administration)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 600, "Physical Education": 300,
+        "Non Aided Staff Fund": 7350, "Gym Development": 100, "TOTAL": 13900,
+    },
+    "BCA (Bachelor of Computer Applications)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 600, "Physical Education": 300,
+        "Non Aided Staff Fund": 9050, "Gym Development": 100, "TOTAL": 15600,
+    },
+    "B.Lib (Bachelor of Library Science)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 600, "Physical Education": 300,
+        "Non Aided Staff Fund": 6850, "Gym Development": 100, "TOTAL": 13400,
+    },
+    "BAJMC (Bachelor of Arts in Journalism & Mass Communication)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 750, "Student Development": 500,
+        "College Development": 0, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 600, "Physical Education": 300,
+        "Non Aided Staff Fund": 3550, "Gym Development": 100, "TOTAL": 7650,
+    },
+    # PG courses (using "MA" key for both Previous and Final)
+    "M.A.": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1000, "Student Development": 250,
+        "College Development": 700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 2300, "Gym Development": 100, "TOTAL": 6500,
+    },
+    "M.Com.": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 6150, "Gym Development": 100, "TOTAL": 12100,
+    },
+    "M.Sc.": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8450, "Gym Development": 100, "TOTAL": 14400,
+    },
+    "M.Sc. (Computer Science)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 8550, "Gym Development": 100, "TOTAL": 14500,
+    },
+    "M.Sc. (Biotechnology)": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 0, "Physical Education": 300,
+        "Non Aided Staff Fund": 7400, "Gym Development": 100, "TOTAL": 13350,
+    },
+    "PGDCA": {
+        "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 500,
+        "Home Examination": 200, "Establishment Fund": 1500, "Student Development": 500,
+        "College Development": 1700, "Cycle Stand": 100, "Caution Money (Ref.)": 300,
+        "Seminar / Workshop": 150, "Computer Maint.": 600, "Physical Education": 300,
+        "Non Aided Staff Fund": 7600, "Gym Development": 100, "TOTAL": 14150,
+    },
+}
+
+
+def get_fee_structure(course_name: str) -> dict | None:
+    """Get the complete fee structure for a given course."""
+    installment = FEE_INSTALLMENTS.get(course_name)
+    if not installment:
+        return None
+
+    # Find detailed heads
+    heads_key = course_name
+    # Map specific PG courses to their group key
+    if course_name.startswith("M.A."):
+        heads_key = "M.A."
+    elif course_name.startswith("M.Com."):
+        heads_key = "M.Com."
+    elif "Computer Science" in course_name and course_name.startswith("M.Sc."):
+        heads_key = "M.Sc. (Computer Science)"
+    elif "Biotechnology" in course_name and course_name.startswith("M.Sc."):
+        heads_key = "M.Sc. (Biotechnology)"
+    elif course_name.startswith("M.Sc."):
+        heads_key = "M.Sc."
+    elif course_name.startswith("PGDCA"):
+        heads_key = "PGDCA"
+
+    heads = FEE_HEADS_DETAIL.get(heads_key, {})
+
+    return {
+        "course": course_name,
+        "installments": installment,
+        "detailed_heads": heads,
+    }
+
+
+def get_all_fee_structures() -> list:
+    """Get fee structures for all courses."""
+    result = []
+    for course in COURSES:
+        structure = get_fee_structure(course)
+        if structure:
+            result.append(structure)
+    return result
