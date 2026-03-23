@@ -1641,12 +1641,13 @@ async function loadFeeStatus(studentId) {
 
         if (data.records.length > 0) {
             html += `<div class="table-wrapper"><table class="data-table">
-                <thead><tr><th>Receipt No</th><th>Date</th><th>Year</th><th>Installment</th><th>Amount</th><th>Mode</th><th>Status</th></tr></thead>
+                <thead><tr><th>Receipt No</th><th>Date</th><th>Year</th><th>Installment</th><th>Amount</th><th>Mode</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>`;
             data.records.forEach(r => {
                 html += `<tr><td><strong>${r.receipt_no}</strong></td><td>${r.date}</td><td>${r.academic_year}</td>
                     <td>${r.installment}</td><td class="fee-highlight">₹${r.total_amount.toLocaleString()}</td>
-                    <td>${r.payment_mode}</td><td><span class="badge badge-success">${r.payment_status}</span></td></tr>`;
+                    <td>${r.payment_mode}</td><td><span class="badge badge-success">${r.payment_status}</span></td>
+                    <td><button class="action-btn fee" onclick="downloadReceipt(${r.id})" title="Print Receipt"><i class="ph ph-printer"></i></button></td></tr>`;
             });
             html += '</tbody></table></div>';
         } else {
@@ -1658,6 +1659,10 @@ async function loadFeeStatus(studentId) {
         </div>`;
         container.innerHTML = html;
     } catch(e){}
+}
+
+async function downloadReceipt(feeRecordId) {
+    window.open(`/api/fees/receipt/${feeRecordId}/pdf`, '_blank');
 }
 </script>
 </body>

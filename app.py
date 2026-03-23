@@ -5,8 +5,10 @@ Admission management + Fee management
 
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 from sqlalchemy import or_
 from database import init_db, get_db, Student, FeeRecord
 from fee_structure import COURSES, get_fee_structure, get_all_fee_structures, FEE_INSTALLMENTS
@@ -431,6 +433,85 @@ def get_student_fees(student_id: int, db: Session = Depends(get_db)):
             for r in records
         ],
     }
+
+
+@app.get("/api/fees/receipt/{fee_record_id}/pdf")
+def generate_fee_receipt_pdf(fee_record_id: int, db: Session = Depends(get_db)):
+    fee_record = db.query(FeeRecord).filter(FeeRecord.id == fee_record_id).first()
+    if not fee_record:
+        raise HTTPException(status_code=404, detail="Fee record not found")
+
+    student = db.query(Student).filter(Student.id == fee_record.student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    os.makedirs("export_pdf", exist_ok=True)
+    pdf_path = f"export_pdf/Receipt_{fee_record.receipt_no}.pdf"
+
+    c = canvas.Canvas(pdf_path, pagesize=A4)
+    width, height = A4
+
+    c.setFont("Courier-Bold", 14)
+    c.drawString(50, height - 50, "KALYAN P.G. COLLEGE - BHILAI")
+    c.setFont("Courier", 12)
+    c.drawString(50, height - 70, "         College of Arts, Commerce, Science & Education")
+    c.drawString(50, height - 90, "               Phone : (PNT)-2223665 (BSP) - 9406")
+
+    c.setFont("Courier-Bold", 12)
+    c.drawString(200, height - 130, "FEE RECEIPT")
+
+    c.setFont("Courier", 10)
+    c.drawString(50, height - 170, f"Receipt No.     {fee_record.receipt_no:<28} Date :   {fee_record.date}")
+
+    c.drawString(50, height - 210, f"Year :          {fee_record.academic_year:<19} Class   :         {student.course}")
+    c.drawString(50, height - 230, f"Name :          {student.student_name:<19} ADMN.NO.:         {student.admission_no}")
+
+    if fee_record.fee_period:
+        fee_period_str = fee_record.fee_period
+        if " TO " in fee_period_str:
+            parts = fee_period_str.split(" TO ")
+            if len(parts) == 2:
+                c.drawString(50, height - 250, f"Fee paid for the period from       {parts[0]:<12} TO    {parts[1]}")
+            else:
+                c.drawString(50, height - 250, f"Fee paid for the period from       {fee_period_str}")
+        else:
+            c.drawString(50, height - 250, f"Fee paid for the period from       {fee_period_str}")
+    else:
+        c.drawString(50, height - 250, f"Fee paid for the period from       -")
+
+    y = height - 290
+
+    def draw_row(y_pos, col1_name, col1_val, col2_name, col2_val, col3_name, col3_val, col4_name, col4_val):
+        c.drawString(50, y_pos, f"{col1_name:<16} {col1_val:>6.2f}  {col2_name:<15} {col2_val:>6.2f}  {col3_name:<15} {col3_val:>6.2f}  {col4_name:<15} {col4_val:>6.2f}")
+
+    draw_row(y, "Tuition", fee_record.tuition, "Enrolment", 0.00, "Staff Welfare", 0.00, "Physical Edu.", fee_record.physical_edu)
+    y -= 20
+    draw_row(y, "Stationery", 0.00, "GYM", fee_record.gym_dev, "Extra-2", 0.00, "Establish", fee_record.establishment_fund)
+    y -= 20
+    draw_row(y, "Seminar/WS", fee_record.seminar_ws, "Cycle", fee_record.cycle_stand, "Decit", 0.00, "Development", fee_record.college_dev)
+    y -= 20
+    draw_row(y, "Application", 0.00, "Visual Lab.", 0.00, "Amalgamated", fee_record.amalgamated_fund, "Cultural", 0.00)
+    y -= 20
+    draw_row(y, "Admission", fee_record.admission_fee, "Immigration", 0.00, "Icard", 0.00, "Comp/EEM/EL.", fee_record.computer_maint)
+    y -= 20
+    draw_row(y, "Student Dev.", fee_record.student_dev, "Caution Money", fee_record.caution_money, "Extra", fee_record.various_heads, "Stu.Coun.", 0.00)
+    y -= 20
+    draw_row(y, "NGS Fund", 0.00, "Laboratory", fee_record.practical, "Model Lesson", 0.00, "Others -6", fee_record.non_aided_staff)
+    y -= 20
+    draw_row(y, "Communic.", 0.00, "ET-Lab.", 0.00, "Library Dev.", fee_record.library_dev, "", 0.00)
+    y -= 20
+    draw_row(y, "Pers.Dev", 0.00, "Others -4", fee_record.home_examination, "Others -5", 0.00, "", 0.00)
+
+    y -= 40
+    c.drawString(50, y, f"{(fee_record.payment_mode or 'CASH') + '-NO':<23}           DATE                  Total :           {fee_record.total_amount:>10.2f}")
+
+    y -= 40
+    c.drawString(50, y, f"Rs. {fee_record.total_amount} only")
+    c.drawString(450, y - 20, "CASHIER")
+
+    c.save()
+
+    return FileResponse(path=pdf_path, filename=f"Receipt_{fee_record.receipt_no}.pdf", media_type='application/pdf')
 
 
 # ═══════════════════════════════════════════════════════════
