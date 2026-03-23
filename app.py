@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from sqlalchemy import or_
 from database import init_db, get_db, Student, FeeRecord
 from fee_structure import COURSES, get_fee_structure, get_all_fee_structures, FEE_INSTALLMENTS
@@ -448,11 +448,11 @@ def generate_fee_receipt_pdf(fee_record_id: int, db: Session = Depends(get_db)):
     os.makedirs("export_pdf", exist_ok=True)
     pdf_path = f"export_pdf/Receipt_{fee_record.receipt_no}.pdf"
 
-    c = canvas.Canvas(pdf_path, pagesize=A4)
-    width, height = A4
+    c = canvas.Canvas(pdf_path, pagesize=landscape(A4))
+    width, height = landscape(A4)
 
     c.setFont("Courier-Bold", 14)
-    c.drawString(50, height - 50, "KALYAN P.G. COLLEGE - BHILAI")
+    c.drawString(50, height - 50, "                KALYAN P.G. COLLEGE - BHILAI")
     c.setFont("Courier", 12)
     c.drawString(50, height - 70, "         College of Arts, Commerce, Science & Education")
     c.drawString(50, height - 90, "               Phone : (PNT)-2223665 (BSP) - 9406")
