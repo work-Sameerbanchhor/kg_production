@@ -1912,6 +1912,59 @@ async function loadFeeStatus(studentId) {
 async function downloadReceipt(feeRecordId) {
     window.open(`/api/fees/receipt/${feeRecordId}/pdf`, '_blank');
 }
+
+async function processScannerFile(event) {
+    const fileInput = event.target;
+    if (!fileInput.files || fileInput.files.length === 0) return;
+    
+    const file = fileInput.files[0];
+    const progressDiv = document.getElementById('scanner-progress');
+    if (progressDiv) progressDiv.style.display = 'block';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/students/scan-form', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detail || 'Failed to scan form');
+        }
+        
+        const data = await response.json();
+        
+        // Auto-fill form fields
+        for (const [key, value] of Object.entries(data)) {
+            if (!value) continue; // Skip empty strings
+            const el = document.querySelector(`[name="${key}"]`);
+            if (el) {
+                el.value = value;
+                // Dispatch change event to trigger any bounded listeners
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+        
+        // Look for showToast function or fallback to alert
+        if (typeof showToast === 'function') {
+            showToast('Form data extracted successfully!', 'success');
+        } else {
+            alert('Form data extracted successfully!');
+        }
+    } catch(err) {
+        if (typeof showToast === 'function') {
+            showToast(`Scan Error: ${err.message}`, 'error');
+        } else {
+            alert(`Scan Error: ${err.message}`);
+        }
+    } finally {
+        if (progressDiv) progressDiv.style.display = 'none';
+        fileInput.value = ''; // Reset input
+    }
+}
 </script>
 </body>
 </html>

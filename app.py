@@ -7,6 +7,16 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+
+load_dotenv()
+try:
+    from google import genai
+    from google.genai import types
+    from pydantic import BaseModel, Field
+    HAS_GENAI = True
+except ImportError:
+    HAS_GENAI = False
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from sqlalchemy import or_
@@ -245,6 +255,134 @@ def delete_student(student_id: int, db: Session = Depends(get_db)):
     db.delete(student)
     db.commit()
     return {"message": "Student deleted successfully"}
+
+
+# ═══════════════════════════════════════════════════════════
+#  FORM SCANNER API
+# ═══════════════════════════════════════════════════════════
+
+if HAS_GENAI:
+    class StudentFormExtract(BaseModel):
+        admission_no: str = Field(description="Admission No.")
+        university_enrolment_no: str = Field(description="University Enrolment No.")
+        admission_date: str = Field(description="Date of Admission")
+        receipt_no_date: str = Field(description="Receipt No. & Date")
+        cast_class: str = Field(description="Cast & Class")
+        percentage: str = Field(description="% of the Previous Exam")
+        student_name: str = Field(description="Name")
+        abc_id: str = Field(description="ABC ID")
+        mobile_no: str = Field(description="Mobile Number")
+        email: str = Field(description="E-mail ID")
+        dob: str = Field(description="Date of Birth in YYYY-MM-DD")
+        blood_group: str = Field(description="Blood Group")
+        faculty: str = Field(description="1. Faculty of")
+        annual_semester: str = Field(description="2. Annual / Semester")
+        course_type: str = Field(description="Semester (First/Second/...)")
+        course_level: str = Field(description="3. Courses (UG / PG / Diploma / Ph.D)")
+        course: str = Field(description="Specific Course")
+        class_name: str = Field(description="CLASS (कक्षा)")
+        dsc_1: str = Field(description="DSC - 1")
+        dsc_2: str = Field(description="DSC - 2")
+        dsc_3: str = Field(description="DSC - 3")
+        vac_sec: str = Field(description="VAC / SEC")
+        ge_dse: str = Field(description="GE / DSE")
+        aec: str = Field(description="AEC")
+        research_project: str = Field(description="Research / Internship / Project / Ph.D")
+        father_name: str = Field(description="4. Fathers Name")
+        father_mobile_no: str = Field(description="Mobile No. (Fathers)")
+        mother_name: str = Field(description="5. Mothers Name")
+        mother_tongue: str = Field(description="Mother Tongue")
+        religion: str = Field(description="6. Religion")
+        bank_ac_no: str = Field(description="Bank A/c No.")
+        aadhaar_no: str = Field(description="Aadhar No.")
+        ifsc_code: str = Field(description="IFSC Code / Bank Name")
+        present_address: str = Field(description="7. Local Address")
+        permanent_address: str = Field(description="Permanent Address")
+        guardian_annual_income: str = Field(description="8. Annual Income of Guardian")
+        domicile: str = Field(description="9. C.G. Domicile (YES/NO)")
+        category: str = Field(description="10. Category (GEN/OBC/SC/ST...)")
+        extra_curricular: str = Field(description="11. Extra Curricular Activities")
+        academic_achievements: str = Field(description="12. Academic achievements")
+        medium_of_exam: str = Field(description="13. Medium of Exam")
+        is_convicted: str = Field(description="14. Convicted by court of law")
+        ex_name_1: str = Field(description="Exam 1 name")
+        ex_roll_1: str = Field(description="Exam 1 roll")
+        ex_year_1: str = Field(description="Exam 1 year")
+        ex_col_1: str = Field(description="Exam 1 college")
+        ex_res_1: str = Field(description="Exam 1 result")
+        ex_per_1: str = Field(description="Exam 1 percentage")
+        ex_name_2: str = Field(description="Exam 2 name")
+        ex_roll_2: str = Field(description="Exam 2 roll")
+        ex_year_2: str = Field(description="Exam 2 year")
+        ex_col_2: str = Field(description="Exam 2 college")
+        ex_res_2: str = Field(description="Exam 2 result")
+        ex_per_2: str = Field(description="Exam 2 percentage")
+        ex_name_3: str = Field(description="Exam 3 name")
+        ex_roll_3: str = Field(description="Exam 3 roll")
+        ex_year_3: str = Field(description="Exam 3 year")
+        ex_col_3: str = Field(description="Exam 3 college")
+        ex_res_3: str = Field(description="Exam 3 result")
+        ex_per_3: str = Field(description="Exam 3 percentage")
+        ex_name_4: str = Field(description="Exam 4 name")
+        ex_roll_4: str = Field(description="Exam 4 roll")
+        ex_year_4: str = Field(description="Exam 4 year")
+        ex_col_4: str = Field(description="Exam 4 college")
+        ex_res_4: str = Field(description="Exam 4 result")
+        ex_per_4: str = Field(description="Exam 4 percentage")
+        ex_name_5: str = Field(description="Exam 5 name")
+        ex_roll_5: str = Field(description="Exam 5 roll")
+        ex_year_5: str = Field(description="Exam 5 year")
+        ex_col_5: str = Field(description="Exam 5 college")
+        ex_res_5: str = Field(description="Exam 5 result")
+        ex_per_5: str = Field(description="Exam 5 percentage")
+
+@app.post("/api/students/scan-form")
+async def scan_student_form(file: UploadFile = File(...)):
+    import json
+    if not HAS_GENAI:
+        raise HTTPException(status_code=500, detail="Google GenAI SDK not installed or configured.")
+        
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing in environment.")
+        
+    try:
+        content = await file.read()
+        mime_type = file.content_type
+        if mime_type not in ["application/pdf", "image/jpeg", "image/png", "image/webp"]:
+            # fallback for generic image mime types if unknown
+            if "image" in mime_type:
+                mime_type = "image/jpeg"
+            elif mime_type == "application/octet-stream" and file.filename:
+                if file.filename.lower().endswith(".pdf"):
+                    mime_type = "application/pdf"
+                elif file.filename.lower().endswith((".jpg", ".jpeg")):
+                    mime_type = "image/jpeg"
+                elif file.filename.lower().endswith(".png"):
+                    mime_type = "image/png"
+        
+        client = genai.Client()
+        
+        prompt = "Extract the student information from this admission form. Provide EXACT texts visible. Return an empty string for missing fields."
+        
+        response = client.models.generate_content(
+            model="gemini-flash-lite-latest",
+            contents=[
+                types.Part.from_bytes(
+                    data=content,
+                    mime_type=mime_type,
+                ),
+                prompt
+            ],
+            config={
+                "response_mime_type": "application/json",
+                "response_json_schema": StudentFormExtract.model_json_schema(),
+            }
+        )
+        
+        return json.loads(response.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
 
 
 # ═══════════════════════════════════════════════════════════
