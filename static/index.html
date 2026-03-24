@@ -1917,12 +1917,13 @@ async function processScannerFile(event) {
     const fileInput = event.target;
     if (!fileInput.files || fileInput.files.length === 0) return;
     
-    const file = fileInput.files[0];
     const progressDiv = document.getElementById('scanner-progress');
     if (progressDiv) progressDiv.style.display = 'block';
     
     const formData = new FormData();
-    formData.append('file', file);
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('files', fileInput.files[i]);
+    }
     
     try {
         const response = await fetch('/api/students/scan-form', {

@@ -337,7 +337,7 @@ if HAS_GENAI:
         ex_per_5: str = Field(description="Exam 5 percentage")
 
 @app.post("/api/students/scan-form")
-async def scan_student_form(file: UploadFile = File(...)):
+async def scan_student_form(files: list[UploadFile] = File(...)):
     import json
     if not HAS_GENAI:
         raise HTTPException(status_code=500, detail="Google GenAI SDK not installed or configured.")
@@ -347,33 +347,44 @@ async def scan_student_form(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing in environment.")
         
     try:
-        content = await file.read()
-        mime_type = file.content_type
-        if mime_type not in ["application/pdf", "image/jpeg", "image/png", "image/webp"]:
-            # fallback for generic image mime types if unknown
-            if "image" in mime_type:
-                mime_type = "image/jpeg"
-            elif mime_type == "application/octet-stream" and file.filename:
-                if file.filename.lower().endswith(".pdf"):
-                    mime_type = "application/pdf"
-                elif file.filename.lower().endswith((".jpg", ".jpeg")):
-                    mime_type = "image/jpeg"
-                elif file.filename.lower().endswith(".png"):
-                    mime_type = "image/png"
-        
         client = genai.Client()
+        contents_list = []
         
-        prompt = "Extract the student information from this admission form. Provide EXACT texts visible. Return an empty string for missing fields."
-        
-        response = client.models.generate_content(
-            model="gemini-flash-lite-latest",
-            contents=[
+        for f in files:
+            content = await f.read()
+            mime_type = f.content_type
+            if mime_type not in ["application/pdf", "image/jpeg", "image/png", "image/webp"]:
+                # fallback for generic image mime types if unknown
+                if "image" in mime_type:
+                    mime_type = "image/jpeg"
+                elif mime_type == "application/octet-stream" and f.filename:
+                    if f.filename.lower().endswith(".pdf"):
+                        mime_type = "application/pdf"
+                    elif f.filename.lower().endswith((".jpg", ".jpeg")):
+                        mime_type = "image/jpeg"
+                    elif f.filename.lower().endswith(".png"):
+                        mime_type = "image/png"
+            
+            contents_list.append(
                 types.Part.from_bytes(
                     data=content,
                     mime_type=mime_type,
-                ),
-                prompt
-            ],
+                )
+            )
+        
+        prompt = (
+            "Extract the student information from this admission form. "
+            "Provide EXACT texts visible. Return an empty string for missing fields. "
+            "The form has multiple pages. "
+            "Page 1 contains Fields 1 to 6 (like Faculty, Courses, Father's Name, Mother's Name). "
+            "Page 2 starts with Field 7 (ADDRESS) up to the last field (Category, Domicile, Medium of Exam, etc.). "
+            "Please ensure you scan and extract data from ALL provided pages."
+        )
+        contents_list.append(prompt)
+        
+        response = client.models.generate_content(
+            model="gemini-flash-lite-latest",
+            contents=contents_list,
             config={
                 "response_mime_type": "application/json",
                 "response_json_schema": StudentFormExtract.model_json_schema(),
