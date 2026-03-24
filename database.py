@@ -68,6 +68,49 @@ class Student(Base):
     percentage = Column(String(20))
     remark = Column(Text)
     
+    # --- New Fields from New Forms ---
+    # Form/Session Fields
+    admission_form_no = Column(String(50))
+    session = Column(String(50))
+    
+    # Office Use Fields
+    university_enrolment_no = Column(String(100))
+    receipt_no_date = Column(String(100))
+    cast_class = Column(String(100))
+    
+    # NEP 2020 Course/Subject Fields
+    faculty = Column(String(100))
+    annual_semester = Column(String(100))
+    course_type = Column(String(50))
+    class_name = Column(String(100))
+    dsc_1 = Column(String(100))
+    dsc_2 = Column(String(100))
+    dsc_3 = Column(String(100))
+    vac_sec = Column(String(100))
+    ge_dse = Column(String(100))
+    aec = Column(String(100))
+    research_project = Column(String(100))
+    
+    # Personal Info Fields
+    abc_id = Column(String(100))
+    blood_group = Column(String(20))
+    father_mobile_no = Column(String(20))
+    religion = Column(String(50))
+    mother_tongue = Column(String(50))
+    
+    # Bank Fields
+    bank_name_address = Column(String(200))
+    bank_ac_no = Column(String(50))
+    ifsc_code = Column(String(20))
+
+    # Page 2 Fields
+    guardian_annual_income = Column(String(50))
+    extra_curricular = Column(String(200))  # Comma separated
+    medium_of_exam = Column(String(50))
+    is_convicted = Column(String(10))
+    academic_history_json = Column(Text)  # JSON representation of academic table
+    # ---------------------------------
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

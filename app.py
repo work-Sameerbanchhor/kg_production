@@ -110,6 +110,14 @@ STUDENT_FIELDS = [
     "aadhaar_no", "subject_4", "subject_5", "subject_6", "last_exam",
     "last_exam_year", "last_subject", "last_roll_no", "last_enroll_no",
     "board", "total_marks", "obtain_marks", "division", "percentage", "remark",
+    
+    # New Fields
+    "admission_form_no", "session", "university_enrolment_no", "receipt_no_date",
+    "cast_class", "faculty", "annual_semester", "course_type", "class_name",
+    "dsc_1", "dsc_2", "dsc_3", "vac_sec", "ge_dse", "aec", "research_project",
+    "abc_id", "blood_group", "father_mobile_no", "religion", "mother_tongue",
+    "bank_name_address", "bank_ac_no", "ifsc_code", "guardian_annual_income",
+    "extra_curricular", "medium_of_exam", "is_convicted", "academic_history_json"
 ]
 
 
