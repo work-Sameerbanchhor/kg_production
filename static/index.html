@@ -782,179 +782,258 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
             <!-- ════ ADD STUDENT ════ -->
             <div class="section" id="sec-add-student">
                 <div class="page-intro"><p>Fill in all the admission details for a new student</p></div>
-                <div class="card">
+                
+                <!-- NEW SCANNER SECTION -->
+                <div class="card" style="margin-bottom: 20px; text-align:center; padding: 20px;">
+                    <h4 style="margin-bottom:10px;"><i class="ph ph-scan"></i> Auto-fill via Form Scan</h4>
+                    <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 15px;">Upload a scanned PDF or Image of the admission form</p>
+                    <input type="file" id="scanner-file" accept="application/pdf,image/*" multiple style="display:none;" onchange="processScannerFile(event)">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('scanner-file').click()">
+                        <i class="ph ph-upload-simple"></i> Select File to Scan
+                    </button>
+                    <div id="scanner-progress" style="margin-top:10px; font-size:0.85em; color:var(--info); display:none;">
+                        <span class="spinner"></span> Processing document...
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 30px;">
+                    <div style="text-align:center; font-family:'Arial',sans-serif; margin-bottom: 20px;">
+                        <h3>Application Form For Admission</h3>
+                        <h2 style="font-family:'DM Serif Display',serif; color:var(--forest-1000);">कल्याण स्नातकोत्तर महाविद्यालय, भिलाई नगर (छ.ग.)<br>Kalyan Post Graduate College, Bhilai Nagar (C.G.)</h2>
+                    </div>
+
                     <form id="student-form" onsubmit="submitStudent(event)">
-                        <div class="print-form-container">
-                            <div class="pf-header">
-                                <h2>Kalyan Post Graduate College</h2>
-                                <p>Bhilai Nagar, Distt.- Durg (C.G.)</p>
-                                <p style="font-weight: 900; margin-top: 10px; border: 1px solid #000; display: inline-block; padding: 5px 20px;">ADMISSION FORM</p>
+                        
+                        <!-- Top Two Boxes: Office Use and Session Info -->
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom:20px;">
+                            <!-- Office Use Box -->
+                            <div style="flex: 1; border: 2px solid var(--text-body); padding: 15px; border-radius: var(--radius-xs); min-width: 300px;">
+                                <h4 style="text-align:center; border-bottom: 2px solid var(--text-body); padding-bottom: 10px; margin-bottom: 15px;">कार्यालय हेतु / For Office Use</h4>
+                                <div class="form-group"><label class="form-label">Admission No.</label><input type="text" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="admission_no" required></div>
+                                <div class="form-group mt-2"><label class="form-label">University Enrolment No.</label><input type="text" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="university_enrolment_no"></div>
+                                <div class="form-group mt-2"><label class="form-label">Date of Admission</label><input type="date" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="admission_date"></div>
+                                <div class="form-group mt-2"><label class="form-label">Receipt No. & Date</label><input type="text" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="receipt_no_date"></div>
+                                <div class="form-group mt-2"><label class="form-label">Cast & Class</label><input type="text" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="cast_class"></div>
+                                <div class="form-group mt-2"><label class="form-label">% of the Previous Exam</label><input type="text" class="form-input" style="border:none; border-bottom:1px dashed var(--text-muted); border-radius:0; background:transparent;" name="percentage"></div>
                             </div>
                             
-                            <div class="pf-row" style="border: none; margin-bottom: 15px;">
-                                <div class="pf-col" style="border: none; flex: 3; padding: 0;">
-                                    <div class="pf-row" style="border: 2px solid #000;">
-                                        <div class="pf-col"><div class="pf-label">Admission Form No</div><input type="text" class="pf-input" name="admission_form_no"></div>
-                                        <div class="pf-col"><div class="pf-label">Session</div><input type="text" class="pf-input" name="session" placeholder="2024-25"></div>
-                                    </div>
-                                    <div style="margin-top: 15px; font-weight: 900; text-decoration: underline; color: #000;">FOR OFFICE USE ONLY</div>
-                                    <div class="pf-section" style="margin-top: 5px;">
-                                        <div class="pf-row">
-                                            <div class="pf-col"><div class="pf-label">Admission No *</div><input type="text" class="pf-input" name="admission_no" required></div>
-                                            <div class="pf-col"><div class="pf-label">Univ. Enrolment No</div><input type="text" class="pf-input" name="university_enrolment_no"></div>
-                                        </div>
-                                        <div class="pf-row">
-                                            <div class="pf-col"><div class="pf-label">Date of Adm.</div><input type="date" class="pf-input" name="admission_date"></div>
-                                            <div class="pf-col"><div class="pf-label">Receipt No & Date</div><input type="text" class="pf-input" name="receipt_no_date"></div>
-                                        </div>
-                                        <div class="pf-row">
-                                            <div class="pf-col"><div class="pf-label">Cast & Class</div><input type="text" class="pf-input" name="cast_class"></div>
-                                            <div class="pf-col"><div class="pf-label">% of Prev. Exam</div><input type="text" class="pf-input" name="percentage"></div>
-                                        </div>
+                            <!-- Student Info Box -->
+                            <div style="flex: 1.5; border: 1px solid var(--ivory-300); padding: 15px; border-radius: var(--radius-xs); min-width: 300px; display:flex;">
+                                <div style="flex:1;">
+                                    <div style="background:var(--forest-900); color:#fff; text-align:center; padding:5px; font-weight:bold; margin-bottom:15px; display:inline-block;">Session-2025-2026</div>
+                                    <div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="student_name" required></div>
+                                    <div class="form-group"><label class="form-label">ABC ID</label><input type="text" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="abc_id"></div>
+                                    <div class="form-group"><label class="form-label">Mobile Number</label><input type="text" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="mobile_no"></div>
+                                    <div class="form-group"><label class="form-label">E-mail ID</label><input type="email" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="email"></div>
+                                    <div style="display:flex; gap:10px;">
+                                        <div class="form-group" style="flex:1;"><label class="form-label">Date of Birth</label><input type="date" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="dob"></div>
+                                        <div class="form-group" style="flex:1;"><label class="form-label">Blood Group</label><input type="text" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="blood_group"></div>
                                     </div>
                                 </div>
-                                <div class="pf-col" style="border: 2px dashed #000; flex: 1; margin-left: 20px; display: flex; align-items: center; justify-content: center; text-align: center; color: #555; font-weight: bold; background: #fafafa;">
-                                    Affix Your Passport Size Photograph Here
-                                </div>
-                            </div>
-
-                            <div class="pf-section">
-                                <div class="pf-section-title">Particulars (Mark by √)</div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 1.5;">
-                                        <div class="pf-label">Faculty</div>
-                                        <select class="pf-select" name="faculty">
-                                            <option value="">-- Select --</option>
-                                            <option value="Science">Science</option>
-                                            <option value="Arts">Arts</option>
-                                            <option value="Commerce">Commerce</option>
-                                            <option value="Computer Application">Computer Application</option>
-                                            <option value="Life Science">Life Science</option>
-                                            <option value="Home Science">Home Science</option>
-                                            <option value="Journalism">Journalism</option>
-                                        </select>
-                                    </div>
-                                    <div class="pf-col">
-                                        <div class="pf-label">Annual / Semester</div>
-                                        <select class="pf-select" name="annual_semester">
-                                            <option value="">-- Select --</option>
-                                            <option value="1">First</option><option value="2">Second</option>
-                                            <option value="3">Third</option><option value="4">Fourth</option>
-                                            <option value="5">Fifth</option><option value="6">Sixth</option>
-                                        </select>
-                                    </div>
-                                    <div class="pf-col">
-                                        <div class="pf-label">Course Type</div>
-                                        <select class="pf-select" name="course_type">
-                                            <option value="">-- Select --</option>
-                                            <option value="UG">UG</option><option value="PG">PG</option>
-                                            <option value="Diploma">Diploma</option><option value="Ph.D.">Ph.D.</option>
-                                        </select>
-                                    </div>
-                                    <div class="pf-col" style="flex: 1.5;">
-                                        <div class="pf-label">Course *</div>
-                                        <select class="pf-select" name="course" id="course-select" required><option value="">Select Course</option></select>
-                                    </div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Class</div><input type="text" class="pf-input" name="class_name"></div>
-                                    <div class="pf-col"><div class="pf-label">DSC 1</div><input type="text" class="pf-input" name="dsc_1"></div>
-                                    <div class="pf-col"><div class="pf-label">DSC 2</div><input type="text" class="pf-input" name="dsc_2"></div>
-                                    <div class="pf-col"><div class="pf-label">DSC 3</div><input type="text" class="pf-input" name="dsc_3"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">VAC / SEC</div><input type="text" class="pf-input" name="vac_sec"></div>
-                                    <div class="pf-col"><div class="pf-label">GE / DSE</div><input type="text" class="pf-input" name="ge_dse"></div>
-                                    <div class="pf-col"><div class="pf-label">AEC</div><input type="text" class="pf-input" name="aec"></div>
-                                    <div class="pf-col"><div class="pf-label">Research / Project</div><input type="text" class="pf-input" name="research_project"></div>
-                                </div>
-                            </div>
-
-                            <div class="pf-section">
-                                <div class="pf-section-title">Student Information</div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 2.5;"><div class="pf-label">Student Name * (In English Capital Letters)</div><input type="text" class="pf-input" name="student_name" required style="text-transform: uppercase;"></div>
-                                    <div class="pf-col"><div class="pf-label">ABC ID</div><input type="text" class="pf-input" name="abc_id"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Mobile No</div><input type="text" class="pf-input" name="mobile_no"></div>
-                                    <div class="pf-col"><div class="pf-label">Email ID</div><input type="email" class="pf-input" name="email"></div>
-                                    <div class="pf-col"><div class="pf-label">Date of Birth</div><input type="date" class="pf-input" name="dob"></div>
-                                    <div class="pf-col"><div class="pf-label">Blood Group</div><input type="text" class="pf-input" name="blood_group"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="pf-section">
-                                <div class="pf-section-title">Family & Personal Details</div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Father's Name</div><input type="text" class="pf-input" name="father_name"></div>
-                                    <div class="pf-col"><div class="pf-label">Occupation</div><input type="text" class="pf-input" name="father_occupation"></div>
-                                    <div class="pf-col"><div class="pf-label">Mobile Number</div><input type="text" class="pf-input" name="father_mobile_no"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Mother's Name</div><input type="text" class="pf-input" name="mother_name"></div>
-                                    <div class="pf-col"><div class="pf-label">Religion</div><input type="text" class="pf-input" name="religion"></div>
-                                    <div class="pf-col"><div class="pf-label">Mother Tongue</div><input type="text" class="pf-input" name="mother_tongue"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Aadhaar Card No</div><input type="text" class="pf-input" name="aadhar_no"></div>
-                                    <div class="pf-col"><div class="pf-label">Category</div>
-                                        <select class="pf-select" name="category"><option value="">Select</option><option value="GEN">GEN</option><option value="OBC">OBC</option><option value="SC">SC</option><option value="ST">ST</option><option value="FF">FF</option><option value="PH">PH</option><option value="MIN">MIN</option><option value="TG">TG</option></select>
-                                    </div>
-                                    <div class="pf-col"><div class="pf-label">Gender</div>
-                                        <select class="pf-select" name="gender"><option value="">Select</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select>
-                                    </div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Guardian Annual Income</div><input type="text" class="pf-input" name="guardian_annual_income"></div>
-                                    <div class="pf-col"><div class="pf-label">Medium of Exam</div><select class="pf-select" name="medium_of_exam"><option value="">Select</option><option value="Hindi">Hindi</option><option value="English">English</option></select></div>
-                                </div>
-                            </div>
-
-                            <div class="pf-section">
-                                <div class="pf-section-title">Bank Details</div>
-                                <div class="pf-row">
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Bank Name & Address</div><input type="text" class="pf-input" name="bank_name_address"></div>
-                                    <div class="pf-col"><div class="pf-label">Bank A/C No</div><input type="text" class="pf-input" name="bank_ac_no"></div>
-                                    <div class="pf-col"><div class="pf-label">IFSC Code</div><input type="text" class="pf-input" name="ifsc_code"></div>
-                                </div>
-                            </div>
-
-                            <div class="pf-section">
-                                <div class="pf-section-title">Address & Miscellaneous</div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Local Address / Present Address (स्थानीय पता)</div><input type="text" class="pf-input" name="present_address"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Permanent Address (स्थायी पता)</div><input type="text" class="pf-input" name="address"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Domicile of C.G.</div><select class="pf-select" name="domicile"><option value="">Select</option><option value="YES">Yes</option><option value="NO">No</option></select></div>
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Extra Curricular (NCC, NSS, SPORTS etc.)</div><input type="text" class="pf-input" name="extra_curricular"></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Ever convicted by court?</div><select class="pf-select" name="is_convicted"><option value="">Select</option><option value="NO">No</option><option value="YES">Yes</option></select></div>
-                                    <div class="pf-col" style="flex: 2;"><div class="pf-label">Office Remarks</div><input type="text" class="pf-input" name="remark"></div>
-                                </div>
-                            </div>
-
-                            <div class="pf-section">
-                                <div class="pf-section-title">Academic Details</div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Previous 3 Years Achievements (JSON / Table format text)</div><textarea class="pf-input" style="height: 60px; resize: vertical;" name="academic_history_json" placeholder="Exam | Roll No | Year | College | Result | %"></textarea></div>
-                                </div>
-                                <div class="pf-row">
-                                    <div class="pf-col"><div class="pf-label">Last Exam Passed</div><input type="text" class="pf-input" name="class_passed"></div>
-                                    <div class="pf-col"><div class="pf-label">Year of Passing</div><input type="text" class="pf-input" name="year_of_passing"></div>
-                                    <div class="pf-col"><div class="pf-label">Roll No</div><input type="text" class="pf-input" name="roll_no"></div>
-                                    <div class="pf-col" style="flex: 1.5;"><div class="pf-label">Board / University</div><input type="text" class="pf-input" name="board_university"></div>
+                                <div style="width: 120px; border: 1px solid var(--text-muted); margin-left:15px; padding: 10px; text-align:center; display:flex; align-items:center; justify-content:center; background:var(--surface-bg);">
+                                    <small style="color:var(--text-muted);">Affix Your<br>Passport Size<br>Photograph</small>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="btn-group">
-                            <button type="submit" class="btn btn-primary" id="submit-btn"><i class="ph ph-plus-circle"></i> Add Student</button>
-                            <button type="reset" class="btn btn-secondary"><i class="ph ph-arrow-counter-clockwise"></i> Reset Form</button>
+                        <!-- Particulars -->
+                        <h4 style="margin-top:0px; border-bottom: 2px solid var(--forest-200); padding-bottom:5px;">वांछित विवरण (Particular) - Mark by ✔</h4>
+                        
+                        <div class="form-group" style="margin-top:10px;">
+                            <label class="form-label">1. Faculty of</label>
+                            <select class="form-select" name="faculty" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                <option value="">Select Faculty</option>
+                                <option value="Life Science">Life Science</option>
+                                <option value="Science">Science</option>
+                                <option value="Computer Application">Computer Application</option>
+                                <option value="Commerce & Management">Commerce & Management</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Home Science">Home Science</option>
+                                <option value="Journalism">Journalism</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-group">
+                                <label class="form-label">2. Annual / Semester</label>
+                                <select class="form-select" name="annual_semester" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select</option>
+                                    <option value="Annual">Annual</option>
+                                    <option value="Semester">Semester (I to VI)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Semester (First/Second/Third/Forth/Fifth/Sixth)</label>
+                                <select class="form-select" name="course_type" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select Semester</option>
+                                    <option value="I">I</option><option value="II">II</option><option value="III">III</option>
+                                    <option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-group">
+                                <label class="form-label">3. Courses (UG / PG / Diploma / Ph.D)</label>
+                                <select class="form-select" name="course_level" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select Level</option>
+                                    <option value="UG">UG</option><option value="PG">PG</option><option value="Diploma">Diploma</option><option value="Ph.D">Ph.D</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Specific Course (पाठ्यक्रम)</label>
+                                <select class="form-select" name="course" id="course-select" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"><option value="">Select Course</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CLASS (कक्षा)</label>
+                                <input type="text" class="form-input" name="class_name" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid" style="margin-top: 10px;">
+                            <div class="form-group"><label class="form-label">DSC - 1</label><input type="text" class="form-input" name="dsc_1" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">DSC - 2</label><input type="text" class="form-input" name="dsc_2" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">DSC - 3</label><input type="text" class="form-input" name="dsc_3" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+                        <div class="form-grid" style="margin-top: 10px;">
+                            <div class="form-group"><label class="form-label">VAC / SEC -</label><input type="text" class="form-input" name="vac_sec" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">GE / DSE -</label><input type="text" class="form-input" name="ge_dse" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">AEC -</label><input type="text" class="form-input" name="aec" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label class="form-label">Research / Internship / Project / Ph.D</label>
+                            <input type="text" class="form-input" name="research_project" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent; width:100%;">
+                        </div>
+
+                        <!-- Line 4 to 6 Family Details -->
+                        <div class="form-grid" style="margin-top:20px;">
+                            <div class="form-group"><label class="form-label">4. Fathers Name (पिता का नाम)</label><input type="text" class="form-input" name="father_name" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">Mobile No. (पिता का मोबाइल नं.)</label><input type="text" class="form-input" name="father_mobile_no" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-group"><label class="form-label">5. Mothers Name (माता का नाम)</label><input type="text" class="form-input" name="mother_name" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">Mother Tongue (मातृभाषा)</label><input type="text" class="form-input" name="mother_tongue" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-group"><label class="form-label">6. Religion (धर्म)</label><input type="text" class="form-input" name="religion" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">Bank A/c No. (बैंक खाता क्र.)</label><input type="text" class="form-input" name="bank_ac_no" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+                        <div class="form-grid" style="margin-top:10px;">
+                            <div class="form-group"><label class="form-label">Aadhar No. (आधार नंबर)</label><input type="text" class="form-input" name="aadhaar_no" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group"><label class="form-label">IFSC Code / Bank Name</label><input type="text" class="form-input" name="ifsc_code" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                        </div>
+
+                        <!-- Back Page Details - Starting from 7 -->
+                        <div class="form-group" style="margin-top:20px;">
+                            <label class="form-label">7. Address</label>
+                            <div style="display:flex; border:1px solid var(--ivory-400);">
+                                <div style="flex:1; border-right:1px solid var(--ivory-400);">
+                                    <div style="background:var(--ivory-200); padding:5px; text-align:center; font-weight:bold; border-bottom:1px solid var(--ivory-400);">Local Address (स्थानीय पता)</div>
+                                    <textarea class="form-textarea" name="present_address" style="border:none; width:100%; border-radius:0; background:transparent; min-height:80px;"></textarea>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="background:var(--ivory-200); padding:5px; text-align:center; font-weight:bold; border-bottom:1px solid var(--ivory-400);">Permanent Address (स्थायी पता)</div>
+                                    <textarea class="form-textarea" name="permanent_address" style="border:none; width:100%; border-radius:0; background:transparent; min-height:80px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:15px;">
+                            <div class="form-group"><label class="form-label">8. Annual Income of Guardian</label><input type="text" class="form-input" name="guardian_annual_income" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;"></div>
+                            <div class="form-group">
+                                <label class="form-label">9. C.G. Domicile (छ.ग. मूल निवासी)</label>
+                                <select class="form-select" name="domicile" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select</option><option value="YES">YES</option><option value="NO">NO</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">10. Category (श्रेणी)</label>
+                                <select class="form-select" name="category" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select</option>
+                                    <option value="GEN">GEN</option><option value="OBC">OBC</option><option value="SC">SC</option><option value="ST">ST</option>
+                                    <option value="FF">FF</option><option value="PH">PH</option><option value="MIN">MIN</option><option value="TG">TG</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top:15px;">
+                            <label class="form-label">11. Extra Curricular Activities (NCC / NSS / SPORTS / CULTURAL...)</label>
+                            <input type="text" class="form-input" name="extra_curricular" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent; width:100%;">
+                        </div>
+                        <div class="form-group" style="margin-top:15px;">
+                            <label class="form-label">12. Academic achievements last three years</label>
+                            <input type="text" class="form-input" name="academic_achievements" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent; width:100%;">
+                        </div>
+
+                        <div class="form-grid" style="margin-top:15px;">
+                            <div class="form-group">
+                                <label class="form-label">13. Medium of Exam (परीक्षा का माध्यम)</label>
+                                <select class="form-select" name="medium_of_exam" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select</option><option value="HINDI">HINDI</option><option value="ENGLISH">ENGLISH</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">14. Convicted by court of law (न्यायालय द्वारा दंडित)</label>
+                                <select class="form-select" name="is_convicted" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;">
+                                    <option value="">Select</option><option value="YES">YES</option><option value="NO">NO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper" style="margin-top:20px;">
+                            <table class="data-table" id="exam-table" style="border:1px solid var(--text-body);">
+                                <thead style="background:transparent; border-bottom:1px solid var(--text-body);">
+                                    <tr>
+                                        <th style="color:var(--text-body); border-right:1px solid var(--text-body);">Exam name</th>
+                                        <th style="color:var(--text-body); border-right:1px solid var(--text-body);">Roll No.</th>
+                                        <th style="color:var(--text-body); border-right:1px solid var(--text-body);">Year</th>
+                                        <th style="color:var(--text-body); border-right:1px solid var(--text-body);">College/Univ. Name</th>
+                                        <th style="color:var(--text-body); border-right:1px solid var(--text-body);">Result</th>
+                                        <th style="color:var(--text-body);">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-I</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_1"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_1"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_1"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_1"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_1"></td></tr>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-II</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_2"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_2"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_2"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_2"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_2"></td></tr>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-III</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_3"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_3"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_3"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_3"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_3"></td></tr>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-IV</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_4"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_4"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_4"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_4"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_4"></td></tr>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-V</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_5"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_5"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_5"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_5"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_5"></td></tr>
+                                    <tr><td style="border-right:1px solid var(--ivory-400);"><strong>Sem-VI</strong></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_roll_6"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_year_6"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_col_6"></td><td style="border-right:1px solid var(--ivory-400); padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_res_6"></td><td style="padding:2px;"><input type="text" style="width:100%; border:none; background:transparent; outline:none;" name="ex_per_6"></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Declarations -->
+                        <div style="border:1px solid var(--ivory-400); padding:15px; margin-top:20px; font-size:0.85em;">
+                            <h5 style="text-align:center; margin-bottom:10px;">Students Declaration Form (विद्यार्थी का घोषणा पत्र)</h5>
+                            <p style="text-align:justify;">मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे द्वारा इस आवेदन में दी गयी जानकारी सत्य है। यदि यह जानकारी गलत या असत्य पाई जाती है तो मेरा प्रवेश निरस्त किया जा सकता है।</p>
+                            
+                            <h5 style="text-align:center; margin-top:15px; margin-bottom:10px;">Parents Declaration Form (पालक का घोषणा पत्र)</h5>
+                            <p style="text-align:justify;">मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे पुत्र/पुत्री/पाल्य द्वारा इस आवेदन में दी गयी जानकारी सत्य है।</p>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; margin-top:30px; margin-bottom:20px; text-align:center; gap:20px; font-weight:bold;">
+                            <div style="flex:1;">
+                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p style="font-size:0.85em; margin-top:5px;">Signature of Principal</p>
+                            </div>
+                            <div style="flex:1;">
+                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p style="font-size:0.85em; margin-top:5px;">Recommendation<br>Signature of Professor In-charge</p>
+                            </div>
+                            <div style="flex:1;">
+                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p style="font-size:0.85em; margin-top:5px;">पिता / अभिभावक के हस्ताक्षर<br>Signature of Parent</p>
+                            </div>
+                            <div style="flex:1;">
+                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p style="font-size:0.85em; margin-top:5px;">छात्र/छात्रा का हस्ताक्षर<br>Signature of Student</p>
+                            </div>
+                        </div>
+
+                        <div class="btn-group" style="margin-top:30px;">
+                            <button type="submit" class="btn btn-primary" id="submit-btn" style="padding:10px 20px; font-size:1.1em;"><i class="ph ph-plus-circle"></i> Save Complete Record</button>
+                            <button type="reset" class="btn btn-secondary" style="padding:10px 20px; font-size:1.1em;"><i class="ph ph-arrow-counter-clockwise"></i> Clear Form</button>
                         </div>
                     </form>
                 </div>
@@ -1274,13 +1353,31 @@ async function submitStudent(e) {
     const data = {};
     for (const [key, val] of formData.entries()) data[key] = val.trim();
 
-    // Map frontend names to backend names
+    // Map old frontend names to backend names if they still exist
     if (data.aadhar_no !== undefined) { data.aadhaar_no = data.aadhar_no; delete data.aadhar_no; }
-    if (data.address !== undefined) { data.permanent_address = data.address; delete data.address; }
-    if (data.board_university !== undefined) { data.board = data.board_university; delete data.board_university; }
-    if (data.class_passed !== undefined) { data.last_exam = data.class_passed; delete data.class_passed; }
-    if (data.year_of_passing !== undefined) { data.last_exam_year = data.year_of_passing; delete data.year_of_passing; }
-    if (data.roll_no !== undefined) { data.last_roll_no = data.roll_no; delete data.roll_no; }
+
+    // Build Exam History JSON
+    let examHistory = [];
+    for (let i = 1; i <= 6; i++) {
+        let semName = "Sem-" + ["I","II","III","IV","V","VI"][i-1];
+        let roll = data["ex_roll_"+i];
+        let year = data["ex_year_"+i];
+        let col = data["ex_col_"+i];
+        let res = data["ex_res_"+i];
+        let per = data["ex_per_"+i];
+        
+        if (roll || year || col || res || per) {
+            examHistory.push({ semester: semName, roll_no: roll||'', year: year||'', college: col||'', result: res||'', percentage: per||'' });
+        }
+        
+        // delete temporary keys
+        delete data["ex_roll_"+i];
+        delete data["ex_year_"+i];
+        delete data["ex_col_"+i];
+        delete data["ex_res_"+i];
+        delete data["ex_per_"+i];
+    }
+    data.academic_history_json = JSON.stringify(examHistory);
 
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
