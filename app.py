@@ -561,3 +561,38 @@ def dashboard_stats(db: Session = Depends(get_db)):
         "gender_distribution": {g or "Unknown": count for g, count in gender_counts},
         "category_distribution": {c or "Unknown": count for c, count in category_counts},
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    import socket
+    import webbrowser
+
+    PORT = 52002  # you can change this later
+
+    def get_local_ip():
+        """Get local network IP (WiFi/LAN IP like 192.168.x.x)"""
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return "127.0.0.1"
+
+    local_ip = get_local_ip()
+
+    print("\n🚀 Server starting...\n")
+    print(f"👉 Local URL:    http://127.0.0.1:{PORT}")
+    print(f"👉 Network URL:  http://{local_ip}:{PORT}\n")
+
+    # Auto open browser (like Streamlit)
+    webbrowser.open(f"http://127.0.0.1:{PORT}")
+
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",   # allows network access
+        port=PORT,
+        reload=True      # 🔥 auto reload (you can remove later)
+    )
