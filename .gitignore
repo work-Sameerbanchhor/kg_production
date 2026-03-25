@@ -1,7 +1,12 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -15,24 +20,60 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+
+# Virtual environments
 .env
 .venv
 env/
 venv/
 ENV/
-.DS_Store
+env.bak/
+venv.bak/
+
+# IDEs and Text Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.spyderproject
+.spyproject
+
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
+nosetests.xml
+coverage.xml
+
+# Mac / OS generated files
 .DS_Store
-__pycache__/app.cpython-314.pyc
-student_passport_photos
-.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Application-specific
+student_passport_photos/
+export_pdf/
+kalyan_2024_admission_data.csv
+kalyan_fee_structure.csv
+kalyan_fee_structure_updated.csv
+*.db
