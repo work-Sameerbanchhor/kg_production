@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 load_dotenv()
 try:
@@ -29,12 +30,17 @@ import random
 import os
 import json
 
-app = FastAPI(title="Kalyan College Management System", version="1.0.0")
-
-# Initialize database on startup
-@app.on_event("startup")
-def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database on startup
     init_db()
+    yield
+
+app = FastAPI(
+    title="Kalyan College Management System", 
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # Mount static files
 os.makedirs("static", exist_ok=True)
@@ -810,6 +816,7 @@ async def save_theme_settings(data: dict):
         json.dump(data, f, indent=4)
     return {"message": "Theme settings saved successfully"}
 
+if __name__ == "__main__":
     import uvicorn
     import socket
     import webbrowser
