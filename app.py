@@ -256,7 +256,6 @@ if HAS_GENAI:
         domicile: str = Field(description="9. C.G. Domicile (YES/NO)")
         category: str = Field(description="10. Category (GEN/OBC/SC/ST...)")
         extra_curricular: str = Field(description="11. Extra Curricular Activities")
-        academic_achievements: str = Field(description="12. Academic achievements")
         medium_of_exam: str = Field(description="13. Medium of Exam")
         is_convicted: str = Field(description="14. Convicted by court of law")
         ex_name_1: str = Field(description="Exam 1 name")
