@@ -30,59 +30,10 @@ import os
 
 app = FastAPI(title="Kalyan College Management System", version="1.0.0")
 
-# Initialize database on startup and auto-import CSV
+# Initialize database on startup
 @app.on_event("startup")
 def startup():
     init_db()
-    # Auto-import CSV if database is empty
-    auto_import_csv()
-
-
-def auto_import_csv():
-    """Auto-import kalyan_2024_admission_data.csv from current directory on first run."""
-    from database import SessionLocal
-    db = SessionLocal()
-    try:
-        count = db.query(Student).count()
-        if count > 0:
-            print(f"✅ Database already has {count} students. Skipping CSV import.")
-            return
-
-        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kalyan_2024_admission_data.csv")
-        if not os.path.exists(csv_path):
-            print(f"⚠️ CSV file not found at: {csv_path}")
-            return
-
-        print(f"📁 Auto-importing CSV from: {csv_path}")
-        imported = 0
-        skipped = 0
-
-        with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                try:
-                    admission_no = row.get("Admission No", "").strip()
-                    if not admission_no:
-                        skipped += 1
-                        continue
-
-                    student = Student()
-                    for csv_col, db_col in CSV_HEADER_MAP.items():
-                        val = row.get(csv_col, "").strip()
-                        setattr(student, db_col, val)
-
-                    db.add(student)
-                    imported += 1
-                except Exception as e:
-                    skipped += 1
-
-        db.commit()
-        print(f"✅ CSV import complete: {imported} students imported, {skipped} skipped.")
-    except Exception as e:
-        print(f"❌ CSV auto-import error: {e}")
-        db.rollback()
-    finally:
-        db.close()
 
 # Mount static files
 os.makedirs("static", exist_ok=True)

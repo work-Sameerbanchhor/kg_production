@@ -35,3 +35,4 @@ htmlcov/
 .DS_Store
 __pycache__/app.cpython-314.pyc
 student_passport_photos
+.DS_Store
