@@ -802,7 +802,7 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
                         <h2 style="font-family:'DM Serif Display',serif; color:var(--forest-1000);">कल्याण स्नातकोत्तर महाविद्यालय, भिलाई नगर (छ.ग.)<br>Kalyan Post Graduate College, Bhilai Nagar (C.G.)</h2>
                     </div>
 
-                    <form id="student-form" onsubmit="submitStudent(event)">
+                    <form id="student-form" onsubmit="submitStudent(event)" onreset="setTimeout(resetFormExtras, 10)">
                         
                         <!-- Top Two Boxes: Office Use and Session Info -->
                         <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom:20px;">
@@ -903,7 +903,12 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
                         </div>
                         <div class="form-group" style="margin-top: 10px;">
                             <label class="form-label">Research / Internship / Project / Ph.D</label>
-                            <input type="text" class="form-input" name="research_project" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent; width:100%;">
+                            <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap;">
+                                <label><input type="checkbox" name="research_project" value="Research"> Research</label>
+                                <label><input type="checkbox" name="research_project" value="Internship"> Internship</label>
+                                <label><input type="checkbox" name="research_project" value="Project"> Project</label>
+                                <label><input type="checkbox" name="research_project" value="Ph.D"> Ph.D</label>
+                            </div>
                         </div>
 
                         <!-- Line 4 to 6 Family Details -->
@@ -959,7 +964,13 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
 
                         <div class="form-group" style="margin-top:15px;">
                             <label class="form-label">11. Extra Curricular Activities (NCC / NSS / SPORTS / CULTURAL...)</label>
-                            <input type="text" class="form-input" name="extra_curricular" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent; width:100%;">
+                            <div style="display: flex; gap: 15px; margin-top: 5px; flex-wrap: wrap;">
+                                <label><input type="checkbox" name="extra_curricular" value="NCC"> NCC</label>
+                                <label><input type="checkbox" name="extra_curricular" value="NSS"> NSS</label>
+                                <label><input type="checkbox" name="extra_curricular" value="SPORTS"> SPORTS</label>
+                                <label><input type="checkbox" name="extra_curricular" value="CULTURAL"> CULTURAL</label>
+                                <label><input type="checkbox" name="extra_curricular" value="OTHERS"> OTHERS</label>
+                            </div>
                         </div>
 
                         <div class="form-grid" style="margin-top:15px;">
@@ -1011,19 +1022,19 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
 
                         <div style="display:flex; justify-content:space-between; margin-top:30px; margin-bottom:20px; text-align:center; gap:20px; font-weight:bold;">
                             <div style="flex:1;">
-                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p id="sign_principal_status" style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
                                 <p style="font-size:0.85em; margin-top:5px;">Signature of Principal</p>
                             </div>
                             <div style="flex:1;">
-                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p id="sign_prof_status" style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
                                 <p style="font-size:0.85em; margin-top:5px;">Recommendation<br>Signature of Professor In-charge</p>
                             </div>
                             <div style="flex:1;">
-                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p id="sign_parent_status" style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
                                 <p style="font-size:0.85em; margin-top:5px;">पिता / अभिभावक के हस्ताक्षर<br>Signature of Parent</p>
                             </div>
                             <div style="flex:1;">
-                                <p style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
+                                <p id="sign_student_status" style="margin-bottom:0; font-size:1.1em; color:var(--text-light);">__________________</p>
                                 <p style="font-size:0.85em; margin-top:5px;">छात्र/छात्रा का हस्ताक्षर<br>Signature of Student</p>
                             </div>
                         </div>
@@ -1348,7 +1359,13 @@ async function submitStudent(e) {
     const form = document.getElementById('student-form');
     const formData = new FormData(form);
     const data = {};
-    for (const [key, val] of formData.entries()) data[key] = val.trim();
+    for (const [key, val] of formData.entries()) {
+        if (data[key] !== undefined) {
+            data[key] += ', ' + val.trim();
+        } else {
+            data[key] = val.trim();
+        }
+    }
 
     // Map old frontend names to backend names if they still exist
     if (data.aadhar_no !== undefined) { data.aadhaar_no = data.aadhar_no; delete data.aadhar_no; }
@@ -1396,6 +1413,22 @@ async function submitStudent(e) {
         btn.disabled = false;
         if (!editingStudentId) btn.innerHTML = '<i class="ph ph-plus-circle"></i> Add Student';
     }
+}
+
+function resetFormExtras() {
+    const photoContainer = document.getElementById('photo-preview-container');
+    if (photoContainer) {
+        photoContainer.innerHTML = `<small style="color:var(--text-muted); padding: 10px; font-weight: 600;">Affix Your<br>Passport Size<br>Photograph</small>
+                                    <input type="hidden" name="photo_path" value="">`;
+    }
+    const statuses = ['principal', 'prof', 'parent', 'student'];
+    statuses.forEach(s => {
+        const el = document.getElementById(`sign_${s}_status`);
+        if (el) {
+            el.innerHTML = '__________________';
+            el.style.color = 'var(--text-light)';
+        }
+    });
 }
 
 // ═══ SEARCH ═══
@@ -1496,8 +1529,12 @@ async function editStudent(id) {
                 continue;
             }
             if (form.elements[key]) {
+                const els = document.querySelectorAll(`[name="${key}"]`);
                 if (key === 'admission_date' || key === 'dob') {
                     form.elements[key].value = formatDate(s[key] || '');
+                } else if (els.length > 1 && els[0].type === 'checkbox') {
+                    const values = (s[key] || '').split(',').map(v => v.trim());
+                    els.forEach(el => el.checked = values.includes(el.value));
                 } else {
                     form.elements[key].value = s[key] || '';
                 }
@@ -1955,11 +1992,34 @@ async function processScannerFile(event) {
                 continue;
             }
             if (key === 'photo_box') continue; // Do not map coordinate array to input
-            const el = document.querySelector(`[name="${key}"]`);
-            if (el) {
-                el.value = value;
-                // Dispatch change event to trigger any bounded listeners
-                el.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // Signature approval logic
+            if (key.startsWith('sign_')) {
+                const sigDiv = document.getElementById(key + '_status');
+                if (sigDiv && value === true) {
+                    sigDiv.innerHTML = '<span style="color: #28a745;">Seen and Approved</span>';
+                }
+                continue;
+            }
+
+            const elements = document.querySelectorAll(`[name="${key}"]`);
+            if (elements.length > 0) {
+                if (elements[0].type === 'checkbox') {
+                    if (Array.isArray(value)) {
+                        elements.forEach(el => {
+                            if (value.includes(el.value)) el.checked = true;
+                        });
+                    } else {
+                        elements[0].checked = value;
+                    }
+                } else if (elements[0].type === 'radio') {
+                    elements.forEach(el => {
+                        if (el.value === String(value)) el.checked = true;
+                    });
+                } else {
+                    elements[0].value = value;
+                    elements[0].dispatchEvent(new Event('change', { bubbles: true }));
+                }
             }
         }
         

@@ -241,7 +241,7 @@ if HAS_GENAI:
         vac_sec: str = Field(description="VAC / SEC")
         ge_dse: str = Field(description="GE / DSE")
         aec: str = Field(description="AEC")
-        research_project: str = Field(description="Research / Internship / Project / Ph.D")
+        research_project: list[str] = Field(default_factory=list, description="List of checked items in: Research / Internship / Project / Ph.D")
         father_name: str = Field(description="4. Fathers Name")
         father_mobile_no: str = Field(description="Mobile No. (Fathers)")
         mother_name: str = Field(description="5. Mothers Name")
@@ -255,7 +255,7 @@ if HAS_GENAI:
         guardian_annual_income: str = Field(description="8. Annual Income of Guardian")
         domicile: str = Field(description="9. C.G. Domicile (YES/NO)")
         category: str = Field(description="10. Category (GEN/OBC/SC/ST...)")
-        extra_curricular: str = Field(description="11. Extra Curricular Activities")
+        extra_curricular: list[str] = Field(default_factory=list, description="11. List of checked items in: Extra Curricular Activities (NCC / NSS / SPORTS / CULTURAL...)")
         medium_of_exam: str = Field(description="13. Medium of Exam")
         is_convicted: str = Field(description="14. Convicted by court of law")
         ex_name_1: str = Field(description="Exam 1 name")
@@ -288,6 +288,10 @@ if HAS_GENAI:
         ex_col_5: str = Field(description="Exam 5 college")
         ex_res_5: str = Field(description="Exam 5 result")
         ex_per_5: str = Field(description="Exam 5 percentage")
+        sign_principal: bool = Field(default=False, description="True if Signature of Principal is present")
+        sign_prof: bool = Field(default=False, description="True if Signature of Professor In-charge is present")
+        sign_parent: bool = Field(default=False, description="True if Signature of Parent is present")
+        sign_student: bool = Field(default=False, description="True if Signature of Student is present")
         photo_box: list[int] = Field(
             default_factory=list,
             description="IMPORTANT: Bounding box [ymin, xmin, ymax, xmax] of the student's passport photo on the first page, using normalized coordinates (0 to 1000). Return empty list [] if no photo attached."
@@ -344,13 +348,16 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         contents_list.append(prompt)
         
         response = client.models.generate_content(
-            model="gemini-flash-lite-latest",
-            contents=contents_list,
-            config={
-                "response_mime_type": "application/json",
-                "response_json_schema": StudentFormExtract.model_json_schema(),
-            }
+    model="gemini-3.1-flash-lite-preview",  # do not change this model
+    contents=contents_list,
+    config=types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_json_schema=StudentFormExtract.model_json_schema(),
+        thinking_config=types.ThinkingConfig(
+            thinking_level="MINIMAL"   # minimal thinking
         )
+    )
+)
         
         data = json.loads(response.text)
         
