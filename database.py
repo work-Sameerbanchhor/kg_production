@@ -109,6 +109,7 @@ class Student(Base):
     medium_of_exam = Column(String(50))
     is_convicted = Column(String(10))
     academic_history_json = Column(Text)  # JSON representation of academic table
+    photo_path = Column(String(500))
     # ---------------------------------
     
     # Timestamps

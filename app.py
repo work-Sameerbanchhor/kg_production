@@ -88,6 +88,8 @@ def auto_import_csv():
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+os.makedirs("student_passport_photos", exist_ok=True)
+app.mount("/student_passport_photos", StaticFiles(directory="student_passport_photos"), name="student_passport_photos")
 
 # ═══════════════════════════════════════════════════════════
 #  ROOT - Serve HTML
@@ -127,7 +129,8 @@ STUDENT_FIELDS = [
     "dsc_1", "dsc_2", "dsc_3", "vac_sec", "ge_dse", "aec", "research_project",
     "abc_id", "blood_group", "father_mobile_no", "religion", "mother_tongue",
     "bank_name_address", "bank_ac_no", "ifsc_code", "guardian_annual_income",
-    "extra_curricular", "medium_of_exam", "is_convicted", "academic_history_json"
+    "extra_curricular", "medium_of_exam", "is_convicted", "academic_history_json",
+    "photo_path"
 ]
 
 
@@ -335,6 +338,10 @@ if HAS_GENAI:
         ex_col_5: str = Field(description="Exam 5 college")
         ex_res_5: str = Field(description="Exam 5 result")
         ex_per_5: str = Field(description="Exam 5 percentage")
+        photo_box: list[int] = Field(
+            default_factory=list,
+            description="IMPORTANT: Bounding box [ymin, xmin, ymax, xmax] of the student's passport photo on the first page, using normalized coordinates (0 to 1000). Return empty list [] if no photo attached."
+        )
 
 @app.post("/api/students/scan-form")
 async def scan_student_form(files: list[UploadFile] = File(...)):
@@ -374,11 +381,15 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         
         prompt = (
             "Extract the student information from this admission form. "
-            "Provide EXACT texts visible. Return an empty string for missing fields. "
+            "Correct any spelling or grammatical mistakes in the text fields (such as names, addresses, subjects, courses, etc.) that the student may have made. "
+            "Do not provide the exact text if it contains errors; instead, infer and provide the correctly spelled information. "
+            "Return an empty string for missing fields. "
             "The form has multiple pages. "
             "Page 1 contains Fields 1 to 6 (like Faculty, Courses, Father's Name, Mother's Name). "
             "Page 2 starts with Field 7 (ADDRESS) up to the last field (Category, Domicile, Medium of Exam, etc.). "
-            "Please ensure you scan and extract data from ALL provided pages."
+            "Please ensure you scan and extract data from ALL provided pages. "
+            "IMPORTANT: Also locate the student's passport photo on the first page, and return its bounding box coordinates [ymin, xmin, ymax, xmax] normalized to 0-1000 scale in the `photo_box` field. "
+            "If there is no physical photo glued/printed on the form, leave `photo_box` as an empty list []."
         )
         contents_list.append(prompt)
         
@@ -391,7 +402,59 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
             }
         )
         
-        return json.loads(response.text)
+        data = json.loads(response.text)
+        
+        # Process photo cropping
+        photo_box = data.get("photo_box", [])
+        if photo_box and len(photo_box) == 4 and len(files) > 0:
+            try:
+                import io
+                from PIL import Image
+                
+                f = files[0]
+                await f.seek(0)
+                content = await f.read()
+                
+                img = None
+                if f.content_type == "application/pdf" or (f.filename and f.filename.lower().endswith(".pdf")):
+                    import fitz # PyMuPDF
+                    doc = fitz.open(stream=content, filetype="pdf")
+                    if len(doc) > 0:
+                        page = doc[0]
+                        pix = page.get_pixmap(dpi=150)
+                        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                    doc.close()
+                else:
+                    img = Image.open(io.BytesIO(content))
+                    
+                if img:
+                    width, height = img.size
+                    ymin, xmin, ymax, xmax = photo_box
+                    
+                    # Convert normalized coords (0-1000) to actual pixels
+                    crop_box = (
+                        int(xmin * width / 1000),
+                        int(ymin * height / 1000),
+                        int(xmax * width / 1000),
+                        int(ymax * height / 1000)
+                    )
+                    
+                    # Ensure valid box
+                    if crop_box[2] > crop_box[0] and crop_box[3] > crop_box[1]:
+                        cropped = img.crop(crop_box)
+                        
+                        os.makedirs("student_passport_photos", exist_ok=True)
+                        filename = f"photo_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
+                        filepath = f"student_passport_photos/{filename}"
+                        cropped.convert("RGB").save(filepath, format="JPEG", quality=85)
+                        
+                        data["photo_url"] = f"/{filepath}"
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(f"Error extracting photo: {e}")
+                
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
 

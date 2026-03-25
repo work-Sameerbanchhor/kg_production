@@ -830,8 +830,9 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
                                         <div class="form-group" style="flex:1;"><label class="form-label">Blood Group</label><input type="text" class="form-input" style="border:none; border-bottom:1px dotted var(--text-muted); border-radius:0; background:transparent;" name="blood_group"></div>
                                     </div>
                                 </div>
-                                <div style="width: 130px; height: 170px; align-self: flex-start; margin-top: 15px; border: 2px dashed var(--ivory-400); border-radius: 4px; margin-left:15px; padding: 10px; text-align:center; display:flex; align-items:center; justify-content:center; background:var(--surface-bg);">
-                                    <small style="color:var(--text-muted); font-weight: 600;">Affix Your<br>Passport Size<br>Photograph</small>
+                                <div id="photo-preview-container" style="width: 130px; height: 170px; overflow: hidden; align-self: flex-start; margin-top: 15px; border: 2px dashed var(--ivory-400); border-radius: 4px; margin-left:15px; padding: 0px; text-align:center; display:flex; align-items:center; justify-content:center; background:var(--surface-bg);">
+                                    <small style="color:var(--text-muted); padding: 10px; font-weight: 600;">Affix Your<br>Passport Size<br>Photograph</small>
+                                    <input type="hidden" name="photo_path" value="">
                                 </div>
                             </div>
                         </div>
@@ -1490,6 +1491,14 @@ async function editStudent(id) {
         };
 
         for (const key in s) {
+            if (key === 'photo_path' && s[key]) {
+                const container = document.getElementById('photo-preview-container');
+                if (container) {
+                    container.innerHTML = `<img src="${s[key]}" style="width:100%; height:100%; object-fit:cover;">
+                                           <input type="hidden" name="photo_path" value="${s[key]}">`;
+                }
+                continue;
+            }
             if (form.elements[key]) {
                 if (key === 'admission_date' || key === 'dob') {
                     form.elements[key].value = formatDate(s[key] || '');
@@ -1941,6 +1950,15 @@ async function processScannerFile(event) {
         // Auto-fill form fields
         for (const [key, value] of Object.entries(data)) {
             if (!value) continue; // Skip empty strings
+            if (key === 'photo_url') {
+                const container = document.getElementById('photo-preview-container');
+                if (container) {
+                    container.innerHTML = `<img src="${value}" style="width:100%; height:100%; object-fit:cover;">
+                                           <input type="hidden" name="photo_path" value="${value}">`;
+                }
+                continue;
+            }
+            if (key === 'photo_box') continue; // Do not map coordinate array to input
             const el = document.querySelector(`[name="${key}"]`);
             if (el) {
                 el.value = value;
