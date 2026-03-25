@@ -27,6 +27,7 @@ import csv
 import io
 import random
 import os
+import json
 
 app = FastAPI(title="Kalyan College Management System", version="1.0.0")
 
@@ -49,6 +50,11 @@ app.mount("/student_passport_photos", StaticFiles(directory="student_passport_ph
 @app.get("/", response_class=HTMLResponse)
 async def root():
     with open("static/index.html", "r") as f:
+        return f.read()
+
+@app.get("/settings", response_class=HTMLResponse)
+async def settings_page():
+    with open("static/settings.html", "r") as f:
         return f.read()
 
 
@@ -740,7 +746,70 @@ def dashboard_stats(db: Session = Depends(get_db)):
     }
 
 
-if __name__ == "__main__":
+# ═══════════════════════════════════════════════════════════
+#  SETTINGS APIs
+# ═══════════════════════════════════════════════════════════
+
+@app.get("/api/settings/upi")
+def get_upi_settings():
+    path = "settings/upi.json"
+    default = {"upi_options": [], "active_upi": None}
+    if not os.path.exists(path):
+        return default
+    with open(path, "r") as f:
+        try:
+            data = json.load(f)
+            if not isinstance(data, dict): return default
+            if "upi_options" not in data: data["upi_options"] = []
+            if "active_upi" not in data: data["active_upi"] = None
+            return data
+        except:
+            return default
+
+@app.post("/api/settings/upi")
+async def save_upi_settings(data: dict):
+    os.makedirs("settings", exist_ok=True)
+    with open("settings/upi.json", "w") as f:
+        json.dump(data, f, indent=4)
+    return {"message": "UPI settings saved successfully"}
+
+
+@app.get("/api/settings/themes")
+def get_theme_settings():
+    path = "settings/themes.json"
+    # Default themes if file doesn't exist or is empty
+    default = {
+        "active_mode": "light",
+        "active_theme": "forest",
+        "themes": [
+            {"id": "forest", "name": "Forest", "primary": "#4a7c4a", "accent": "#b8944a"},
+            {"id": "ocean", "name": "Ocean", "primary": "#2980b9", "accent": "#f39c12"},
+            {"id": "midnight", "name": "Midnight", "primary": "#34495e", "accent": "#e74c3c"},
+            {"id": "royal", "name": "Royal", "primary": "#8e44ad", "accent": "#f1c40f"},
+            {"id": "crimson", "name": "Crimson", "primary": "#c0392b", "accent": "#2c3e50"},
+            {"id": "sunset", "name": "Sunset", "primary": "#e67e22", "accent": "#2980b9"},
+            {"id": "sakura", "name": "Sakura", "primary": "#d63384", "accent": "#4a7c4a"},
+            {"id": "gray", "name": "Silver Gray", "primary": "#9e9e9e", "accent": "#333333"}
+        ]
+    }
+    if not os.path.exists(path):
+        return default
+    with open(path, "r") as f:
+        try:
+            data = json.load(f)
+            if not isinstance(data, dict): return default
+            if "themes" not in data: data["themes"] = default["themes"]
+            return data
+        except:
+            return default
+
+@app.post("/api/settings/themes")
+async def save_theme_settings(data: dict):
+    os.makedirs("settings", exist_ok=True)
+    with open("settings/themes.json", "w") as f:
+        json.dump(data, f, indent=4)
+    return {"message": "Theme settings saved successfully"}
+
     import uvicorn
     import socket
     import webbrowser

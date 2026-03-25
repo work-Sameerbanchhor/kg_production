@@ -1,1 +1,17 @@
-{}
+{
+    "upi_options": [
+        {
+            "label": "kalyan",
+            "id": "kalyan@UPI"
+        },
+        {
+            "label": "Sameer banchhor",
+            "id": "sameerbanchhor@upi"
+        },
+        {
+            "label": "ekta Agrawal",
+            "id": "ekta@upi"
+        }
+    ],
+    "active_upi": "sameerbanchhor@upi"
+}

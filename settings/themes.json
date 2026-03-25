@@ -1,1 +1,54 @@
-{}
+{
+    "active_mode": "light",
+    "active_theme": "forest",
+    "themes": [
+        {
+            "id": "forest",
+            "name": "Forest",
+            "primary": "#4a7c4a",
+            "accent": "#b8944a"
+        },
+        {
+            "id": "ocean",
+            "name": "Ocean",
+            "primary": "#2980b9",
+            "accent": "#f39c12"
+        },
+        {
+            "id": "midnight",
+            "name": "Midnight",
+            "primary": "#34495e",
+            "accent": "#e74c3c"
+        },
+        {
+            "id": "royal",
+            "name": "Royal",
+            "primary": "#8e44ad",
+            "accent": "#f1c40f"
+        },
+        {
+            "id": "crimson",
+            "name": "Crimson",
+            "primary": "#c0392b",
+            "accent": "#2c3e50"
+        },
+        {
+            "id": "sunset",
+            "name": "Sunset",
+            "primary": "#e67e22",
+            "accent": "#2980b9"
+        },
+        {
+            "id": "sakura",
+            "name": "Sakura",
+            "primary": "#d63384",
+            "accent": "#4a7c4a"
+        },
+        {
+            "id": "gray",
+            "name": "Silver Gray",
+            "primary": "#9e9e9e",
+            "accent": "#333333"
+        }
+    ]
+}
