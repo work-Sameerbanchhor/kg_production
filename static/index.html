@@ -701,6 +701,11 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
             <div class="nav-item" data-section="fee-status" onclick="showSection('fee-status')">
                 <i class="ph ph-receipt icon"></i> <span>Fee Status</span>
             </div>
+
+            <div class="nav-group-label"><span>System</span></div>
+            <div class="nav-item" data-section="settings" onclick="showSection('settings')">
+                <i class="ph ph-gear icon"></i> <span>Settings</span>
+            </div>
         </nav>
     </aside>
 
@@ -1143,6 +1148,16 @@ body.dark-mode .pf-input, body.dark-mode .pf-select {
                 </div>
             </div>
 
+            <!-- ════ SETTINGS ════ -->
+            <div class="section" id="sec-settings">
+                <div class="page-intro"><p>Configure system settings, API keys, and more</p></div>
+                <div class="card" style="text-align:center; padding: 60px 20px;">
+                    <div class="icon" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px; opacity:0.5;"><i class="ph ph-wrench"></i></div>
+                    <h2 style="font-family:'DM Serif Display',serif; color:var(--forest-1000);">Settings Coming Soon</h2>
+                    <p style="color:var(--text-muted); margin-top: 10px;">We are currently building this page to allow system configuration. Your settings will be stored in <code>api_keys.json</code>, <code>upi.json</code>, and <code>themes.json</code> in the <code>settings/</code> directory.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -1179,7 +1194,8 @@ const sectionTitles = {
     'import-csv':'Import CSV',
     'fee-structure':'Fee Structure',
     'fee-payment':'Record Payment',
-    'fee-status':'Fee Status'
+    'fee-status':'Fee Status',
+    'settings':'System Settings'
 };
 
 // ═══ INIT ═══
