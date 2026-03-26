@@ -517,6 +517,7 @@
     </div>
 </div>
 
+<script src="/static/theme.js"></script>
 <script>
 /**
  * Kalyan College Management System - Frontend Logic
@@ -539,32 +540,7 @@ const sectionTitles = {
     'fee-status':'Fee Status'
 };
 
-// ═══ INIT ═══
-// ═══ THEME LOGIC ═══
-async function initTheme() {
-    try {
-        const response = await fetch('/api/settings/themes');
-        const data = await response.json();
-        
-        const mode = data.active_mode || 'light';
-        const themeId = data.active_theme || 'forest';
-        const themeDef = data.themes.find(t => t.id === themeId);
-        
-        document.documentElement.setAttribute('data-theme', mode);
-        if (themeDef) {
-            document.documentElement.style.setProperty('--primary-500', themeDef.primary);
-            if (themeId === 'forest') {
-                document.documentElement.removeAttribute('data-theme-color');
-            } else {
-                document.documentElement.setAttribute('data-theme-color', themeId);
-            }
-        }
-    } catch (e) {
-        console.error('Failed to load theme settings', e);
-        const savedMode = localStorage.getItem('theme-mode') || 'light';
-        document.documentElement.setAttribute('data-theme', savedMode);
-    }
-}
+// Theme logic moved to static/theme.js
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();

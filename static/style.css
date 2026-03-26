@@ -71,140 +71,7 @@
 }
 
 /* ─── COLOR THEMES ─── */
-
-/* Ocean Blue Theme */
-[data-theme-color="ocean"] {
-    --primary-900: #1a2a3a;
-    --primary-800: #243444;
-    --primary-700: #2d455d;
-    --primary-600: #3a5a7a;
-    --primary-500: #2980b9;
-    --primary-400: #3498db;
-    --primary-300: #5dade2;
-    --primary-200: #a9cce3;
-    --primary-100: #d4e6f1;
-    --primary-50:  #ebf5fb;
-    --accent-500: #2ecc71;
-    --accent-400: #58d68d;
-    --accent-300: #82e0aa;
-    --text-dark: #1a2a3a;
-    --text-body: #2c3e50;
-    --text-muted: #7f8c8d;
-}
-
-/* Midnight Theme */
-[data-theme-color="midnight"] {
-    --primary-900: #1c2833;
-    --primary-800: #212f3d;
-    --primary-700: #283747;
-    --primary-600: #2e4053;
-    --primary-500: #34495e;
-    --primary-400: #566573;
-    --primary-300: #808b96;
-    --primary-200: #abb2b9;
-    --primary-100: #d5d8dc;
-    --primary-50:  #f4f6f7;
-    --accent-500: #f39c12;
-    --accent-400: #f5b041;
-    --accent-300: #f8c471;
-    --text-dark: #1c2833;
-    --text-body: #2e4053;
-}
-
-/* Royal Purple Theme */
-[data-theme-color="royal"] {
-    --primary-900: #2e1a3a;
-    --primary-800: #3a2444;
-    --primary-700: #4a2d5d;
-    --primary-600: #5a3a7a;
-    --primary-500: #8e44ad;
-    --primary-400: #9b59b6;
-    --primary-300: #af7ac5;
-    --primary-200: #d2b4de;
-    --primary-100: #e8daef;
-    --primary-50:  #f5eef8;
-    --accent-500: #f1c40f;
-    --accent-400: #f4d03f;
-    --accent-300: #f7dc6f;
-    --text-dark: #2e1a3a;
-    --text-body: #4a235a;
-}
-
-/* Crimson Red Theme */
-[data-theme-color="crimson"] {
-    --primary-900: #3a1a1a;
-    --primary-800: #442424;
-    --primary-700: #5d2d2d;
-    --primary-600: #7a3a3a;
-    --primary-500: #c0392b;
-    --primary-400: #e74c3c;
-    --primary-300: #ec7063;
-    --primary-200: #f5b0a1;
-    --primary-100: #f9d7d1;
-    --primary-50:  #fdedec;
-    --accent-500: #3498db;
-    --accent-400: #5dade2;
-    --accent-300: #85c1e9;
-    --text-dark: #3a1a1a;
-    --text-body: #641e16;
-}
-
-/* Sunset Orange Theme */
-[data-theme-color="sunset"] {
-    --primary-900: #3a2a1a;
-    --primary-800: #443424;
-    --primary-700: #5d452d;
-    --primary-600: #7a5a3a;
-    --primary-500: #e67e22;
-    --primary-400: #f39c12;
-    --primary-300: #f5b041;
-    --primary-200: #f8c471;
-    --primary-100: #fae5d3;
-    --primary-50:  #fef5e7;
-    --accent-500: #1abc9c;
-    --accent-400: #48c9b0;
-    --accent-300: #76d7c4;
-    --text-dark: #3a2a1a;
-    --text-body: #6e2c00;
-}
-
-/* Sakura Pink Theme */
-[data-theme-color="sakura"] {
-    --primary-900: #3a1a2e;
-    --primary-800: #44243a;
-    --primary-700: #5d2d4a;
-    --primary-600: #7a3a5a;
-    --primary-500: #d63384;
-    --primary-400: #e83e8c;
-    --primary-300: #f06292;
-    --primary-200: #f48fb1;
-    --primary-100: #f8bbd0;
-    --primary-50:  #fce4ec;
-    --accent-500: #00bcd4;
-    --accent-400: #4dd0e1;
-    --accent-300: #80deea;
-    --text-dark: #3a1a2e;
-    --text-body: #880e4f;
-}
-
-/* Midnight Gray Theme */
-[data-theme-color="gray"] {
-    --primary-900: #212121;
-    --primary-800: #424242;
-    --primary-700: #616161;
-    --primary-600: #757575;
-    --primary-500: #9e9e9e;
-    --primary-400: #bdbdbd;
-    --primary-300: #e0e0e0;
-    --primary-200: #eeeeee;
-    --primary-100: #f5f5f5;
-    --primary-50:  #fafafa;
-    --accent-500: #ff9800;
-    --accent-400: #ffb74d;
-    --accent-300: #ffcc80;
-    --text-dark: #212121;
-    --text-body: #424242;
-}
+/* Theme colors are now generated dynamically by theme.js based on themes.json */
 
 /* Dark Mode Overrides */
 [data-theme="dark"] {
@@ -235,14 +102,8 @@
     --info-bg: rgba(52, 152, 219, 0.15);
 }
 
-/* Dark Mode Color Adjustments (Dynamic based on theme) */
-[data-theme="dark"][data-theme-color="ocean"] { --surface-bg: #1a2a3a; --primary-900: #0d151d; }
-[data-theme="dark"][data-theme-color="midnight"] { --surface-bg: #1c2833; --primary-900: #0e141a; }
-[data-theme="dark"][data-theme-color="royal"] { --surface-bg: #2e1a3a; --primary-900: #170d1d; }
-[data-theme="dark"][data-theme-color="crimson"] { --surface-bg: #3a1a1a; --primary-900: #1d0d0d; }
-[data-theme="dark"][data-theme-color="sunset"] { --surface-bg: #3a2a1a; --primary-900: #1d150d; }
-[data-theme="dark"][data-theme-color="sakura"] { --surface-bg: #3a1a2e; --primary-900: #1d0d17; }
-[data-theme="dark"][data-theme-color="gray"] { --surface-bg: #212121; --primary-900: #111111; }
+/* Dark Mode Color Adjustments */
+/* Now handled dynamically via static/theme.js */
 
 
 /* ─── Reset ─────────────────────────────────────────── */

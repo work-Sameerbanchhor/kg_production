@@ -8,6 +8,292 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ═══ SETTINGS-SPECIFIC STYLES ═══ */
+
+        /* Mode Toggle */
+        .mode-toggle-track {
+            display: flex;
+            gap: 4px;
+            background: var(--ivory-200);
+            padding: 5px;
+            border-radius: 14px;
+            width: fit-content;
+            position: relative;
+        }
+        [data-theme="dark"] .mode-toggle-track {
+            background: rgba(255,255,255,0.06);
+        }
+        .mode-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 22px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            z-index: 1;
+        }
+        .mode-toggle-btn i {
+            font-size: 1.1rem;
+        }
+        .mode-toggle-btn.active {
+            background: var(--primary-500);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+        }
+        .mode-toggle-btn:not(.active):hover {
+            color: var(--text-dark);
+            background: rgba(0,0,0,0.04);
+        }
+        [data-theme="dark"] .mode-toggle-btn:not(.active):hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* Theme Grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .theme-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+        }
+
+        /* Theme Card */
+        .theme-card {
+            position: relative;
+            padding: 16px 14px 14px;
+            border-radius: 14px;
+            border: 2px solid var(--ivory-300);
+            background: var(--card-bg, #fff);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            overflow: hidden;
+        }
+        [data-theme="dark"] .theme-card {
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+        }
+        .theme-card:hover:not(.active) {
+            border-color: var(--primary-300);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        [data-theme="dark"] .theme-card:hover:not(.active) {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .theme-card.active {
+            border-color: var(--primary-500);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .theme-card.active {
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        }
+
+        /* Active badge */
+        .theme-card.active::after {
+            content: '\2713';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-500);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        /* Color swatches */
+        .theme-swatches {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 0 auto 10px;
+            width: fit-content;
+        }
+        .swatch-primary {
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 0 0 50%;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            position: relative;
+            z-index: 2;
+        }
+        .swatch-accent {
+            width: 36px;
+            height: 36px;
+            border-radius: 0 50% 50% 0;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            margin-left: -4px;
+            position: relative;
+            z-index: 1;
+        }
+        [data-theme="dark"] .swatch-primary,
+        [data-theme="dark"] .swatch-accent {
+            border-color: rgba(0,0,0,0.3);
+        }
+
+        .theme-emoji {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .theme-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+        .theme-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Live Preview Card */
+        .preview-card {
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+            border: 2px solid var(--ivory-300);
+            background: var(--card-bg, #fff);
+            transition: all 0.3s ease;
+        }
+        [data-theme="dark"] .preview-card {
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+        }
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .preview-header h4 {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .preview-swatch-strip {
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 40px;
+            flex: 1;
+            min-width: 180px;
+        }
+        [data-theme="dark"] .preview-swatch-strip {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .preview-swatch-strip div {
+            flex: 1;
+            min-width: 0;
+        }
+        .preview-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .preview-btn {
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+        .preview-input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .preview-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .preview-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .preview-shadow-card {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Section label */
+        .settings-label {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .settings-label i {
+            font-size: 1.15rem;
+            opacity: 0.8;
+        }
+        .settings-sublabel {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            margin-top: -10px;
+        }
+    </style>
 </head>
 <body>
 <div class="app">
@@ -69,9 +355,7 @@
                 <button class="mobile-toggle" onclick="openMobileSidebar()"><i class="ph ph-list"></i></button>
                 <h2 id="page-title">Settings</h2>
             </div>
-            <div class="header-actions">
-                <!-- Theme toggle moved to settings section below -->
-            </div>
+            <div class="header-actions"></div>
         </header>
 
         <div class="content">
@@ -91,48 +375,70 @@
                     <p>Customize the look and feel of your management system</p>
                 </div>
 
-
                 <div class="card" style="margin-bottom: 24px;">
                     <div class="card-title"><i class="ph ph-palette"></i> Personalization</div>
                     
-                    <div style="margin-bottom: 30px;">
-                        <h4 style="font-size: 0.95rem; margin-bottom: 15px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                    <!-- Interface Mode -->
+                    <div style="margin-bottom: 32px;">
+                        <div class="settings-label">
                             <i class="ph ph-moon-stars"></i> Interface Mode
-                        </h4>
-                        <div style="display: flex; gap: 12px; background: var(--ivory-200); padding: 6px; border-radius: 12px; width: fit-content;">
-                            <button id="mode-light-btn" class="btn btn-sm" onclick="setMode('light')" style="border-radius: 8px; border: none; padding: 8px 20px;">
-                                <i class="ph ph-sun"></i> Light
+                        </div>
+                        <div class="mode-toggle-track">
+                            <button id="mode-light-btn" class="mode-toggle-btn active" onclick="setMode('light')">
+                                <i class="ph-fill ph-sun-dim"></i> Light
                             </button>
-                            <button id="mode-dark-btn" class="btn btn-sm" onclick="setMode('dark')" style="border-radius: 8px; border: none; padding: 8px 20px;">
-                                <i class="ph ph-moon"></i> Dark
+                            <button id="mode-dark-btn" class="mode-toggle-btn" onclick="setMode('dark')">
+                                <i class="ph-fill ph-moon-stars"></i> Dark
                             </button>
                         </div>
                     </div>
 
+                    <!-- Theme Color -->
                     <div>
-                        <h4 style="font-size: 0.95rem; margin-bottom: 15px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                        <div class="settings-label">
                             <i class="ph ph-paint-brush"></i> Theme Color
-                        </h4>
-                        <div class="theme-grid" id="theme-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
-                            <!-- Dynamic themes from themes.json -->
+                        </div>
+                        <p class="settings-sublabel">Choose a color palette that suits your style. Each theme includes a full light & dark mode.</p>
+                        <div class="theme-grid" id="theme-grid">
+                            <!-- Dynamic themes rendered by JS -->
                         </div>
                     </div>
                 </div>
 
-                <style>
-                    .theme-option.active {
-                        border-color: var(--primary-500) !important;
-                        background: var(--primary-50);
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-                    }
-                    .theme-option:hover:not(.active) {
-                        border-color: var(--primary-300);
-                        transform: translateY(-2px);
-                    }
-                    [data-theme="dark"] .theme-option.active {
-                        background: rgba(255,255,255,0.05);
-                    }
-                </style>
+                <!-- Live Preview -->
+                <div class="card" id="preview-card">
+                    <div class="card-title"><i class="ph ph-eye"></i> Live Preview</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 18px;">See how your current theme looks across UI elements</p>
+
+                    <!-- Primary palette strip -->
+                    <div style="margin-bottom: 18px;">
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:6px;">Primary Palette</div>
+                        <div class="preview-swatch-strip" id="preview-primary-strip"></div>
+                    </div>
+
+                    <!-- Accent palette strip -->
+                    <div style="margin-bottom: 22px;">
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:6px;">Accent Palette</div>
+                        <div class="preview-swatch-strip" id="preview-accent-strip"></div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;">Buttons & Actions</div>
+                    <div class="preview-btns" id="preview-buttons"></div>
+
+                    <!-- Inputs -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:6px;">Inputs & Badges</div>
+                    <div class="preview-input-row" id="preview-inputs"></div>
+
+                    <!-- Shadows -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:18px;">Shadows & Elevation</div>
+                    <div class="preview-row" id="preview-shadows"></div>
+
+                    <!-- Gradient -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:6px;">Hero Gradient</div>
+                    <div id="preview-gradient" style="height:48px;border-radius:12px;margin-bottom:4px;transition:all 0.3s ease;"></div>
+                </div>
+
             </div>
 
             <!-- ════ UPI SETTINGS ════ -->
@@ -141,7 +447,6 @@
                     <p>Manage payment gateway and UPI configurations for fee collection</p>
                 </div>
 
-                
                 <div class="card" style="margin-bottom: 24px;">
                     <div class="card-title"><i class="ph ph-qr-code"></i> UPI Payment Configuration</div>
                     
@@ -176,7 +481,6 @@
                                 </tr>
                             </thead>
                             <tbody id="upi-list">
-                                <!-- Dynamic content -->
                                 <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr>
                             </tbody>
                         </table>
@@ -191,124 +495,120 @@
 <!-- Toasts -->
 <div class="toast-container" id="toast-container"></div>
 
+<script src="/static/theme.js"></script>
 <script>
 let upiSettings = { upi_options: [], active_upi: null };
 
-let themeSettings = { active_mode: 'light', active_theme: 'forest', themes: [] };
-
 // ═══ THEME LOGIC ═══
-async function initTheme() {
-    try {
-        themeSettings = await api('/api/settings/themes');
-        renderThemeOptions();
-        applyMode(themeSettings.active_mode);
-        applyColor(themeSettings.active_theme);
-    } catch (e) {
-        console.error('Failed to load theme settings', e);
-        // Fallback to local
-        const savedMode = localStorage.getItem('theme-mode') || 'light';
-        const savedColor = localStorage.getItem('theme-color') || 'forest';
-        applyMode(savedMode);
-        applyColor(savedColor);
-    }
-}
 
 function renderThemeOptions() {
     const container = document.getElementById('theme-grid');
     if (!container) return;
-    
-    container.innerHTML = themeSettings.themes.map(t => `
-        <div class="theme-option" onclick="setThemeColor('${t.id}')" data-theme-val="${t.id}" style="cursor: pointer; padding: 12px; border-radius: 12px; border: 2px solid var(--ivory-300); transition: var(--transition); text-align: center;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${t.primary}; margin: 0 auto 8px; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-            <span style="font-size: 0.82rem; font-weight: 600;">${t.name}</span>
-        </div>
-    `).join('');
+
+    container.innerHTML = themeSettings.themes.map(t => {
+        const primary500 = t.primary || t.colors?.primary?.['500'] || '#4a7c4a';
+        const accent500 = t.accent || t.colors?.accent?.['500'] || '#b8944a';
+        const emoji = t.emoji || '';
+        const desc = t.description || '';
+
+        return `
+            <div class="theme-card" onclick="setThemeColor('${t.id}')" data-theme-val="${t.id}">
+                ${emoji ? `<span class="theme-emoji">${emoji}</span>` : ''}
+                <div class="theme-swatches">
+                    <div class="swatch-primary" style="background:${primary500};" title="Primary"></div>
+                    <div class="swatch-accent" style="background:${accent500};" title="Accent"></div>
+                </div>
+                <div class="theme-name">${t.name}</div>
+                ${desc ? `<div class="theme-desc">${desc}</div>` : ''}
+            </div>
+        `;
+    }).join('');
 }
 
-async function setMode(mode) {
-    applyMode(mode);
-    themeSettings.active_mode = mode;
-    saveThemeSettings();
-}
+// Functions moved to static/theme.js
 
-function applyMode(mode) {
-    document.documentElement.setAttribute('data-theme', mode);
-    
-    const lightBtn = document.getElementById('mode-light-btn');
-    const darkBtn = document.getElementById('mode-dark-btn');
-    if (!lightBtn || !darkBtn) return;
-    
-    if (mode === 'dark') {
-        darkBtn.classList.add('btn-primary');
-        darkBtn.classList.remove('btn-secondary');
-        lightBtn.classList.add('btn-secondary');
-        lightBtn.classList.remove('btn-primary');
-    } else {
-        lightBtn.classList.add('btn-primary');
-        lightBtn.classList.remove('btn-secondary');
-        darkBtn.classList.add('btn-secondary');
-        darkBtn.classList.remove('btn-primary');
+function renderPreview(theme, mode) {
+    const primary = theme.generated_primary || theme.colors?.primary;
+    const accent = theme.generated_accent || theme.colors?.accent;
+    if (!primary || !accent) return;
+
+    const tokens = theme[mode] || {};
+
+    // Primary strip
+    const primaryStrip = document.getElementById('preview-primary-strip');
+    if (primaryStrip && primary) {
+        primaryStrip.innerHTML = ['50','100','200','300','400','500','600','700','800','900']
+            .map(s => `<div style="background:${primary[s]}" title="primary-${s}"></div>`).join('');
+    }
+
+    // Accent strip
+    const accentStrip = document.getElementById('preview-accent-strip');
+    if (accentStrip && accent) {
+        accentStrip.innerHTML = ['50','100','200','300','400','500','600','700','800','900']
+            .map(s => `<div style="background:${accent[s]}" title="accent-${s}"></div>`).join('');
+    }
+
+    // Buttons
+    const btnsEl = document.getElementById('preview-buttons');
+    if (btnsEl) {
+        btnsEl.innerHTML = `
+            <span class="preview-btn" style="background:${primary['500']};color:${tokens.text_on_primary || '#fff'};">Primary</span>
+            <span class="preview-btn" style="background:${accent['500']};color:${tokens.text_on_accent || '#fff'};">Accent</span>
+            <span class="preview-btn" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};border:1.5px solid ${tokens.border_default || '#ddd'};">Surface</span>
+            <span class="preview-btn" style="background:transparent;color:${primary['500']};border:1.5px solid ${primary['500']};">Outline</span>
+        `;
+    }
+
+    // Inputs & badges
+    const inputsEl = document.getElementById('preview-inputs');
+    if (inputsEl) {
+        const sem = theme.colors?.semantic || {};
+        inputsEl.innerHTML = `
+            <input class="preview-input" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};border:1.5px solid ${tokens.border_default || '#ddd'};" value="Sample input" readonly>
+            <span class="preview-badge" style="background:${sem.success_light || '#d5f5e3'};color:${sem.success || '#27ae60'};">Success</span>
+            <span class="preview-badge" style="background:${sem.warning_light || '#fff3cd'};color:${sem.warning || '#f39c12'};">Warning</span>
+            <span class="preview-badge" style="background:${sem.error_light || '#f8d7da'};color:${sem.error || '#e74c3c'};">Error</span>
+            <span class="preview-badge" style="background:${sem.info_light || '#d1ecf1'};color:${sem.info || '#2980b9'};">Info</span>
+        `;
+    }
+
+    // Shadows
+    const shadowsEl = document.getElementById('preview-shadows');
+    if (shadowsEl) {
+        shadowsEl.innerHTML = ['sm','md','lg','glow'].map(s => {
+            const shadow = tokens[`shadow_${s}`] || 'none';
+            return `<div class="preview-shadow-card" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};box-shadow:${shadow};">${s.toUpperCase()}</div>`;
+        }).join('');
+    }
+
+    // Gradient
+    const gradientEl = document.getElementById('preview-gradient');
+    if (gradientEl) {
+        gradientEl.style.background = tokens.gradient_hero || `linear-gradient(135deg, ${primary['500']}, ${accent['500']})`;
     }
 }
 
-async function setThemeColor(themeId) {
-    applyColor(themeId);
-    themeSettings.active_theme = themeId;
-    saveThemeSettings();
-}
-
-function applyColor(themeId) {
-    const theme = themeSettings.themes.find(t => t.id === themeId);
-    if (theme) {
-        // Set root variables dynamically
-        document.documentElement.style.setProperty('--primary-500', theme.primary);
-        // Generate a lighter version for shades if possible, or just set the main ones
-        // For simplicity with current CSS system, we still use the data-attribute 
-        // which has the full palette, but we could eventually make it fully dynamic.
-        // For now, let's also set the data-attribute so existing palette works.
-        if (themeId === 'forest') {
-            document.documentElement.removeAttribute('data-theme-color');
-        } else {
-            document.documentElement.setAttribute('data-theme-color', themeId);
-        }
-    }
-    
-    document.querySelectorAll('.theme-option').forEach(opt => {
-        if (opt.getAttribute('data-theme-val') === themeId) {
-            opt.classList.add('active');
-        } else {
-            opt.classList.remove('active');
-        }
-    });
-}
-
-async function saveThemeSettings() {
-    try {
-        await api('/api/settings/themes', {
-            method: 'POST',
-            body: JSON.stringify(themeSettings)
-        });
-    } catch (e) {
-        console.error('Failed to save theme settings', e);
-    }
-}
+// saveThemeSettings moved to static/theme.js
 
 
+// ═══ SETTINGS TAB NAV ═══
 function showSettingsSection(section) {
-    // Update sections
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById('sec-' + section + (section === 'upi' ? '-settings' : '')).classList.add('active');
-    
-    // Update tabs
     document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + section).classList.add('active');
 }
 
+
+// ═══ INIT ═══
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     loadSettings();
 });
 
+document.addEventListener('themeLoaded', () => {
+    renderThemeOptions();
+});
 
 
 // ═══ SIDEBAR ═══
@@ -378,10 +678,10 @@ function renderUPIList() {
             <td>
                 ${upiSettings.active_upi === opt.id 
                     ? '<span class="badge badge-success">ACTIVE</span>' 
-                    : '<span class="badge badge-info" style="cursor:pointer;" onclick="setActiveUPI(\''+opt.id+'\')">SET AS ACTIVE</span>'}
+                    : `<span class="badge badge-info" style="cursor:pointer;" onclick="setActiveUPI('${opt.id}')">SET AS ACTIVE</span>`}
             </td>
             <td>
-                <button class="action-btn delete" onclick="deleteUPI(\''+opt.id+'\')" title="Delete">
+                <button class="action-btn delete" onclick="deleteUPI('${opt.id}')" title="Delete">
                     <i class="ph ph-trash"></i>
                 </button>
             </td>
