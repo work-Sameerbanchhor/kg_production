@@ -78,3 +78,5 @@ kalyan_fee_structure.csv
 kalyan_fee_structure_updated.csv
 *.db
 examples/docs/gemini_docs.md
+__pycache__/database.cpython-314.pyc
+__pycache__/fee_structure.cpython-314.pyc
