@@ -1136,15 +1136,48 @@ async function selectStudentForFee(studentId, name, admNo, course) {
                     <p style="font-weight:600;margin-bottom:8px;">Scan to Pay ₹<span id="qr-amount-display">0</span></p>
                     <img id="upi-qr-image" src="" style="max-width:200px;border-radius:8px;" alt="UPI QR">
                 </div>
-                <div class="form-section-title"><i class="ph ph-receipt"></i> Fee Breakup (Optional)</div>
-                <div class="form-group">
-                    <label class="form-label">Tuition</label>
-                    <input type="number" class="form-input" name="tuition" value="${structure ? structure.installments.first.tuition : 0}" step="0.01">
+                <div class="form-group full-width" style="margin-top: 20px;">
+                    <div class="form-section-title"><i class="ph ph-receipt"></i> Fee Breakup (Optional)</div>
                 </div>
+                \`;
+        
+        const headMapping = [
+            { label: "Tuition", val: structure ? structure.installments.first.tuition : 0, backendKey: "tuition" },
+            { label: "Practical", val: structure && structure.installments.first.practical ? structure.installments.first.practical : 0, backendKey: "practical" },
+            { label: "Various Heads", val: structure ? structure.installments.first.various : 0, backendKey: "various_heads" },
+            { label: "Admission Fees", key: "Admission Fees", backendKey: "admission_fee" },
+            { label: "Amalgamated Fund", key: "Amalgamated Fund", backendKey: "amalgamated_fund" },
+            { label: "Library Development", key: "Library Development", backendKey: "library_dev" },
+            { label: "Home Examination", key: "Home Examination", backendKey: "home_examination" },
+            { label: "Establishment Fund", key: "Establishment Fund", backendKey: "establishment_fund" },
+            { label: "Student Development", key: "Student Development", backendKey: "student_dev" },
+            { label: "College Development", key: "College Development", backendKey: "college_dev" },
+            { label: "Cycle Stand", key: "Cycle Stand", backendKey: "cycle_stand" },
+            { label: "Caution Money (Ref.)", key: "Caution Money (Ref.)", backendKey: "caution_money" },
+            { label: "Seminar / Workshop", key: "Seminar / Workshop", backendKey: "seminar_ws" },
+            { label: "Computer Maint.", key: "Computer Maint.", backendKey: "computer_maint" },
+            { label: "Physical Education", key: "Physical Education", backendKey: "physical_edu" },
+            { label: "Non Aided Staff Fund", key: "Non Aided Staff Fund", backendKey: "non_aided_staff" },
+            { label: "Gym Development", key: "Gym Development", backendKey: "gym_dev" }
+        ];
+
+        headMapping.forEach(h => {
+            let val = 0;
+            if (h.val !== undefined) {
+                val = h.val;
+            } else if (structure && structure.detailed_heads && structure.detailed_heads[h.key]) {
+                const headVal = structure.detailed_heads[h.key];
+                val = (headVal === '—' || headVal === '-' || !headVal) ? 0 : headVal;
+            }
+            container.innerHTML += \`
                 <div class="form-group">
-                    <label class="form-label">Practical</label>
-                    <input type="number" class="form-input" name="practical" value="${structure ? structure.installments.first.practical : 0}" step="0.01">
+                    <label class="form-label">\${h.label}</label>
+                    <input type="number" class="form-input" name="\${h.backendKey}" value="\${val}" step="0.01">
                 </div>
+            \`;
+        });
+
+        container.innerHTML += \`
             </div>
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary"><i class="ph ph-currency-circle-dollar"></i> Record Payment</button>
