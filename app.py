@@ -702,6 +702,37 @@ def generate_fee_receipt_pdf(fee_record_id: int, db: Session = Depends(get_db)):
 
     return FileResponse(path=pdf_path, filename=f"Receipt_{fee_record.receipt_no}.pdf", media_type='application/pdf')
 
+# ═══════════════════════════════════════════════════════════
+#  PDF UPLOAD API
+# ═══════════════════════════════════════════════════════════
+
+@app.post("/api/upload-pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    # Validate file type
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+
+    # Create directory if it doesn't exist
+    upload_dir = "Uploaded_pdfs"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Securely create the file path
+    # You could also append a timestamp here to prevent overwriting files with the same name
+    file_path = os.path.join(upload_dir, file.filename)
+
+    try:
+        # Read and save the file
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+            
+        return {
+            "message": "PDF uploaded successfully", 
+            "filename": file.filename, 
+            "file_path": file_path
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while saving the file: {str(e)}")
 
 # ═══════════════════════════════════════════════════════════
 #  DASHBOARD STATS
