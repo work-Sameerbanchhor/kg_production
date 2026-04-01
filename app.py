@@ -111,6 +111,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 os.makedirs("student_passport_photos", exist_ok=True)
 app.mount("/student_passport_photos", StaticFiles(directory="student_passport_photos"), name="student_passport_photos")
 
+os.makedirs("Uploaded_pdfs", exist_ok=True)
+app.mount("/Uploaded_pdfs", StaticFiles(directory="Uploaded_pdfs"), name="Uploaded_pdfs")
+
 # ═══════════════════════════════════════════════════════════
 #  ROOT - Serve HTML
 # ═══════════════════════════════════════════════════════════
@@ -782,6 +785,23 @@ async def upload_pdf(file: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while saving the file: {str(e)}")
+
+@app.get("/api/recent-pdfs")
+def get_recent_pdfs():
+    upload_dir = "Uploaded_pdfs"
+    if not os.path.exists(upload_dir):
+        return {"pdfs": []}
+    files = []
+    for f in os.listdir(upload_dir):
+        if f.lower().endswith(".pdf"):
+            path = os.path.join(upload_dir, f)
+            files.append({
+                "filename": f,
+                "url": f"/Uploaded_pdfs/{f}",
+                "time": os.path.getmtime(path)
+            })
+    files.sort(key=lambda x: x["time"], reverse=True)
+    return {"pdfs": files[:5]}
 
 # ═══════════════════════════════════════════════════════════
 #  DASHBOARD STATS

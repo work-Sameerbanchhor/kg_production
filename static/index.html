@@ -141,7 +141,15 @@
                 <!-- NEW SCANNER SECTION -->
                 <div class="card" style="margin-bottom: 20px; text-align:center; padding: 20px;">
                     <h4 style="margin-bottom:10px;"><i class="ph ph-scan"></i> Auto-fill via Form Scan</h4>
-                    <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 15px;">Upload a scanned PDF or Image of the admission form</p>
+                    
+                    <div id="recent-pdfs-container" style="display:none; margin-bottom:15px; background:var(--surface-bg); padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                        <p style="font-size: 0.85em; font-weight: 600; margin-bottom: 10px; text-align: left; color:var(--text-body);">Recently Uploaded PDFs (Click to Scan)</p>
+                        <div id="recent-pdfs-list" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+                            <!-- PDFs injected here -->
+                        </div>
+                    </div>
+
+                    <p style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 15px;">Or upload a new scanned PDF or Image of the admission form</p>
                     <input type="file" id="scanner-file" accept="application/pdf,image/*" multiple style="display:none;" onchange="processScannerFile(event)">
                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('scanner-file').click()">
                         <i class="ph ph-upload-simple"></i> Select File to Scan
@@ -575,6 +583,7 @@ function showSection(sectionId) {
     document.getElementById('page-title').textContent = sectionTitles[sectionId] || 'Dashboard';
 
     if (sectionId === 'dashboard') loadDashboard();
+    if (sectionId === 'add-student') loadRecentPDFs();
     if (sectionId === 'fee-structure') showFeeTab('ug');
 
     closeMobileSidebar();
@@ -1426,6 +1435,59 @@ async function processScannerFile(event) {
     } finally {
         if (progressDiv) progressDiv.style.display = 'none';
         fileInput.value = ''; // Reset input
+    }
+}
+
+async function loadRecentPDFs() {
+    try {
+        const data = await api('/api/recent-pdfs');
+        const container = document.getElementById('recent-pdfs-container');
+        const list = document.getElementById('recent-pdfs-list');
+        if (data.pdfs && data.pdfs.length > 0) {
+            container.style.display = 'block';
+            list.innerHTML = data.pdfs.map(pdf => `
+                <div class="recent-pdf-item" style="cursor:pointer; padding:8px 12px; background:var(--forest-100); color:var(--forest-900); border-radius:6px; font-size:0.85em; display:flex; align-items:center; gap:6px; white-space:nowrap; border:1px solid var(--forest-200); transition:background 0.2s;" onclick="scanRecentPDF('${pdf.url}', '${pdf.filename}')" onmouseover="this.style.background='var(--forest-200)'" onmouseout="this.style.background='var(--forest-100)'">
+                    <i class="ph-fill ph-file-pdf" style="color:#d32f2f;"></i>
+                    <span>${pdf.filename}</span>
+                </div>
+            `).join('');
+        } else {
+            container.style.display = 'none';
+        }
+    } catch(e) {
+        console.error('Failed to load recent PDFs', e);
+    }
+}
+
+async function scanRecentPDF(url, filename) {
+    const progressDiv = document.getElementById('scanner-progress');
+    if (progressDiv) progressDiv.style.display = 'block';
+    
+    try {
+        // Fetch the file as a blob
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Could not fetch the PDF document');
+        const blob = await res.blob();
+        
+        // Create a File object
+        const file = new File([blob], filename, { type: blob.type });
+        
+        // Mock an event to reuse processScannerFile
+        const mockEvent = {
+            target: {
+                files: [file],
+                value: ''
+            }
+        };
+        
+        await processScannerFile(mockEvent);
+    } catch(e) {
+        if (typeof showToast === 'function') {
+            showToast(`Error scanning PDF: ${e.message}`, 'error');
+        } else {
+            alert(`Error scanning PDF: ${e.message}`);
+        }
+        if (progressDiv) progressDiv.style.display = 'none';
     }
 }
 
