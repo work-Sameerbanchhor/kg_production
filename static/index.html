@@ -375,10 +375,16 @@
                         <!-- Declarations -->
                         <div style="border:1px solid var(--ivory-400); padding:15px; margin-top:20px; font-size:0.85em;">
                             <h5 style="text-align:center; margin-bottom:10px;">Students Declaration Form (विद्यार्थी का घोषणा पत्र)</h5>
-                            <p style="text-align:justify;">मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे द्वारा इस आवेदन में दी गयी जानकारी सत्य है। यदि यह जानकारी गलत या असत्य पाई जाती है तो मेरा प्रवेश निरस्त किया जा सकता है।</p>
+                            <label style="display: flex; gap: 10px; align-items: flex-start; text-align:justify; cursor: pointer;">
+                                <input type="checkbox" name="student_declaration" required style="margin-top: 4px; transform: scale(1.2);">
+                                <span>मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे द्वारा इस आवेदन में दी गयी जानकारी सत्य है। यदि यह जानकारी गलत या असत्य पाई जाती है तो मेरा प्रवेश निरस्त किया जा सकता है।</span>
+                            </label>
                             
                             <h5 style="text-align:center; margin-top:15px; margin-bottom:10px;">Parents Declaration Form (पालक का घोषणा पत्र)</h5>
-                            <p style="text-align:justify;">मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे पुत्र/पुत्री/पाल्य द्वारा इस आवेदन में दी गयी जानकारी सत्य है।</p>
+                            <label style="display: flex; gap: 10px; align-items: flex-start; text-align:justify; cursor: pointer;">
+                                <input type="checkbox" name="parent_declaration" required style="margin-top: 4px; transform: scale(1.2);">
+                                <span>मैं सत्यनिष्ठा से शपथ लेता हूँ कि मेरे पुत्र/पुत्री/पाल्य द्वारा इस आवेदन में दी गयी जानकारी सत्य है।</span>
+                            </label>
                         </div>
 
                         <div style="display:flex; justify-content:space-between; margin-top:30px; margin-bottom:20px; text-align:center; gap:20px; font-weight:bold;">
