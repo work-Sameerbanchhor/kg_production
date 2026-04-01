@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import socket
+import netifaces
 
 load_dotenv()
 
@@ -50,16 +51,76 @@ import json
 PORT = 52002  # Global port variable
 aio_zeroconf_instance = None
 
+def get_all_network_ips():
+    """
+    Get all IPv4 addresses grouped by type using netifaces.
+    Returns a dict with keys: 'wifi', 'ethernet', 'self_assign'
+    Each value is a list of IPs found for that category.
+    Falls back to socket-based detection if netifaces is unavailable.
+    """
+    wifi_ips = []
+    ethernet_ips = []
+    self_assign_ips = []
+
+    try:
+        for iface in netifaces.interfaces():
+            addrs = netifaces.ifaddresses(iface)
+            ipv4_list = addrs.get(netifaces.AF_INET, [])
+            for entry in ipv4_list:
+                ip = entry.get("addr", "")
+                if not ip or ip.startswith("127."):
+                    continue
+                if ip.startswith("169.254."):
+                    # APIPA / self-assigned (no DHCP / link-local)
+                    self_assign_ips.append(ip)
+                elif ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172."):
+                    wifi_ips.append(ip)
+                else:
+                    ethernet_ips.append(ip)
+    except Exception:
+        # Fallback: socket-based
+        try:
+            hostname = socket.gethostname()
+            for info in socket.getaddrinfo(hostname, None):
+                ip = info[4][0]
+                if ip.startswith("127.") or ":" in ip:
+                    continue
+                if ip.startswith("169.254."):
+                    self_assign_ips.append(ip)
+                elif ip.startswith("192.168.") or ip.startswith("10.") or ip.startswith("172."):
+                    wifi_ips.append(ip)
+                else:
+                    ethernet_ips.append(ip)
+        except Exception:
+            pass
+
+    return {
+        "wifi": list(set(wifi_ips)),
+        "ethernet": list(set(ethernet_ips)),
+        "self_assign": list(set(self_assign_ips)),
+    }
+
+
 def get_local_ip():
-    """Get local network IP (WiFi/LAN IP like 192.168.x.x)"""
+    """Primary LAN IP (wifi/ethernet) for mDNS, falls back to 127.0.0.1"""
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
         s.close()
         return ip
-    except:
+    except Exception:
         return "127.0.0.1"
+
+
+def get_wifi_ip():
+    return get_all_network_ips()["wifi"][0] if get_all_network_ips()["wifi"] else None
+
+
+def get_ethernet_ip():
+    ips = get_all_network_ips()
+    # Return self-assigned (APIPA) if present, else real ethernet
+    return (ips["self_assign"] or ips["ethernet"] or [None])[0]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -911,11 +972,24 @@ if __name__ == "__main__":
     import uvicorn
     import webbrowser
 
-    local_ip = get_local_ip()
-
     print("\n🚀 Server starting...\n")
-    print(f"👉 Local URL:    http://127.0.0.1:{PORT}")
-    print(f"👉 Network URL:  http://{local_ip}:{PORT}\n")
+    print(f"   👉 Local URL:      http://127.0.0.1:{PORT}")
+
+    network_ips = get_all_network_ips()
+
+    # WiFi / LAN URLs (192.168.x.x, 10.x.x.x, 172.x.x.x)
+    for ip in network_ips["wifi"]:
+        print(f"   👉 WiFi URL:       http://{ip}:{PORT}")
+
+    # Real Ethernet URLs (non-APIPA routed IPs that aren't private ranges)
+    for ip in network_ips["ethernet"]:
+        print(f"   👉 Ethernet URL:   http://{ip}:{PORT}")
+
+    # Self-assigned / APIPA (169.254.x.x) - link-local, no DHCP
+    for ip in network_ips["self_assign"]:
+        print(f"   👉 Self-Assign IP: http://{ip}:{PORT}")
+
+    print()  # blank line for readability
 
     # Auto open browser
     webbrowser.open(f"http://127.0.0.1:{PORT}")
@@ -924,5 +998,5 @@ if __name__ == "__main__":
         "app:app",
         host="0.0.0.0",   # allows network access
         port=PORT,
-        reload=True      # 🔥 auto reload
+        reload=True        # 🔥 auto reload
     )
