@@ -367,6 +367,9 @@
                 <button class="tab-btn" id="tab-upi" onclick="showSettingsSection('upi')">
                     <i class="ph ph-qr-code"></i> UPI Payments
                 </button>
+                <button class="tab-btn" id="tab-fees" onclick="showSettingsSection('fees')">
+                    <i class="ph ph-list-numbers"></i> Legacy Fee Structure
+                </button>
             </div>
 
             <!-- ════ APPEARANCE SETTINGS ════ -->
@@ -488,6 +491,122 @@
                 </div>
             </div>
 
+            <!-- ════ FEES STRUCTURE SETTINGS ════ -->
+            <div class="section" id="sec-fees">
+                <div class="page-intro">
+                    <p>Manage the Legacy 2024 Fee Structure configurations</p>
+                </div>
+                
+                <div class="tabs" style="font-size: 0.85rem; margin-bottom: 20px;">
+                    <button class="tab-btn active" id="subtab-courses" onclick="showFeeSubtab('courses')">Courses</button>
+                    <button class="tab-btn" id="subtab-installments" onclick="showFeeSubtab('installments')">Installments</button>
+                    <button class="tab-btn" id="subtab-heads" onclick="showFeeSubtab('heads')">Detailed Heads</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <!-- Courses Subtab -->
+                    <div id="fee-courses-container" style="display: block;">
+                        <div class="card-title"><i class="ph ph-books"></i> Manage Courses</div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <input type="text" id="new-course-name" class="form-input" placeholder="Enter new course name" style="max-width: 300px;">
+                            <button class="btn btn-primary" onclick="addCourse()"><i class="ph ph-plus"></i> Add</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead><tr><th>Course Name</th><th style="width: 100px;">Actions</th></tr></thead>
+                                <tbody id="courses-list-tbody"><tr><td colspan="2">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Installments Subtab -->
+                    <div id="fee-installments-container" style="display: none;">
+                        <div class="card-title"><i class="ph ph-money"></i> Manage Installments</div>
+                        <div style="margin-bottom: 20px;">
+                            <label class="form-label">Select Course</label>
+                            <select id="inst-course-select" class="form-input" style="max-width: 300px;" onchange="renderInstallmentInputs()"></select>
+                            <button class="btn btn-secondary" onclick="initCourseInstallment()" style="margin-top: 10px;" id="btn-init-inst"><i class="ph ph-plus"></i> Initialize Data for Selected Course</button>
+                        </div>
+                        <div id="installment-forms" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div style="padding: 16px; border: 1px solid var(--ivory-300); border-radius: 8px;">
+                                    <h4 style="margin-bottom: 12px;">First Installment</h4>
+                                    <div class="form-group">
+                                        <label class="form-label">Various / Extra</label>
+                                        <input type="number" class="form-input" id="inst-1-various" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tuition</label>
+                                        <input type="number" class="form-input" id="inst-1-tuition" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Practical</label>
+                                        <input type="number" class="form-input" id="inst-1-practical" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" style="font-weight: bold;">First Total (Auto)</label>
+                                        <input type="number" class="form-input" id="inst-1-total" placeholder="0" readonly style="background: var(--ivory-200);">
+                                    </div>
+                                </div>
+                                <div style="padding: 16px; border: 1px solid var(--ivory-300); border-radius: 8px;">
+                                    <h4 style="margin-bottom: 12px;">Second Installment</h4>
+                                    <div class="form-group">
+                                        <label class="form-label">Various / Extra</label>
+                                        <input type="number" class="form-input" id="inst-2-various" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tuition</label>
+                                        <input type="number" class="form-input" id="inst-2-tuition" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Practical</label>
+                                        <input type="number" class="form-input" id="inst-2-practical" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" style="font-weight: bold;">Second Total (Auto)</label>
+                                        <input type="number" class="form-input" id="inst-2-total" placeholder="0" readonly style="background: var(--ivory-200);">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; text-align: right;">
+                                <h3 style="color: var(--text-dark);">Year Total: ₹<span id="inst-year-total">0</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Heads Subtab -->
+                    <div id="fee-heads-container" style="display: none;">
+                        <div class="card-title"><i class="ph ph-receipt"></i> Detailed Fee Heads</div>
+                         <div style="margin-bottom: 20px;">
+                            <label class="form-label">Select Group</label>
+                            <select id="heads-group-select" class="form-input" style="max-width: 300px;" onchange="renderHeadsInputs()"></select>
+                            <button class="btn btn-secondary" onclick="addHeadGroup()" style="margin-top: 10px;"><i class="ph ph-plus"></i> Add New Group Here</button>
+                        </div>
+                        <div id="heads-forms" style="display: none;">
+                            <div style="margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-end;">
+                                <div class="form-group" style="margin: 0; flex: 1; max-width: 200px;">
+                                    <label class="form-label">Add New Field</label>
+                                    <input type="text" id="new-head-field-name" class="form-input" placeholder="Field name">
+                                </div>
+                                <button class="btn btn-secondary" onclick="addHeadField()">Add Field</button>
+                            </div>
+                            <div class="form-grid" id="heads-inputs-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                                <!-- Generated -->
+                            </div>
+                             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--ivory-300); text-align: right;">
+                                <h3 style="color: var(--text-dark);">Total: ₹<span id="heads-total">0</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; display: flex; justify-content: flex-end; padding-top: 16px; border-top: 2px solid var(--ivory-200);">
+                        <button class="btn btn-primary" onclick="saveFeeStructure()">
+                            <i class="ph ph-floppy-disk"></i> Save Fee Structure
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -604,6 +723,7 @@ function showSettingsSection(section) {
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     loadSettings();
+    loadFeeStructure();
 });
 
 document.addEventListener('themeLoaded', () => {
@@ -748,6 +868,237 @@ async function saveSettings() {
         body: JSON.stringify(upiSettings)
     });
     renderUPIList();
+}
+
+// ═══ FEE STRUCTURE LOGIC ═══
+let feeStructureData = { COURSES: [], FEE_INSTALLMENTS: {}, FEE_HEADS_DETAIL: {} };
+
+async function loadFeeStructure() {
+    try {
+        feeStructureData = await api('/api/settings/fee-structure');
+        if(!feeStructureData.COURSES) feeStructureData.COURSES = [];
+        if(!feeStructureData.FEE_INSTALLMENTS) feeStructureData.FEE_INSTALLMENTS = {};
+        if(!feeStructureData.FEE_HEADS_DETAIL) feeStructureData.FEE_HEADS_DETAIL = {};
+        renderFeeCourses();
+        populateSelectors();
+    } catch (e) {
+        showToast('Failed to load fee structure', 'error');
+    }
+}
+
+function showFeeSubtab(tab) {
+    document.getElementById('subtab-courses').classList.remove('active');
+    document.getElementById('subtab-installments').classList.remove('active');
+    document.getElementById('subtab-heads').classList.remove('active');
+    document.getElementById(`subtab-${tab}`).classList.add('active');
+
+    document.getElementById('fee-courses-container').style.display = 'none';
+    document.getElementById('fee-installments-container').style.display = 'none';
+    document.getElementById('fee-heads-container').style.display = 'none';
+    document.getElementById(`fee-${tab}-container`).style.display = 'block';
+    
+    if (tab === 'installments' || tab === 'heads') {
+        populateSelectors();
+    }
+}
+
+function renderFeeCourses() {
+    const tbody = document.getElementById('courses-list-tbody');
+    if (!feeStructureData.COURSES.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">No courses added</td></tr>';
+        return;
+    }
+    tbody.innerHTML = feeStructureData.COURSES.map((c, i) => `
+        <tr>
+            <td><strong>${c}</strong></td>
+            <td><button class="action-btn delete" onclick="deleteCourse(${i})"><i class="ph ph-trash"></i></button></td>
+        </tr>
+    `).join('');
+}
+
+function addCourse() {
+    const input = document.getElementById('new-course-name');
+    const name = input.value.trim();
+    if (name && !feeStructureData.COURSES.includes(name)) {
+        feeStructureData.COURSES.push(name);
+        input.value = '';
+        renderFeeCourses();
+    }
+}
+
+function deleteCourse(index) {
+    const course = feeStructureData.COURSES[index];
+    if (confirm(`Remove course: ${course}?`)) {
+        feeStructureData.COURSES.splice(index, 1);
+        renderFeeCourses();
+    }
+}
+
+function populateSelectors() {
+    // Installments Selector
+    const instSelect = document.getElementById('inst-course-select');
+    const savedInstCourse = instSelect.value;
+    instSelect.innerHTML = '<option value="">-- Select Course --</option>' + 
+        feeStructureData.COURSES.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (feeStructureData.COURSES.includes(savedInstCourse)) instSelect.value = savedInstCourse;
+    renderInstallmentInputs();
+
+    // Heads Selector
+    const headsSelect = document.getElementById('heads-group-select');
+    const savedHeadGroup = headsSelect.value;
+    const groups = Object.keys(feeStructureData.FEE_HEADS_DETAIL);
+    headsSelect.innerHTML = '<option value="">-- Select Group --</option>' + 
+        groups.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (groups.includes(savedHeadGroup)) headsSelect.value = savedHeadGroup;
+    renderHeadsInputs();
+}
+
+function renderInstallmentInputs() {
+    const course = document.getElementById('inst-course-select').value;
+    const formsDiv = document.getElementById('installment-forms');
+    const initBtn = document.getElementById('btn-init-inst');
+    
+    if (!course) {
+        formsDiv.style.display = 'none';
+        initBtn.style.display = 'none';
+        return;
+    }
+    
+    if (!feeStructureData.FEE_INSTALLMENTS[course]) {
+        formsDiv.style.display = 'none';
+        initBtn.style.display = 'inline-block';
+        return;
+    }
+    
+    initBtn.style.display = 'none';
+    formsDiv.style.display = 'block';
+    
+    const data = feeStructureData.FEE_INSTALLMENTS[course];
+    const populate = (prefix, instData) => {
+        document.getElementById(`${prefix}-various`).value = instData?.various || 0;
+        document.getElementById(`${prefix}-tuition`).value = instData?.tuition || 0;
+        document.getElementById(`${prefix}-practical`).value = instData?.practical || 0;
+        document.getElementById(`${prefix}-total`).value = instData?.total || 0;
+    };
+    
+    populate('inst-1', data.first);
+    populate('inst-2', data.second);
+    document.getElementById('inst-year-total').innerText = data.year_total || 0;
+}
+
+function initCourseInstallment() {
+    const course = document.getElementById('inst-course-select').value;
+    if (!course) return;
+    feeStructureData.FEE_INSTALLMENTS[course] = {
+        first: { various: 0, tuition: 0, practical: 0, total: 0 },
+        second: { various: 0, tuition: 0, practical: 0, total: 0 },
+        year_total: 0
+    };
+    renderInstallmentInputs();
+}
+
+function updateInstallments() {
+    const course = document.getElementById('inst-course-select').value;
+    if (!course || !feeStructureData.FEE_INSTALLMENTS[course]) return;
+    
+    const readTotal = (prefix) => {
+        const various = parseFloat(document.getElementById(`${prefix}-various`).value) || 0;
+        const tuition = parseFloat(document.getElementById(`${prefix}-tuition`).value) || 0;
+        const practical = parseFloat(document.getElementById(`${prefix}-practical`).value) || 0;
+        const total = various + tuition + practical;
+        document.getElementById(`${prefix}-total`).value = total;
+        
+        feeStructureData.FEE_INSTALLMENTS[course][prefix === 'inst-1' ? 'first' : 'second'] = {
+            various, tuition, practical, total
+        };
+        return total;
+    };
+    
+    const t1 = readTotal('inst-1');
+    const t2 = readTotal('inst-2');
+    const year_total = t1 + t2;
+    document.getElementById('inst-year-total').innerText = year_total;
+    feeStructureData.FEE_INSTALLMENTS[course].year_total = year_total;
+}
+
+function addHeadGroup() {
+    const course = prompt("Enter a group map key (e.g. M.Sc. or B.A.):");
+    if (course && !feeStructureData.FEE_HEADS_DETAIL[course]) {
+        feeStructureData.FEE_HEADS_DETAIL[course] = { "TOTAL": 0 };
+        populateSelectors();
+        document.getElementById('heads-group-select').value = course;
+        renderHeadsInputs();
+    }
+}
+
+function addHeadField() {
+    const group = document.getElementById('heads-group-select').value;
+    const fieldNode = document.getElementById('new-head-field-name');
+    const field = fieldNode.value.trim();
+    if (!group || !field) return;
+    
+    if (feeStructureData.FEE_HEADS_DETAIL[group][field] === undefined) {
+        feeStructureData.FEE_HEADS_DETAIL[group][field] = 0;
+        fieldNode.value = '';
+        renderHeadsInputs();
+    }
+}
+
+function renderHeadsInputs() {
+    const group = document.getElementById('heads-group-select').value;
+    const formsDiv = document.getElementById('heads-forms');
+    const grid = document.getElementById('heads-inputs-grid');
+    
+    if (!group) {
+        formsDiv.style.display = 'none';
+        return;
+    }
+    
+    formsDiv.style.display = 'block';
+    const data = feeStructureData.FEE_HEADS_DETAIL[group];
+    
+    grid.innerHTML = Object.keys(data).filter(k => k !== 'TOTAL').map(k => `
+        <div class="form-group" style="position:relative;">
+            <label class="form-label">${k}</label>
+            <input type="number" class="form-input" value="${data[k]}" oninput="updateHeads('${k.replace(/'/g, "\\'")}', this.value)">
+            <button onclick="removeHeadField('${k.replace(/'/g, "\\'")}')" style="position:absolute; top: 0; right: 0; background:none; border:none; color:var(--danger); cursor:pointer;"><i class="ph ph-x"></i></button>
+        </div>
+    `).join('');
+    
+    document.getElementById('heads-total').innerText = data.TOTAL || 0;
+}
+
+function updateHeads(key, val) {
+    const group = document.getElementById('heads-group-select').value;
+    feeStructureData.FEE_HEADS_DETAIL[group][key] = parseFloat(val) || 0;
+    
+    let total = 0;
+    for (let k in feeStructureData.FEE_HEADS_DETAIL[group]) {
+        if (k !== 'TOTAL') total += feeStructureData.FEE_HEADS_DETAIL[group][k];
+    }
+    feeStructureData.FEE_HEADS_DETAIL[group].TOTAL = total;
+    document.getElementById('heads-total').innerText = total;
+}
+
+function removeHeadField(key) {
+    const group = document.getElementById('heads-group-select').value;
+    if (confirm(`Remove field [ ${key} ] ?`)) {
+        delete feeStructureData.FEE_HEADS_DETAIL[group][key];
+        updateHeads('', 0); // triggers total recalc
+        renderHeadsInputs();
+    }
+}
+
+async function saveFeeStructure() {
+    try {
+        await api('/api/settings/fee-structure', {
+            method: 'POST',
+            body: JSON.stringify(feeStructureData)
+        });
+        showToast('Fee structure saved successfully!', 'success');
+    } catch (e) {
+        showToast(e.message || 'Failed to save fee structure', 'error');
+    }
 }
 </script>
 </body>

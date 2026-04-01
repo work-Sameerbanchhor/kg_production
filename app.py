@@ -6,7 +6,6 @@ Admission management + Fee management
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
-from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import socket
@@ -34,9 +33,8 @@ except ImportError:
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
-from sqlalchemy import or_
-from database import init_db, get_db, Student, FeeRecord
-from fee_structure import COURSES, get_fee_structure, get_all_fee_structures, FEE_INSTALLMENTS
+from database import init_db, get_db, save_db, Struct
+from fee_structure import get_fee_structure, get_all_fee_structures, load_fee_data, save_fee_data, _COURSES_BASE
 from datetime import datetime
 import csv
 import io
@@ -196,7 +194,8 @@ async def settings_page():
 
 @app.get("/api/courses")
 def list_courses():
-    return {"courses": COURSES}
+    data = load_fee_data()
+    return {"courses": data.get("COURSES", _COURSES_BASE)}
 
 
 # ═══════════════════════════════════════════════════════════
@@ -223,28 +222,34 @@ STUDENT_FIELDS = [
 ]
 
 
-def student_to_dict(s: Student) -> dict:
-    return {field: getattr(s, field, "") or "" for field in STUDENT_FIELDS} | {
-        "id": s.id,
-        "created_at": str(s.created_at) if s.created_at else "",
-        "updated_at": str(s.updated_at) if s.updated_at else "",
+def student_to_dict(s: dict) -> dict:
+    return {field: s.get(field, "") or "" for field in STUDENT_FIELDS} | {
+        "id": s.get("id"),
+        "created_at": str(s.get("created_at", "")),
+        "updated_at": str(s.get("updated_at", "")),
     }
 
 
 @app.post("/api/students")
-async def create_student(data: dict, db: Session = Depends(get_db)):
+async def create_student(data: dict, db: dict = Depends(get_db)):
     # Check duplicate admission_no
-    existing = db.query(Student).filter(Student.admission_no == data.get("admission_no")).first()
+    existing = next((s for s in db["students"] if s.get("admission_no") == data.get("admission_no")), None)
     if existing:
         raise HTTPException(status_code=400, detail="Admission number already exists")
 
-    student = Student()
+    student_id = db["student_id_seq"]
+    db["student_id_seq"] += 1
+    
+    student = {
+        "id": student_id,
+        "created_at": str(datetime.utcnow()),
+        "updated_at": str(datetime.utcnow())
+    }
     for field in STUDENT_FIELDS:
-        setattr(student, field, data.get(field, ""))
+        student[field] = data.get(field, "")
 
-    db.add(student)
-    db.commit()
-    db.refresh(student)
+    db["students"].append(student)
+    save_db(db)
     return {"message": "Student added successfully", "student": student_to_dict(student)}
 
 
@@ -252,18 +257,17 @@ async def create_student(data: dict, db: Session = Depends(get_db)):
 def list_students(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db),
+    db: dict = Depends(get_db),
 ):
-    total = db.query(Student).count()
-    students = (
-        db.query(Student)
-        .order_by(Student.id.desc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-        .all()
-    )
+    students_list = sorted(db["students"], key=lambda x: x.get("id", 0), reverse=True)
+    total = len(students_list)
+    
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_students = students_list[start:end]
+
     return {
-        "students": [student_to_dict(s) for s in students],
+        "students": [student_to_dict(s) for s in paginated_students],
         "total": total,
         "page": page,
         "per_page": per_page,
@@ -278,35 +282,34 @@ def search_students(
     category: str = Query(""),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db),
+    db: dict = Depends(get_db),
 ):
-    query = db.query(Student)
+    filtered_students = db["students"]
 
     if q:
-        search_term = f"%{q}%"
-        query = query.filter(
-            or_(
-                Student.student_name.ilike(search_term),
-                Student.admission_no.ilike(search_term),
-                Student.mobile_no.ilike(search_term),
-            )
-        )
+        q_lower = q.lower()
+        filtered_students = [
+            s for s in filtered_students
+            if q_lower in s.get("student_name", "").lower() or
+               q_lower in s.get("admission_no", "").lower() or
+               q_lower in s.get("mobile_no", "").lower()
+        ]
 
     if course:
-        query = query.filter(Student.course == course)
+        filtered_students = [s for s in filtered_students if s.get("course") == course]
 
     if category:
-        query = query.filter(Student.category == category)
+        filtered_students = [s for s in filtered_students if s.get("category") == category]
 
-    total = query.count()
-    students = (
-        query.order_by(Student.student_name)
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-        .all()
-    )
+    filtered_students = sorted(filtered_students, key=lambda x: x.get("student_name", ""))
+    total = len(filtered_students)
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_students = filtered_students[start:end]
+
     return {
-        "students": [student_to_dict(s) for s in students],
+        "students": [student_to_dict(s) for s in paginated_students],
         "total": total,
         "page": page,
         "per_page": per_page,
@@ -315,37 +318,37 @@ def search_students(
 
 
 @app.get("/api/students/{student_id}")
-def get_student(student_id: int, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+def get_student(student_id: int, db: dict = Depends(get_db)):
+    student = next((s for s in db["students"] if s.get("id") == student_id), None)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     return {"student": student_to_dict(student)}
 
 
 @app.put("/api/students/{student_id}")
-async def update_student(student_id: int, data: dict, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+async def update_student(student_id: int, data: dict, db: dict = Depends(get_db)):
+    student = next((s for s in db["students"] if s.get("id") == student_id), None)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
     for field in STUDENT_FIELDS:
         if field in data:
-            setattr(student, field, data[field])
+            student[field] = data[field]
 
-    student.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(student)
+    student["updated_at"] = str(datetime.utcnow())
+    save_db(db)
     return {"message": "Student updated successfully", "student": student_to_dict(student)}
 
 
 @app.delete("/api/students/{student_id}")
-def delete_student(student_id: int, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+def delete_student(student_id: int, db: dict = Depends(get_db)):
+    student = next((s for s in db["students"] if s.get("id") == student_id), None)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    db.delete(student)
-    db.commit()
+    db["students"] = [s for s in db["students"] if s.get("id") != student_id]
+    db["fee_records"] = [f for f in db["fee_records"] if f.get("student_id") != student_id]
+    save_db(db)
     return {"message": "Student deleted successfully"}
 
 
@@ -591,7 +594,7 @@ CSV_HEADER_MAP = {
 
 
 @app.post("/api/students/import-csv")
-async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def import_csv(file: UploadFile = File(...), db: dict = Depends(get_db)):
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are accepted")
 
@@ -610,23 +613,30 @@ async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
                 skipped += 1
                 continue
 
-            existing = db.query(Student).filter(Student.admission_no == admission_no).first()
+            existing = next((s for s in db["students"] if s.get("admission_no") == admission_no), None)
             if existing:
                 skipped += 1
                 continue
 
-            student = Student()
+            student_id = db["student_id_seq"]
+            db["student_id_seq"] += 1
+            student = {
+                "id": student_id,
+                "created_at": str(datetime.utcnow()),
+                "updated_at": str(datetime.utcnow())
+            }
+            
             for csv_col, db_col in CSV_HEADER_MAP.items():
                 val = row.get(csv_col, "").strip()
-                setattr(student, db_col, val)
+                student[db_col] = val
 
-            db.add(student)
+            db["students"].append(student)
             imported += 1
         except Exception as e:
             errors.append(f"Row {i}: {str(e)}")
             skipped += 1
 
-    db.commit()
+    save_db(db)
     return {
         "message": f"Import complete: {imported} imported, {skipped} skipped",
         "imported": imported,
@@ -657,86 +667,96 @@ def fee_structure_for_course(course: str):
 # ═══════════════════════════════════════════════════════════
 
 @app.post("/api/fees/pay")
-async def record_fee_payment(data: dict, db: Session = Depends(get_db)):
+async def record_fee_payment(data: dict, db: dict = Depends(get_db)):
     student_id = data.get("student_id")
     if not student_id:
         raise HTTPException(status_code=400, detail="student_id is required")
 
-    student = db.query(Student).filter(Student.id == student_id).first()
+    try:
+        student_id = int(student_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid student_id format")
+
+    student = next((s for s in db["students"] if s.get("id") == student_id), None)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
     receipt_no = f"{random.randint(10000, 99999)}"
 
-    fee_record = FeeRecord(
-        student_id=student_id,
-        receipt_no=receipt_no,
-        date=data.get("date", datetime.now().strftime("%d-%m-%Y")),
-        academic_year=data.get("academic_year", "2024-25"),
-        fee_period=data.get("fee_period", ""),
-        installment=data.get("installment", "FIRST"),
-        tuition=float(data.get("tuition", 0)),
-        various_heads=float(data.get("various_heads", 0)),
-        practical=float(data.get("practical", 0)),
-        admission_fee=float(data.get("admission_fee", 0)),
-        amalgamated_fund=float(data.get("amalgamated_fund", 0)),
-        library_dev=float(data.get("library_dev", 0)),
-        home_examination=float(data.get("home_examination", 0)),
-        establishment_fund=float(data.get("establishment_fund", 0)),
-        student_dev=float(data.get("student_dev", 0)),
-        college_dev=float(data.get("college_dev", 0)),
-        cycle_stand=float(data.get("cycle_stand", 0)),
-        caution_money=float(data.get("caution_money", 0)),
-        seminar_ws=float(data.get("seminar_ws", 0)),
-        computer_maint=float(data.get("computer_maint", 0)),
-        physical_edu=float(data.get("physical_edu", 0)),
-        non_aided_staff=float(data.get("non_aided_staff", 0)),
-        gym_dev=float(data.get("gym_dev", 0)),
-        total_amount=float(data.get("total_amount", 0)),
-        payment_mode=data.get("payment_mode", "CASH"),
-        payment_status="PAID",
-    )
+    fee_id = db["fee_id_seq"]
+    db["fee_id_seq"] += 1
+    
+    fee_record = {
+        "id": fee_id,
+        "student_id": student_id,
+        "receipt_no": receipt_no,
+        "date": data.get("date", datetime.now().strftime("%d-%m-%Y")),
+        "academic_year": data.get("academic_year", "2024-25"),
+        "fee_period": data.get("fee_period", ""),
+        "installment": data.get("installment", "FIRST"),
+        "tuition": float(data.get("tuition") or 0),
+        "various_heads": float(data.get("various_heads") or 0),
+        "practical": float(data.get("practical") or 0),
+        "admission_fee": float(data.get("admission_fee") or 0),
+        "amalgamated_fund": float(data.get("amalgamated_fund") or 0),
+        "library_dev": float(data.get("library_dev") or 0),
+        "home_examination": float(data.get("home_examination") or 0),
+        "establishment_fund": float(data.get("establishment_fund") or 0),
+        "student_dev": float(data.get("student_dev") or 0),
+        "college_dev": float(data.get("college_dev") or 0),
+        "cycle_stand": float(data.get("cycle_stand") or 0),
+        "caution_money": float(data.get("caution_money") or 0),
+        "seminar_ws": float(data.get("seminar_ws") or 0),
+        "computer_maint": float(data.get("computer_maint") or 0),
+        "physical_edu": float(data.get("physical_edu") or 0),
+        "non_aided_staff": float(data.get("non_aided_staff") or 0),
+        "gym_dev": float(data.get("gym_dev") or 0),
+        "total_amount": float(data.get("total_amount") or 0),
+        "payment_mode": data.get("payment_mode", "CASH"),
+        "payment_status": "PAID",
+        "created_at": str(datetime.utcnow())
+    }
 
-    db.add(fee_record)
-    db.commit()
-    db.refresh(fee_record)
+    db["fee_records"].append(fee_record)
+    save_db(db)
 
     return {
         "message": "Fee payment recorded successfully",
         "receipt_no": receipt_no,
-        "fee_record_id": fee_record.id,
+        "fee_record_id": fee_id,
     }
 
 
 @app.get("/api/fees/student/{student_id}")
-def get_student_fees(student_id: int, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+def get_student_fees(student_id: int, db: dict = Depends(get_db)):
+    student = next((s for s in db["students"] if s.get("id") == student_id), None)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    records = db.query(FeeRecord).filter(FeeRecord.student_id == student_id).order_by(FeeRecord.id.desc()).all()
+    records = [f for f in db["fee_records"] if f.get("student_id") == student_id]
+    records = sorted(records, key=lambda x: x.get("id", 0), reverse=True)
 
-    total_paid = sum(r.total_amount for r in records)
-    fee_structure = get_fee_structure(student.course)
+    total_paid = sum(r.get("total_amount", 0) for r in records)
+    fee_structure = get_fee_structure(student.get("course", ""))
     year_total = fee_structure["installments"]["year_total"] if fee_structure else 0
 
     return {
-        "student_name": student.student_name,
-        "admission_no": student.admission_no,
-        "course": student.course,
+        "student_name": student.get("student_name", ""),
+        "admission_no": student.get("admission_no", ""),
+        "course": student.get("course", ""),
         "total_fee": year_total,
         "total_paid": total_paid,
         "balance": year_total - total_paid,
         "records": [
             {
-                "id": r.id,
-                "receipt_no": r.receipt_no,
-                "date": r.date,
-                "academic_year": r.academic_year,
-                "installment": r.installment,
-                "total_amount": r.total_amount,
-                "payment_mode": r.payment_mode,
-                "payment_status": r.payment_status,
+                "id": r.get("id"),
+                "receipt_no": r.get("receipt_no"),
+                "date": r.get("date"),
+                "academic_year": r.get("academic_year"),
+                "installment": r.get("installment"),
+                "total_amount": r.get("total_amount"),
+                "payment_mode": r.get("payment_mode"),
+                "payment_status": r.get("payment_status"),
             }
             for r in records
         ],
@@ -744,14 +764,17 @@ def get_student_fees(student_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/fees/receipt/{fee_record_id}/pdf")
-def generate_fee_receipt_pdf(fee_record_id: int, db: Session = Depends(get_db)):
-    fee_record = db.query(FeeRecord).filter(FeeRecord.id == fee_record_id).first()
-    if not fee_record:
+def generate_fee_receipt_pdf(fee_record_id: int, db: dict = Depends(get_db)):
+    fee_record_dict = next((f for f in db["fee_records"] if f.get("id") == fee_record_id), None)
+    if not fee_record_dict:
         raise HTTPException(status_code=404, detail="Fee record not found")
 
-    student = db.query(Student).filter(Student.id == fee_record.student_id).first()
-    if not student:
+    student_dict = next((s for s in db["students"] if s.get("id") == fee_record_dict.get("student_id")), None)
+    if not student_dict:
         raise HTTPException(status_code=404, detail="Student not found")
+
+    fee_record = Struct(**fee_record_dict)
+    student = Struct(**student_dict)
 
     os.makedirs("export_pdf", exist_ok=True)
     pdf_path = f"export_pdf/Receipt_{fee_record.receipt_no}.pdf"
@@ -869,45 +892,48 @@ def get_recent_pdfs():
 # ═══════════════════════════════════════════════════════════
 
 @app.get("/api/dashboard")
-def dashboard_stats(db: Session = Depends(get_db)):
-    total_students = db.query(Student).count()
-    total_fee_records = db.query(FeeRecord).count()
+def dashboard_stats(db: dict = Depends(get_db)):
+    total_students = len(db["students"])
+    total_fee_records = len(db["fee_records"])
     
-    from sqlalchemy import func
-    course_counts = (
-        db.query(Student.course, func.count(Student.id))
-        .group_by(Student.course)
-        .all()
-    )
-
-    gender_counts = (
-        db.query(Student.gender, func.count(Student.id))
-        .group_by(Student.gender)
-        .all()
-    )
-
-    category_counts = (
-        db.query(Student.category, func.count(Student.id))
-        .group_by(Student.category)
-        .all()
-    )
-
-    fees_sum = db.query(func.sum(FeeRecord.total_amount)).scalar() or 0
+    course_counts_dict = {}
+    gender_counts_dict = {}
+    category_counts_dict = {}
+    
+    for s in db["students"]:
+        course = s.get("course", "")
+        gender = s.get("gender", "")
+        category = s.get("category", "")
+        
+        course_counts_dict[course] = course_counts_dict.get(course, 0) + 1
+        gender_counts_dict[gender] = gender_counts_dict.get(gender, 0) + 1
+        category_counts_dict[category] = category_counts_dict.get(category, 0) + 1
+        
+    fees_sum = sum(f.get("total_amount", 0) for f in db["fee_records"])
 
     return {
         "total_students": total_students,
         "total_fee_records": total_fee_records,
         "total_fees_collected": fees_sum,
-        "total_courses": len(COURSES),
-        "course_distribution": {c: count for c, count in course_counts},
-        "gender_distribution": {g or "Unknown": count for g, count in gender_counts},
-        "category_distribution": {c or "Unknown": count for c, count in category_counts},
+        "total_courses": len(load_fee_data().get("COURSES", _COURSES_BASE)),
+        "course_distribution": course_counts_dict,
+        "gender_distribution": {g or "Unknown": count for g, count in gender_counts_dict.items()},
+        "category_distribution": {c or "Unknown": count for c, count in category_counts_dict.items()},
     }
 
 
 # ═══════════════════════════════════════════════════════════
 #  SETTINGS APIs
 # ═══════════════════════════════════════════════════════════
+
+@app.get("/api/settings/fee-structure")
+def get_fee_structure_settings():
+    return load_fee_data()
+
+@app.post("/api/settings/fee-structure")
+async def save_fee_structure_settings(data: dict):
+    save_fee_data(data)
+    return {"message": "Fee structure saved successfully"}
 
 @app.get("/api/settings/upi")
 def get_upi_settings():

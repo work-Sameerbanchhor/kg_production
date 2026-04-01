@@ -3,8 +3,14 @@ Kalyan College Fee Structure (Legacy 2024).
 Hardcoded fee data as provided in the prompt.
 """
 
+# ─── File Path ──────────────────────────────────────────────
+import os
+import json
+
+FEE_FILE = "fee-structure.json"
+
 # ─── Courses List ──────────────────────────────────────────
-COURSES = [
+_COURSES_BASE = [
     "B.A.",
     "B.Com.",
     "B.Sc. (Biology)",
@@ -47,7 +53,7 @@ COURSES = [
 #   year_total
 # }
 
-FEE_INSTALLMENTS = {
+_FEE_INSTALLMENTS_BASE = {
     "B.A.": {
         "first": {"various": 3600, "tuition": 350, "practical": 0, "total": 3950},
         "second": {"various": 2200, "tuition": 350, "practical": 0, "total": 2550},
@@ -217,7 +223,7 @@ FEE_INSTALLMENTS = {
 
 # ─── Detailed Fee Heads Breakdown (per course, annual) ────
 # From the detailed table in the prompt
-FEE_HEADS_DETAIL = {
+_FEE_HEADS_DETAIL_BASE = {
     "B.A.": {
         "Admission Fees": 500, "Amalgamated Fund": 100, "Library Development": 100,
         "Home Examination": 200, "Establishment Fund": 1000, "Student Development": 250,
@@ -355,9 +361,34 @@ FEE_HEADS_DETAIL = {
 }
 
 
+# ─── Dynamic Loading / Saving ──────────────────────────────
+def load_fee_data() -> dict:
+    if os.path.exists(FEE_FILE):
+        try:
+            with open(FEE_FILE, "r") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            pass
+    
+    # Return base if doesn't exist or corrupt
+    return {
+        "COURSES": _COURSES_BASE,
+        "FEE_INSTALLMENTS": _FEE_INSTALLMENTS_BASE,
+        "FEE_HEADS_DETAIL": _FEE_HEADS_DETAIL_BASE
+    }
+
+def save_fee_data(data: dict):
+    with open(FEE_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+# Provided for backwards compatibility where COURSES was imported
+COURSES = load_fee_data().get("COURSES", _COURSES_BASE)
+
 def get_fee_structure(course_name: str) -> dict | None:
     """Get the complete fee structure for a given course."""
-    installment = FEE_INSTALLMENTS.get(course_name)
+    data = load_fee_data()
+    installments_data = data.get("FEE_INSTALLMENTS", _FEE_INSTALLMENTS_BASE)
+    installment = installments_data.get(course_name)
     if not installment:
         return None
 
@@ -377,7 +408,8 @@ def get_fee_structure(course_name: str) -> dict | None:
     elif course_name.startswith("PGDCA"):
         heads_key = "PGDCA"
 
-    heads = FEE_HEADS_DETAIL.get(heads_key, {})
+    heads_data = data.get("FEE_HEADS_DETAIL", _FEE_HEADS_DETAIL_BASE)
+    heads = heads_data.get(heads_key, {})
 
     return {
         "course": course_name,
@@ -385,11 +417,12 @@ def get_fee_structure(course_name: str) -> dict | None:
         "detailed_heads": heads,
     }
 
-
 def get_all_fee_structures() -> list:
     """Get fee structures for all courses."""
+    data = load_fee_data()
+    courses_list = data.get("COURSES", _COURSES_BASE)
     result = []
-    for course in COURSES:
+    for course in courses_list:
         structure = get_fee_structure(course)
         if structure:
             result.append(structure)

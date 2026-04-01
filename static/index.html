@@ -1101,7 +1101,7 @@ async function selectStudentForFee(studentId, name, admNo, course) {
         const secondTotal = structure ? structure.installments.second.total : 0;
         const safeName = (name||'').replace(/'/g,"\\'");
         const safeAdmNo = (admNo||'').replace(/'/g,"\\'");
-        container.innerHTML = `
+        let formHTML = `
         <form onsubmit="submitFeePayment(event,${studentId})">
             <div class="form-grid">
                 <div class="form-group">
@@ -1110,7 +1110,7 @@ async function selectStudentForFee(studentId, name, admNo, course) {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Installment</label>
-                    <select class="form-select" name="installment" onchange="updateFeeAmount(this.value,${firstTotal},${secondTotal},'${safeName}','${safeAdmNo}')">
+                    <select class="form-select" name="installment" onchange="updateFeeAmount(this.value, '${encodeURIComponent(JSON.stringify(structure))}', '${safeName}', '${safeAdmNo}')">
                         <option value="FIRST">First Installment</option>
                         <option value="SECOND">Second Installment</option>
                     </select>
@@ -1178,7 +1178,7 @@ async function selectStudentForFee(studentId, name, admNo, course) {
                 const headVal = structure.detailed_heads[h.key];
                 val = (headVal === '—' || headVal === '-' || !headVal) ? 0 : headVal;
             }
-            container.innerHTML += `
+            formHTML += `
                 <div class="form-group">
                     <label class="form-label">${h.label}</label>
                     <input type="number" class="form-input" name="${h.backendKey}" value="${val}" step="0.01">
@@ -1186,20 +1186,42 @@ async function selectStudentForFee(studentId, name, admNo, course) {
             `;
         });
 
-        container.innerHTML += `
+        formHTML += `
             </div>
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary"><i class="ph ph-currency-circle-dollar"></i> Record Payment</button>
                 <button type="reset" class="btn btn-secondary">Reset</button>
             </div>
         </form>`;
+        
+        container.innerHTML = formHTML;
         setTimeout(() => updateUPIQRCode(firstTotal, safeName, safeAdmNo), 100);
     } catch(e){ container.innerHTML = '<p style="color:var(--danger);">Could not load fee structure</p>'; }
 }
 
-function updateFeeAmount(installment, firstTotal, secondTotal, studentName, admNo) {
+function updateFeeAmount(installment, structureStr, studentName, admNo) {
     const input = document.getElementById('fee-total-amount');
-    input.value = installment === 'FIRST' ? firstTotal : installment === 'SECOND' ? secondTotal : 0;
+    let structure = null;
+    try { structure = JSON.parse(decodeURIComponent(structureStr)); } catch(e){}
+    
+    if (structure) {
+        const instData = installment === 'FIRST' ? structure.installments.first : structure.installments.second;
+        input.value = instData ? instData.total || 0 : 0;
+        
+        // Update various heads depending on installment
+        const map = {
+            "tuition": instData ? instData.tuition || 0 : 0,
+            "various_heads": instData ? instData.various || 0 : 0,
+            "practical": instData && instData.practical ? instData.practical : 0
+        };
+        
+        for (const [key, val] of Object.entries(map)) {
+            const el = document.querySelector(`input[name="${key}"]`);
+            if (el) el.value = val;
+        }
+    } else {
+        input.value = 0;
+    }
     updateUPIQRCode(input.value, studentName, admNo);
 }
 
