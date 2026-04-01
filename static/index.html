@@ -39,9 +39,7 @@
             <div class="nav-item" data-section="search-students" onclick="showSection('search-students')">
                 <i class="ph ph-users icon"></i> <span>Search & View</span>
             </div>
-            <div class="nav-item" data-section="import-csv" onclick="showSection('import-csv')">
-                <i class="ph ph-file-csv icon"></i> <span>Import CSV</span>
-            </div>
+
 
             <div class="nav-group-label"><span>Fees</span></div>
             <div class="nav-item" data-section="fee-structure" onclick="showSection('fee-structure')">
@@ -451,19 +449,6 @@
                 </div>
             </div>
 
-            <!-- ════ IMPORT CSV ════ -->
-            <div class="section" id="sec-import-csv">
-                <div class="page-intro"><p>Bulk import student records from the Kalyan 2024 admission CSV file</p></div>
-                <div class="card">
-                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('csv-file').click()">
-                        <div class="icon"><i class="ph ph-upload-simple"></i></div>
-                        <p><strong>Click to upload</strong> or drag and drop</p>
-                        <p style="font-size:.73rem;margin-top:4px;opacity:.7;">CSV files only &bull; Max 1000 records</p>
-                        <input type="file" id="csv-file" accept=".csv" onchange="handleCSVUpload(event)">
-                    </div>
-                    <div id="import-result" style="margin-top:16px;"></div>
-                </div>
-            </div>
 
             <!-- ════ FEE STRUCTURE ════ -->
             <div class="section" id="sec-fee-structure">
@@ -542,7 +527,6 @@ const sectionTitles = {
     'dashboard':'Dashboard',
     'add-student':'Add Student',
     'search-students':'Search & View',
-    'import-csv':'Import CSV',
     'fee-structure':'Fee Structure',
     'fee-payment':'Record Payment',
     'fee-status':'Fee Status'
@@ -926,25 +910,6 @@ async function deleteStudent(id) {
     } catch(e){}
 }
 
-// ═══ CSV IMPORT ═══
-async function handleCSVUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    document.getElementById('import-result').innerHTML = '<div class="loading-overlay"><span class="spinner"></span> Importing...</div>';
-    try {
-        const res = await fetch('/api/students/import-csv', {method:'POST', body:formData});
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Import failed');
-        document.getElementById('import-result').innerHTML = `<div style="padding:16px;background:var(--success-bg);border-radius:var(--radius-sm);color:var(--success);font-weight:600;">
-            Imported ${data.imported} students successfully! ${data.skipped ? `(${data.skipped} skipped)` : ''}
-        </div>`;
-        showToast(`Imported ${data.imported} students!`,'success');
-    } catch(e){
-        document.getElementById('import-result').innerHTML = `<div style="padding:16px;background:var(--danger-bg);border-radius:var(--radius-sm);color:var(--danger);">Error: ${e.message}</div>`;
-    }
-}
 
 // ═══ FEE STRUCTURE ═══
 let feeStructureCache = null;
