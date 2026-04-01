@@ -1028,13 +1028,18 @@ function renderFeeInstallmentTable(container, structures, title) {
 }
 
 function renderFeeDetailTable(container, structures) {
-    const heads = [
-        'Admission Fees', 'Amalgamated Fund', 'Library Development',
-        'Home Examination', 'Establishment Fund', 'Student Development',
-        'College Development', 'Cycle Stand', 'Caution Money (Ref.)',
-        'Seminar / Workshop', 'Computer Maint.', 'Physical Education',
-        'Non Aided Staff Fund', 'Gym Development', 'TOTAL'
-    ];
+    const headSet = new Set();
+    structures.forEach(s => {
+        if (s.detailed_heads) {
+            Object.keys(s.detailed_heads).forEach(k => {
+                if (k !== 'TOTAL' && k.trim() !== '') {
+                    headSet.add(k);
+                }
+            });
+        }
+    });
+    const heads = Array.from(headSet);
+    heads.push('TOTAL');
 
     let html = '<div style="padding:20px;"><h3 style="margin-bottom:16px;color:var(--text-dark);">Detailed Fee Heads Breakdown</h3>';
     html += '<div class="table-wrapper"><table class="data-table" style="font-size:0.75rem;"><thead><tr><th>Course</th>';
@@ -1169,6 +1174,18 @@ async function selectStudentForFee(studentId, name, admNo, course) {
             { label: "Non Aided Staff Fund", key: "Non Aided Staff Fund", backendKey: "non_aided_staff" },
             { label: "Gym Development", key: "Gym Development", backendKey: "gym_dev" }
         ];
+
+        // Add dynamically injected keys that aren't already covered
+        if (structure && structure.detailed_heads) {
+            const mappedKeys = headMapping.map(h => h.key).filter(Boolean);
+            for (const [k, v] of Object.entries(structure.detailed_heads)) {
+                if (k !== 'TOTAL' && k !== '' && !mappedKeys.includes(k)) {
+                    const backendKey = "dyn_" + k.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                    headMapping.push({ label: k, key: k, backendKey: backendKey });
+                }
+            }
+        }
+
 
         headMapping.forEach(h => {
             let val = 0;

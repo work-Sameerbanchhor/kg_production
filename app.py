@@ -694,28 +694,32 @@ async def record_fee_payment(data: dict, db: dict = Depends(get_db)):
         "academic_year": data.get("academic_year", "2024-25"),
         "fee_period": data.get("fee_period", ""),
         "installment": data.get("installment", "FIRST"),
-        "tuition": float(data.get("tuition") or 0),
-        "various_heads": float(data.get("various_heads") or 0),
-        "practical": float(data.get("practical") or 0),
-        "admission_fee": float(data.get("admission_fee") or 0),
-        "amalgamated_fund": float(data.get("amalgamated_fund") or 0),
-        "library_dev": float(data.get("library_dev") or 0),
-        "home_examination": float(data.get("home_examination") or 0),
-        "establishment_fund": float(data.get("establishment_fund") or 0),
-        "student_dev": float(data.get("student_dev") or 0),
-        "college_dev": float(data.get("college_dev") or 0),
-        "cycle_stand": float(data.get("cycle_stand") or 0),
-        "caution_money": float(data.get("caution_money") or 0),
-        "seminar_ws": float(data.get("seminar_ws") or 0),
-        "computer_maint": float(data.get("computer_maint") or 0),
-        "physical_edu": float(data.get("physical_edu") or 0),
-        "non_aided_staff": float(data.get("non_aided_staff") or 0),
-        "gym_dev": float(data.get("gym_dev") or 0),
-        "total_amount": float(data.get("total_amount") or 0),
-        "payment_mode": data.get("payment_mode", "CASH"),
-        "payment_status": "PAID",
-        "created_at": str(datetime.utcnow())
     }
+    
+    reserved_keys = {"student_id", "date", "academic_year", "fee_period", "installment", "payment_mode"}
+    
+    for k, v in data.items():
+        if k not in reserved_keys:
+            try:
+                fee_record[k] = float(v) if v else 0.0
+            except ValueError:
+                fee_record[k] = v
+                
+    default_heads = [
+        "tuition", "various_heads", "practical", "admission_fee",
+        "amalgamated_fund", "library_dev", "home_examination",
+        "establishment_fund", "student_dev", "college_dev",
+        "cycle_stand", "caution_money", "seminar_ws",
+        "computer_maint", "physical_edu", "non_aided_staff",
+        "gym_dev", "total_amount"
+    ]
+    for head in default_heads:
+         if head not in fee_record:
+             fee_record[head] = 0.0
+
+    fee_record["payment_mode"] = data.get("payment_mode", "CASH")
+    fee_record["payment_status"] = "PAID"
+    fee_record["created_at"] = str(datetime.utcnow())
 
     db["fee_records"].append(fee_record)
     save_db(db)
@@ -829,12 +833,25 @@ def generate_fee_receipt_pdf(fee_record_id: int, db: dict = Depends(get_db)):
     y -= 20
     draw_row(y, "NGS Fund", 0.00, "Laboratory", fee_record.practical, "Model Lesson", 0.00, "Others -6", fee_record.non_aided_staff)
     y -= 20
-    draw_row(y, "Communic.", 0.00, "ET-Lab.", 0.00, "Library Dev.", fee_record.library_dev, "", 0.00)
+    draw_row(y, "Communic.", 0.00, "ET-Lab.", 0.00, "Library Dev.", getattr(fee_record, 'library_dev', 0.0), "", 0.00)
     y -= 20
-    draw_row(y, "Pers.Dev", 0.00, "Others -4", fee_record.home_examination, "Others -5", 0.00, "", 0.00)
+    draw_row(y, "Pers.Dev", 0.00, "Others -4", getattr(fee_record, 'home_examination', 0.0), "Others -5", 0.00, "", 0.00)
+
+    dyn_heads = [(k, v) for k, v in fee_record_dict.items() if k.startswith("dyn_") and isinstance(v, (int, float)) and v > 0]
+    while dyn_heads:
+        chunk = dyn_heads[:4]
+        dyn_heads = dyn_heads[4:]
+        args = []
+        for key, val in chunk:
+            display_name = key[4:].replace('_', ' ').title()[:15]
+            args.extend([display_name, val])
+        while len(args) < 8:
+            args.extend(["", 0.00])
+        y -= 20
+        draw_row(y, *args)
 
     y -= 40
-    c.drawString(50, y, f"{(fee_record.payment_mode or 'CASH') + '-NO':<23}           DATE                  Total :           {fee_record.total_amount:>10.2f}")
+    c.drawString(50, y, f"{(getattr(fee_record, 'payment_mode', 'CASH') or 'CASH') + '-NO':<23}           DATE                  Total :           {getattr(fee_record, 'total_amount', 0.0):>10.2f}")
 
     y -= 40
     c.drawString(50, y, f"Rs. {fee_record.total_amount} only")

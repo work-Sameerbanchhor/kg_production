@@ -526,12 +526,13 @@
             "College Development": 650,
             "Cycle Stand": 100,
             "Caution Money (Ref.)": 300,
-            "Seminar / Workshop": 0,
+            "Seminar / Workshop": 500,
             "Computer Maint.": 0,
             "Physical Education": 300,
             "Non Aided Staff Fund": 2200,
             "Gym Development": 100,
-            "TOTAL": 5800
+            "TOTAL": 6300,
+            "": 0
         },
         "B.Com.": {
             "Admission Fees": 500,
