@@ -9,8 +9,11 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+import socket
 
 load_dotenv()
+
+# --- Optional Dependencies ---
 try:
     from google import genai
     from google.genai import types
@@ -18,6 +21,16 @@ try:
     HAS_GENAI = True
 except ImportError:
     HAS_GENAI = False
+
+try:
+    from zeroconf import ServiceInfo
+    # NEW: Import the Async version of Zeroconf
+    from zeroconf.asyncio import AsyncZeroconf
+    HAS_ZEROCONF = True
+except ImportError:
+    HAS_ZEROCONF = False
+# -----------------------------
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
 from sqlalchemy import or_
@@ -30,11 +43,60 @@ import random
 import os
 import json
 
+# ═══════════════════════════════════════════════════════════
+#  SERVER CONFIGURATION & LIFECYCLE
+# ═══════════════════════════════════════════════════════════
+
+PORT = 52002  # Global port variable
+aio_zeroconf_instance = None
+
+def get_local_ip():
+    """Get local network IP (WiFi/LAN IP like 192.168.x.x)"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return "127.0.0.1"
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global aio_zeroconf_instance
+    
     # Initialize database on startup
     init_db()
+    
+    # Start mDNS Broadcasting (Auto-Discovery) using AsyncZeroconf
+    if HAS_ZEROCONF:
+        ip_address = get_local_ip()
+        if ip_address != "127.0.0.1":
+            try:
+                info = ServiceInfo(
+                    "_http._tcp.local.",
+                    "KalyanScanner._http._tcp.local.",
+                    parsed_addresses=[ip_address],
+                    port=PORT,
+                    server="kalyanscanner.local."
+                )
+                aio_zeroconf_instance = AsyncZeroconf()
+                await aio_zeroconf_instance.async_register_service(info)
+                print(f"📡 Broadcasting KalyanScanner on {ip_address}:{PORT} via mDNS")
+            except Exception as e:
+                print(f"⚠️ Failed to start mDNS broadcasting: {repr(e)}")
+    else:
+        print("⚠️ 'zeroconf' library not installed. Auto-discovery will not work.")
+
     yield
+    
+    # Shutdown mDNS on exit safely
+    if aio_zeroconf_instance:
+        try:
+            await aio_zeroconf_instance.async_unregister_all_services()
+            await aio_zeroconf_instance.async_close()
+        except:
+            pass
 
 app = FastAPI(
     title="Kalyan College Management System", 
@@ -327,7 +389,6 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
             content = await f.read()
             mime_type = f.content_type
             if mime_type not in ["application/pdf", "image/jpeg", "image/png", "image/webp"]:
-                # fallback for generic image mime types if unknown
                 if "image" in mime_type:
                     mime_type = "image/jpeg"
                 elif mime_type == "application/octet-stream" and f.filename:
@@ -347,29 +408,26 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         
         prompt = (
             "Extract the student information from this admission form. "
-            "Correct any spelling or grammatical mistakes in the text fields (such as names, addresses, subjects, courses, etc.) that the student may have made. "
+            "Correct any spelling or grammatical mistakes in the text fields. "
             "Do not provide the exact text if it contains errors; instead, infer and provide the correctly spelled information. "
             "Return an empty string for missing fields. "
             "The form has multiple pages. "
-            "Page 1 contains Fields 1 to 6 (like Faculty, Courses, Father's Name, Mother's Name). "
-            "Page 2 starts with Field 7 (ADDRESS) up to the last field (Category, Domicile, Medium of Exam, etc.). "
-            "Please ensure you scan and extract data from ALL provided pages. "
             "IMPORTANT: Also locate the student's passport photo on the first page, and return its bounding box coordinates [ymin, xmin, ymax, xmax] normalized to 0-1000 scale in the `photo_box` field. "
             "If there is no physical photo glued/printed on the form, leave `photo_box` as an empty list []."
         )
         contents_list.append(prompt)
         
         response = client.models.generate_content(
-    model="gemini-3.1-flash-lite-preview",  # do not change this model
-    contents=contents_list,
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_json_schema=StudentFormExtract.model_json_schema(),
-        thinking_config=types.ThinkingConfig(
-            thinking_level="low"   # low
+            model="gemini-3.1-flash-lite-preview",
+            contents=contents_list,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_json_schema=StudentFormExtract.model_json_schema(),
+                thinking_config=types.ThinkingConfig(
+                    thinking_level="low"
+                )
+            )
         )
-    )
-)
         
         data = json.loads(response.text)
         
@@ -400,7 +458,6 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                     width, height = img.size
                     ymin, xmin, ymax, xmax = photo_box
                     
-                    # Convert normalized coords (0-1000) to actual pixels
                     crop_box = (
                         int(xmin * width / 1000),
                         int(ymin * height / 1000),
@@ -408,7 +465,6 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                         int(ymax * height / 1000)
                     )
                     
-                    # Ensure valid box
                     if crop_box[2] > crop_box[0] and crop_box[3] > crop_box[1]:
                         cropped = img.crop(crop_box)
                         
@@ -546,7 +602,6 @@ async def record_fee_payment(data: dict, db: Session = Depends(get_db)):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    # Generate receipt number
     receipt_no = f"{random.randint(10000, 99999)}"
 
     fee_record = FeeRecord(
@@ -708,20 +763,14 @@ def generate_fee_receipt_pdf(fee_record_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/upload-pdf")
 async def upload_pdf(file: UploadFile = File(...)):
-    # Validate file type
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
 
-    # Create directory if it doesn't exist
     upload_dir = "Uploaded_pdfs"
     os.makedirs(upload_dir, exist_ok=True)
-
-    # Securely create the file path
-    # You could also append a timestamp here to prevent overwriting files with the same name
     file_path = os.path.join(upload_dir, file.filename)
 
     try:
-        # Read and save the file
         content = await file.read()
         with open(file_path, "wb") as f:
             f.write(content)
@@ -742,11 +791,7 @@ async def upload_pdf(file: UploadFile = File(...)):
 def dashboard_stats(db: Session = Depends(get_db)):
     total_students = db.query(Student).count()
     total_fee_records = db.query(FeeRecord).count()
-    total_collected = db.query(FeeRecord).with_entities(
-        db.query(FeeRecord).with_entities(FeeRecord.total_amount).subquery()
-    ).count()
-
-    # Count by course
+    
     from sqlalchemy import func
     course_counts = (
         db.query(Student.course, func.count(Student.id))
@@ -754,23 +799,19 @@ def dashboard_stats(db: Session = Depends(get_db)):
         .all()
     )
 
-    # Count by gender
     gender_counts = (
         db.query(Student.gender, func.count(Student.id))
         .group_by(Student.gender)
         .all()
     )
 
-    # Count by category
     category_counts = (
         db.query(Student.category, func.count(Student.id))
         .group_by(Student.category)
         .all()
     )
 
-    # Total fees collected
-    from sqlalchemy import func as sqlfunc
-    fees_sum = db.query(sqlfunc.sum(FeeRecord.total_amount)).scalar() or 0
+    fees_sum = db.query(func.sum(FeeRecord.total_amount)).scalar() or 0
 
     return {
         "total_students": total_students,
@@ -814,7 +855,6 @@ async def save_upi_settings(data: dict):
 @app.get("/api/settings/themes")
 def get_theme_settings():
     path = "settings/themes.json"
-    # Default themes if file doesn't exist or is empty
     default = {
         "active_mode": "light",
         "active_theme": "forest",
@@ -849,21 +889,7 @@ async def save_theme_settings(data: dict):
 
 if __name__ == "__main__":
     import uvicorn
-    import socket
     import webbrowser
-
-    PORT = 52002  # you can change this later
-
-    def get_local_ip():
-        """Get local network IP (WiFi/LAN IP like 192.168.x.x)"""
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))
-            ip = s.getsockname()[0]
-            s.close()
-            return ip
-        except:
-            return "127.0.0.1"
 
     local_ip = get_local_ip()
 
@@ -871,12 +897,12 @@ if __name__ == "__main__":
     print(f"👉 Local URL:    http://127.0.0.1:{PORT}")
     print(f"👉 Network URL:  http://{local_ip}:{PORT}\n")
 
-    # Auto open browser (like Streamlit)
+    # Auto open browser
     webbrowser.open(f"http://127.0.0.1:{PORT}")
 
     uvicorn.run(
         "app:app",
         host="0.0.0.0",   # allows network access
         port=PORT,
-        reload=True      # 🔥 auto reload (you can remove later)
+        reload=True      # 🔥 auto reload
     )
