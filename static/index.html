@@ -1148,7 +1148,7 @@ async function selectStudentForFee(studentId, name, admNo, course) {
                 <div class="form-group full-width" style="margin-top: 20px;">
                     <div class="form-section-title"><i class="ph ph-receipt"></i> Fee Breakup (Optional)</div>
                 </div>
-                \`;
+                `;
         
         const headMapping = [
             { label: "Tuition", val: structure ? structure.installments.first.tuition : 0, backendKey: "tuition" },
@@ -1178,15 +1178,15 @@ async function selectStudentForFee(studentId, name, admNo, course) {
                 const headVal = structure.detailed_heads[h.key];
                 val = (headVal === '—' || headVal === '-' || !headVal) ? 0 : headVal;
             }
-            container.innerHTML += \`
+            container.innerHTML += `
                 <div class="form-group">
-                    <label class="form-label">\${h.label}</label>
-                    <input type="number" class="form-input" name="\${h.backendKey}" value="\${val}" step="0.01">
+                    <label class="form-label">${h.label}</label>
+                    <input type="number" class="form-input" name="${h.backendKey}" value="${val}" step="0.01">
                 </div>
-            \`;
+            `;
         });
 
-        container.innerHTML += \`
+        container.innerHTML += `
             </div>
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary"><i class="ph ph-currency-circle-dollar"></i> Record Payment</button>
