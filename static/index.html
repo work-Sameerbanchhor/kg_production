@@ -824,7 +824,7 @@ function renderStudentTable(students) {
     }
     container.innerHTML = `
     <div class="table-wrapper">
-        <table class="data-table">
+        <table class="data-table" style="min-width: 800px;">
             <thead><tr>
                 <th>Adm No</th><th>Name</th><th>Course</th><th>Mobile</th><th>Category</th><th>Gender</th><th>Actions</th>
             </tr></thead>
@@ -989,7 +989,7 @@ function renderFeeInstallmentTable(container, structures, title) {
     }
     let html = `<div style="padding:20px;"><h3 style="margin-bottom:16px;color:var(--text-dark);">${title}</h3>
     <div class="table-wrapper">
-    <table class="data-table">
+    <table class="data-table" style="min-width: 800px;">
         <thead>
             <tr>
                 <th>Course</th>
@@ -1042,7 +1042,7 @@ function renderFeeDetailTable(container, structures) {
     heads.push('TOTAL');
 
     let html = '<div style="padding:20px;"><h3 style="margin-bottom:16px;color:var(--text-dark);">Detailed Fee Heads Breakdown</h3>';
-    html += '<div class="table-wrapper"><table class="data-table" style="font-size:0.75rem;"><thead><tr><th>Course</th>';
+    html += '<div class="table-wrapper"><table class="data-table" style="font-size:0.75rem; width: 100%; white-space: nowrap;"><thead><tr><th>Course</th>';
     heads.forEach(h => { html += `<th>${h}</th>`; });
     html += '</tr></thead><tbody>';
 
@@ -1366,7 +1366,7 @@ async function loadFeeStatus(studentId) {
         </div>`;
 
         if (data.records.length > 0) {
-            html += `<div class="table-wrapper"><table class="data-table">
+            html += `<div class="table-wrapper"><table class="data-table" style="min-width: 800px;">
                 <thead><tr><th>Receipt No</th><th>Date</th><th>Year</th><th>Installment</th><th>Amount</th><th>Mode</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>`;
             data.records.forEach(r => {
