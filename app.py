@@ -384,6 +384,7 @@ if HAS_GENAI:
         aec: str = Field(description="AEC")
         research_project: list[str] = Field(default_factory=list, description="List of checked items in: Research / Internship / Project / Ph.D")
         father_name: str = Field(description="4. Fathers Name")
+        father_occupation: str = Field(description="Occupation of the Father") # Add this line
         father_mobile_no: str = Field(description="Mobile No. (Fathers)")
         mother_name: str = Field(description="5. Mothers Name")
         mother_tongue: str = Field(description="Mother Tongue")
@@ -491,7 +492,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                 response_mime_type="application/json",
                 response_json_schema=StudentFormExtract.model_json_schema(),
                 thinking_config=types.ThinkingConfig(
-                    thinking_level="low"
+                    thinking_level="medium"
                 )
             )
         )
