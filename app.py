@@ -51,7 +51,7 @@ def init_db():
 
 def load_db():
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
             try:
                 return json.load(f)
             except:
@@ -59,8 +59,8 @@ def load_db():
     return {"students": [], "fee_records": [], "student_id_seq": 1, "fee_id_seq": 1}
 
 def save_db(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 def get_db():
     db = load_db()
@@ -418,7 +418,7 @@ _FEE_HEADS_DETAIL_BASE = {
 def load_fee_data() -> dict:
     if os.path.exists(FEE_FILE):
         try:
-            with open(FEE_FILE, "r") as f:
+            with open(FEE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except json.JSONDecodeError:
             pass
@@ -430,8 +430,8 @@ def load_fee_data() -> dict:
     }
 
 def save_fee_data(data: dict):
-    with open(FEE_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+    with open(FEE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 COURSES = load_fee_data().get("COURSES", _COURSES_BASE)
 
@@ -613,12 +613,12 @@ app.mount("/Uploaded_pdfs", StaticFiles(directory="Uploaded_pdfs"), name="Upload
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    with open("static/index.html", "r") as f:
+    with open("static/index.html", "r", encoding="utf-8") as f:
         return f.read()
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page():
-    with open("static/settings.html", "r") as f:
+    with open("static/settings.html", "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -1393,7 +1393,7 @@ def get_upi_settings():
     default = {"upi_options": [], "active_upi": None}
     if not os.path.exists(path):
         return default
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         try:
             data = json.load(f)
             if not isinstance(data, dict): return default
@@ -1406,8 +1406,8 @@ def get_upi_settings():
 @app.post("/api/settings/upi")
 async def save_upi_settings(data: dict):
     os.makedirs("settings", exist_ok=True)
-    with open("settings/upi.json", "w") as f:
-        json.dump(data, f, indent=4)
+    with open("settings/upi.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
     return {"message": "UPI settings saved successfully"}
 
 
@@ -1430,7 +1430,7 @@ def get_theme_settings():
     }
     if not os.path.exists(path):
         return default
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         try:
             data = json.load(f)
             if not isinstance(data, dict): return default
@@ -1442,8 +1442,8 @@ def get_theme_settings():
 @app.post("/api/settings/themes")
 async def save_theme_settings(data: dict):
     os.makedirs("settings", exist_ok=True)
-    with open("settings/themes.json", "w") as f:
-        json.dump(data, f, indent=4)
+    with open("settings/themes.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
     return {"message": "Theme settings saved successfully"}
 
 if __name__ == "__main__":
