@@ -969,6 +969,13 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                     width, height = img.size
                     ymin, xmin, ymax, xmax = photo_box
                     
+                    # Save full-page image for manual re-cropping in the browser
+                    os.makedirs("student_passport_photos", exist_ok=True)
+                    full_page_filename = f"full_page_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
+                    full_page_path = f"student_passport_photos/{full_page_filename}"
+                    img.convert("RGB").save(full_page_path, format="JPEG", quality=80)
+                    data["original_page_url"] = f"/{full_page_path}"
+                    
                     crop_box = (
                         int(xmin * width / 1000),
                         int(ymin * height / 1000),
@@ -993,6 +1000,18 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
+
+
+@app.post("/api/upload-photo")
+async def upload_manual_photo(file: UploadFile = File(...)):
+    """Endpoint for saving a manually cropped passport photo from Cropper.js."""
+    os.makedirs("student_passport_photos", exist_ok=True)
+    filename = f"manual_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
+    filepath = os.path.join("student_passport_photos", filename)
+    content = await file.read()
+    with open(filepath, "wb") as f:
+        f.write(content)
+    return {"photo_url": f"/{filepath}"}
 
 
 # ═══════════════════════════════════════════════════════════
@@ -1336,17 +1355,26 @@ def get_recent_pdfs():
     upload_dir = "Uploaded_pdfs"
     if not os.path.exists(upload_dir):
         return {"pdfs": []}
+        
     files = []
     for f in os.listdir(upload_dir):
         if f.lower().endswith(".pdf"):
             path = os.path.join(upload_dir, f)
+            # Get the last modification time
+            mtime = os.path.getmtime(path)
             files.append({
                 "filename": f,
                 "url": f"/Uploaded_pdfs/{f}",
-                "time": os.path.getmtime(path)
+                "time": mtime,
+                # Human readable date for debugging if needed
+                "date_str": datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
             })
+            
+    # Sort: Higher timestamp (newer) comes first
     files.sort(key=lambda x: x["time"], reverse=True)
-    return {"pdfs": files[:5]}
+    
+    # Return the 10 most recent instead of 5 for better visibility
+    return {"pdfs": files[:10]}
 
 # ═══════════════════════════════════════════════════════════
 #  DASHBOARD STATS
