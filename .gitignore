@@ -81,3 +81,6 @@ kalyan_fee_structure_updated.csv
 examples/docs/gemini_docs.md
 Uploaded_pdfs
 __pycache__/
+
+# Sensitive settings files (API keys etc.)
+settings/gemini_api_keys.json

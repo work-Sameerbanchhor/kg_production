@@ -879,9 +879,16 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
     if not HAS_GENAI:
         raise HTTPException(status_code=500, detail="Google GenAI SDK not installed or configured.")
         
-    api_key = os.environ.get("GEMINI_API_KEY")
+    # Fetch active key from JSON settings instead of .env
+    gemini_settings = get_gemini_settings()
+    active_id = gemini_settings.get("active_key_id")
+    api_key = None
+
+    if active_id:
+        api_key = next((k["key"] for k in gemini_settings["keys"] if k["id"] == active_id), None)
+
     if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing in environment.")
+        raise HTTPException(status_code=500, detail="No active Gemini API Key found in settings. Please configure one in Settings > AI Configuration.")
         
     try:
         client = genai.Client()
@@ -919,8 +926,10 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         )
         contents_list.append(prompt)
         
+        active_model = gemini_settings.get("model", "gemini-2.0-flash")
+
         response = client.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
+            model=active_model,
             contents=contents_list,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -1377,6 +1386,30 @@ def dashboard_stats(db: dict = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════
 #  SETTINGS APIs
 # ═══════════════════════════════════════════════════════════
+
+GEMINI_SETTINGS_FILE = "settings/gemini_api_keys.json"
+
+def get_gemini_settings():
+    default = {"keys": [], "active_key_id": None, "model": "gemini-2.0-flash"}
+    if not os.path.exists(GEMINI_SETTINGS_FILE):
+        return default
+    with open(GEMINI_SETTINGS_FILE, "r", encoding="utf-8") as f:
+        try:
+            return json.load(f)
+        except:
+            return default
+
+@app.get("/api/settings/gemini")
+def get_gemini_keys():
+    return get_gemini_settings()
+
+@app.post("/api/settings/gemini")
+async def save_gemini_keys(data: dict):
+    os.makedirs("settings", exist_ok=True)
+    with open(GEMINI_SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+    return {"message": "Gemini settings saved successfully"}
+
 
 @app.get("/api/settings/fee-structure")
 def get_fee_structure_settings():
