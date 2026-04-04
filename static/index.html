@@ -22,7 +22,7 @@
             <i class="ph ph-caret-left" id="toggle-icon"></i>
         </button>
         <div class="sidebar-header">
-            <div class="sidebar-logo"><i class="ph-fill ph-graduation-cap"></i></div>
+            <div class="sidebar-logo"><img src="/static/media/kalyan_college_logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
             <div class="sidebar-brand-text">
                 <h1>Kalyan PG College</h1>
                 <p>Bhilai Nagar</p>
@@ -159,11 +159,18 @@
                     </div>
                 </div>
 
-                <div class="card" style="padding: 30px;">
-                    <div style="text-align:center; font-family:'Arial',sans-serif; margin-bottom: 20px;">
-                        <h3>Application Form For Admission</h3>
-                        <h2 style="font-family:'DM Serif Display',serif; color:var(--forest-1000);">कल्याण स्नातकोत्तर महाविद्यालय, भिलाई नगर (छ.ग.)<br>Kalyan Post Graduate College, Bhilai Nagar (C.G.)</h2>
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div style="text-align:center; position:relative; background-image: url('/static/media/kalyan_college_banner.png'); background-size: cover; background-position: center; padding: 50px 20px; color: #fff;">
+                        <!-- Reading Overlay -->
+                        <div style="position:absolute; inset:0; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.4));"></div>
+                        <!-- Content -->
+                        <div style="position:relative; z-index:1;">
+                            <h3 style="text-transform:uppercase; letter-spacing:2px; font-weight:600; font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Application Form For Admission</h3>
+                            <h2 style="font-family:'DM Serif Display',serif; font-size: 1.8rem; line-height: 1.2;">कल्याण स्नातकोत्तर महाविद्यालय, भिलाई नगर (छ.ग.)<br>Kalyan Post Graduate College, Bhilai Nagar (C.G.)</h2>
+                        </div>
                     </div>
+
+                    <div style="padding: 30px;">
 
                     <form id="student-form" onsubmit="submitStudent(event)" onreset="setTimeout(resetFormExtras, 10)">
                         
