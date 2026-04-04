@@ -805,11 +805,40 @@ if HAS_GENAI:
         dob: str = Field(description="Date of Birth in YYYY-MM-DD")
         blood_group: str = Field(description="Blood Group")
         faculty: str = Field(description="1. Faculty of")
-        annual_semester: str = Field(description="2. Annual / Semester")
-        course_type: str = Field(description="Semester (First/Second/...)")
+        annual_semester: str = Field(description="""
+Look at line '2. Annual/Semester (वार्षिक / मेमेस्टर)' on the form. A tick, circle, or underline may appear on either the English word OR its Hindi equivalent. Apply this exact mapping:
+- If 'Annual' OR 'वार्षिक' is marked → return exactly 'Annual'
+- If 'Semester' OR 'मेमेस्टर' OR 'सेमेस्टर' is marked → return exactly 'Semester'
+Return ONLY 'Annual' or 'Semester'. If nothing is clearly marked, return ''.
+""")
+        course_type: str = Field(description="""
+Look at the bracketed options next to line '2. Annual/Semester' on the form, e.g. '(First / Second / Third / Forth / Fifth / Sixth / प्रथम / द्वितीय / तृतीय / चतुर्थ / पंचम / षष्टम)'. Identify which word (English OR Hindi) has a tick, circle, or underline and return its Roman numeral using this exact mapping:
+- 'First' or 'प्रथम'   → 'I'
+- 'Second' or 'द्वितीय' → 'II'
+- 'Third' or 'तृतीय'   → 'III'
+- 'Forth' or 'Fourth' or 'चतुर्थ' → 'IV'
+- 'Fifth' or 'पंचम'   → 'V'
+- 'Sixth' or 'षष्टम'  → 'VI'
+Return ONLY the Roman numeral (e.g. 'I', 'II', 'III'). If nothing is clearly marked, return ''.
+""")
         course_level: str = Field(description="3. Courses (UG / PG / Diploma / Ph.D)")
-        course: str = Field(description="Specific Course")
-        class_name: str = Field(description="CLASS (कक्षा)")
+        course: str = Field(description="""
+Look at the 'CLASS (कक्षा)' field on the form. You MUST map what the student wrote to the closest official course name from this list:
+'B.A.', 'B.Com.', 'B.Sc.', 'B.Sc. Computer Science', 'B.Sc. Biotechnology', 'B.Sc. Home Science',
+'BCA (Bachelor of Computer Applications)', 'PGDCA',
+'M.A. (Hindi)', 'M.A. (English)', 'M.A. (Economics)', 'M.A. (Political Science)', 'M.A. (History)',
+'M.A. (Sociology)', 'M.A. (Geography)', 'M.A. (Journalism & Mass Communication)',
+'M.Com.', 'M.Com. (Finance & Control)', 'M.Com. (Business Management)',
+'M.Sc. (Computer Science - Previous)', 'M.Sc. (Computer Science - Final)',
+'M.Sc. (Biotechnology - Previous)', 'M.Sc. (Biotechnology - Final)',
+'M.Sc. (Chemistry - Previous)', 'M.Sc. (Chemistry - Final)',
+'M.Sc. (Mathematics - Previous)', 'M.Sc. (Mathematics - Final)',
+'M.Sc. (Physics - Previous)', 'M.Sc. (Physics - Final)',
+'M.Sc. (Botany - Previous)', 'M.Sc. (Botany - Final)'.
+Mapping examples: 'bca' or 'BCA' → 'BCA (Bachelor of Computer Applications)'; 'msc cs' or 'M.Sc(CS)' → 'M.Sc. (Computer Science - Previous)'; 'ba' → 'B.A.'; 'mca' → 'BCA (Bachelor of Computer Applications)'; 'pgdca' → 'PGDCA'.
+Return the exact official name from the list. If unclear, return the closest match.
+""")
+        class_name: str = Field(description="Extract the exact raw text the student wrote in the 'CLASS (कक्षा)' field, without any corrections. This is a verbatim backup of their handwriting.")
         dsc_1: str = Field(description="DSC - 1")
         dsc_2: str = Field(description="DSC - 2")
         dsc_3: str = Field(description="DSC - 3")
