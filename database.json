@@ -70,7 +70,39 @@
             "photo_path": "/student_passport_photos/photo_1775283381_620.jpg"
         }
     ],
-    "fee_records": [],
+    "fee_records": [
+        {
+            "id": 10,
+            "student_id": 9,
+            "receipt_no": "55614",
+            "date": "04-04-2026",
+            "academic_year": "2024-25",
+            "fee_period": "",
+            "installment": "FIRST",
+            "total_amount": 13800.0,
+            "payment_date": "2026-04-04",
+            "tuition": 2000.0,
+            "practical": 1200.0,
+            "various_heads": 10600.0,
+            "admission_fee": 500.0,
+            "amalgamated_fund": 100.0,
+            "library_dev": 500.0,
+            "home_examination": 200.0,
+            "establishment_fund": 1500.0,
+            "student_dev": 500.0,
+            "college_dev": 1700.0,
+            "cycle_stand": 100.0,
+            "caution_money": 300.0,
+            "seminar_ws": 150.0,
+            "computer_maint": 0.0,
+            "physical_edu": 300.0,
+            "non_aided_staff": 8550.0,
+            "gym_dev": 100.0,
+            "payment_mode": "CASH",
+            "payment_status": "PAID",
+            "created_at": "2026-04-04 17:37:01.194258"
+        }
+    ],
     "student_id_seq": 10,
-    "fee_id_seq": 10
+    "fee_id_seq": 11
 }

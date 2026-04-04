@@ -3,9 +3,10 @@ Kalyan College Management System - FastAPI Backend
 Admission management + Fee management (Merged Single File Version)
 """
 
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query, Request, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import socket
@@ -591,11 +592,34 @@ async def lifespan(app: FastAPI):
         except:
             pass
 
+# Define a secret key known only to your apps
+APP_SECRET_TOKEN = "Kalyan_Secure_Access_2026_##"
+
+class TrustedAppMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # 1. Allow the server to serve local assets for the app itself
+        # 2. Check for the secret header
+        app_auth = request.headers.get("X-Kalyan-App-Auth")
+        
+        # Skip check for local health checks if needed, else strict block:
+        if app_auth != APP_SECRET_TOKEN:
+            return Response(
+                content="<html><body><h1>403 Forbidden</h1><p>Access restricted to Official Kalyan College App.</p></body></html>",
+                status_code=403,
+                media_type="text/html"
+            )
+            
+        response = await call_next(request)
+        return response
+
 app = FastAPI(
     title="Kalyan College Management System", 
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Register the gatekeeper
+app.add_middleware(TrustedAppMiddleware)
 
 # Mount static files
 os.makedirs("static", exist_ok=True)
