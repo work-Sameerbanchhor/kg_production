@@ -1351,7 +1351,8 @@ def generate_fee_receipt_pdf(fee_record_id: int, db: dict = Depends(get_db)):
 
     c.save()
 
-    return FileResponse(path=pdf_path, filename=f"Receipt_{fee_record.receipt_no}.pdf", media_type='application/pdf')
+    headers = {"Content-Disposition": f"inline; filename=Receipt_{fee_record.receipt_no}.pdf"}
+    return FileResponse(path=pdf_path, media_type='application/pdf', headers=headers)
 
 # ═══════════════════════════════════════════════════════════
 #  PDF UPLOAD API
