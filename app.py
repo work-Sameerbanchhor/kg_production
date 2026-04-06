@@ -557,40 +557,40 @@ def get_ethernet_ip():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global aio_zeroconf_instance
+    # global aio_zeroconf_instance
     
     # Initialize database on startup
     init_db()
     
     # Start mDNS Broadcasting (Auto-Discovery) using AsyncZeroconf
-    if HAS_ZEROCONF:
-        ip_address = get_local_ip()
-        if ip_address != "127.0.0.1":
-            try:
-                info = ServiceInfo(
-                    "_http._tcp.local.",
-                    "KalyanScanner._http._tcp.local.",
-                    parsed_addresses=[ip_address],
-                    port=PORT,
-                    server="kalyanscanner.local."
-                )
-                aio_zeroconf_instance = AsyncZeroconf()
-                await aio_zeroconf_instance.async_register_service(info)
-                print(f"📡 Broadcasting KalyanScanner on {ip_address}:{PORT} via mDNS")
-            except Exception as e:
-                print(f"⚠️ Failed to start mDNS broadcasting: {repr(e)}")
-    else:
-        print("⚠️ 'zeroconf' library not installed. Auto-discovery will not work.")
+    # if HAS_ZEROCONF:
+    #     ip_address = get_local_ip()
+    #     if ip_address != "127.0.0.1":
+    #         try:
+    #             info = ServiceInfo(
+    #                 "_http._tcp.local.",
+    #                 "KalyanScanner._http._tcp.local.",
+    #                 parsed_addresses=[ip_address],
+    #                 port=PORT,
+    #                 server="kalyanscanner.local."
+    #             )
+    #             aio_zeroconf_instance = AsyncZeroconf()
+    #             await aio_zeroconf_instance.async_register_service(info)
+    #             print(f"📡 Broadcasting KalyanScanner on {ip_address}:{PORT} via mDNS")
+    #         except Exception as e:
+    #             print(f"⚠️ Failed to start mDNS broadcasting: {repr(e)}")
+    # else:
+    #     print("⚠️ 'zeroconf' library not installed. Auto-discovery will not work.")
 
     yield
     
     # Shutdown mDNS on exit safely
-    if aio_zeroconf_instance:
-        try:
-            await aio_zeroconf_instance.async_unregister_all_services()
-            await aio_zeroconf_instance.async_close()
-        except:
-            pass
+    # if aio_zeroconf_instance:
+    #     try:
+    #         await aio_zeroconf_instance.async_unregister_all_services()
+    #         await aio_zeroconf_instance.async_close()
+    #     except:
+    #         pass
 
 # Define a secret key known only to your apps
 APP_SECRET_TOKEN = "Kalyan_Secure_Access_2026_##"
