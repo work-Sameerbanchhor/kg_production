@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-multipart
+aiofiles
+reportlab
+netifaces
+zeroconf
+google-api-python-client 
+google-auth-httplib2 
+google-auth-oauthlib
+google-genai

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 Forbidden - Kalyan Smart Student System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap');
+
+        :root {
+            --forest-900: #1a2e1a;
+            --forest-800: #243524;
+            --forest-700: #2d4a2d;
+            --forest-600: #3a5c3a;
+            --forest-500: #4a7c4a;
+            --forest-400: #6b9e6b;
+            --forest-300: #8fb88f;
+            --forest-200: #b5d3b5;
+            --forest-100: #dceadc;
+            --forest-50:  #f0f7f0;
+
+            --gold-500: #b8944a;
+            --gold-400: #d4aa5c;
+            --gold-300: #e8c882;
+
+            --ivory-100: #faf8f4;
+            --ivory-200: #f5f1ea;
+            --ivory-300: #ede8df;
+            --ivory-400: #ddd6c9;
+
+            --text-dark: #1a2e1a;
+            --text-muted: #7a8c7a;
+            --text-on-dark: #e8eee8;
+            --text-on-dark-muted: #a3b8a3;
+
+            --danger: #c0392b;
+            --danger-soft: #e57373;
+            --success: #27ae60;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--forest-900);
+            color: var(--text-on-dark);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Layered Forest Background ── */
+        .bg-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Radial gradient glow in center — tinted toward danger */
+        .bg-glow {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(192,57,43,0.18) 0%, rgba(26,46,26,0) 70%);
+            animation: glowPulse 4s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+            50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        /* Ambient forest blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.12;
+            z-index: 0;
+            animation: blobDrift 12s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 350px; height: 350px;
+            background: var(--forest-500);
+            top: -80px; left: -60px;
+        }
+
+        .blob-2 {
+            width: 300px; height: 300px;
+            background: var(--danger);
+            bottom: -60px; right: -60px;
+            animation-delay: -6s;
+            opacity: 0.10;
+        }
+
+        .blob-3 {
+            width: 200px; height: 200px;
+            background: var(--gold-400);
+            top: 30%; right: 10%;
+            animation-delay: -3s;
+        }
+
+        @keyframes blobDrift {
+            0%   { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 20px) scale(1.2); }
+        }
+
+        /* ── Floating Leaf Particles ── */
+        .particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50% 0 50% 0;
+            opacity: 0;
+            animation: leafFloat linear infinite;
+        }
+
+        .leaf:nth-child(1)  { left: 8%;   background: var(--forest-400); animation-duration: 10s; animation-delay: 0s;   width: 5px; height: 5px; }
+        .leaf:nth-child(2)  { left: 18%;  background: var(--gold-400);   animation-duration: 14s; animation-delay: 2s;   width: 7px; height: 7px; }
+        .leaf:nth-child(3)  { left: 28%;  background: var(--forest-300); animation-duration: 11s; animation-delay: 1s;   width: 4px; height: 4px; }
+        .leaf:nth-child(4)  { left: 42%;  background: var(--forest-500); animation-duration: 13s; animation-delay: 3.5s; width: 6px; height: 6px; }
+        .leaf:nth-child(5)  { left: 55%;  background: var(--gold-300);   animation-duration: 9s;  animation-delay: 0.5s; width: 8px; height: 8px; }
+        .leaf:nth-child(6)  { left: 65%;  background: var(--forest-400); animation-duration: 12s; animation-delay: 4s;   width: 5px; height: 5px; }
+        .leaf:nth-child(7)  { left: 78%;  background: var(--gold-500);   animation-duration: 15s; animation-delay: 1.8s; width: 6px; height: 6px; }
+        .leaf:nth-child(8)  { left: 88%;  background: var(--forest-300); animation-duration: 10s; animation-delay: 2.8s; width: 4px; height: 4px; }
+        .leaf:nth-child(9)  { left: 35%;  background: var(--gold-400);   animation-duration: 16s; animation-delay: 5s;   width: 7px; height: 7px; }
+        .leaf:nth-child(10) { left: 92%;  background: var(--forest-500); animation-duration: 11s; animation-delay: 1.2s; width: 5px; height: 5px; }
+
+        @keyframes leafFloat {
+            0%   { transform: translateY(100vh) rotate(0deg) scale(0); opacity: 0; }
+            8%   { opacity: 0.5; }
+            50%  { transform: translateY(50vh) rotate(180deg) translateX(30px) scale(1); opacity: 0.4; }
+            90%  { opacity: 0.2; }
+            100% { transform: translateY(-10vh) rotate(360deg) translateX(-20px) scale(0.8); opacity: 0; }
+        }
+
+        /* ── Main Container ── */
+        .splash-container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Lock Icon with Forest Glow Ring ── */
+        .icon-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: staggerIn 1s ease-out 0.3s forwards;
+            width: 180px;
+            height: 180px;
+        }
+
+        .icon-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                var(--forest-500),
+                var(--danger),
+                var(--gold-400),
+                var(--forest-400),
+                var(--forest-500)
+            );
+            opacity: 0.3;
+            animation: spinGlow 8s linear infinite;
+            filter: blur(22px);
+        }
+
+        .icon-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 165px; height: 165px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--danger-soft);
+            border-right-color: var(--forest-400);
+            animation: spinRing 4.5s linear infinite;
+        }
+
+        .icon-ring-outer {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 185px; height: 185px;
+            border-radius: 50%;
+            border: 1px solid transparent;
+            border-bottom-color: rgba(212,170,92,0.3);
+            border-left-color: rgba(192,57,43,0.25);
+            animation: spinRing 6s linear infinite reverse;
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 72px;
+            height: 72px;
+            z-index: 2;
+            filter: drop-shadow(0 0 20px rgba(192,57,43,0.35));
+            animation: lockPulse 3.5s ease-in-out infinite;
+        }
+
+        .lock-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: var(--gold-300);
+            fill: none;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @keyframes spinGlow {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to   { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes spinRing {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to   { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes lockPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1);    filter: drop-shadow(0 0 20px rgba(192,57,43,0.35)); }
+            50%      { transform: translate(-50%, -50%) scale(1.05); filter: drop-shadow(0 0 32px rgba(212,170,92,0.45)); }
+        }
+
+        /* ── Error Code ── */
+        .error-code {
+            font-family: 'DM Serif Display', serif;
+            font-size: 5rem;
+            font-weight: 400;
+            line-height: 1;
+            letter-spacing: 0.02em;
+            background: linear-gradient(135deg, var(--text-on-dark) 0%, var(--gold-300) 50%, var(--danger-soft) 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation:
+                staggerIn 1s ease-out 0.5s forwards,
+                gradientShift 5s ease-in-out infinite;
+            opacity: 0;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Text ── */
+        .error-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            color: var(--text-on-dark);
+            opacity: 0;
+            animation: staggerIn 1s ease-out 0.7s forwards;
+        }
+
+        .error-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-on-dark-muted);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 0.7rem;
+            opacity: 0;
+            animation: staggerIn 1s ease-out 0.85s forwards;
+        }
+
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ── Decorative Divider ── */
+        .divider {
+            width: 60px;
+            height: 2px;
+            margin: 1.5rem auto 0;
+            background: linear-gradient(90deg, transparent, var(--gold-400), transparent);
+            opacity: 0;
+            animation: staggerIn 1s ease-out 1s forwards;
+        }
+
+        /* ── Description ── */
+        .error-description {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-on-dark-muted);
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            animation: staggerIn 1s ease-out 1.15s forwards;
+        }
+
+        /* ── Status Indicator ── */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: staggerIn 1s ease-out 1.3s forwards;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--danger);
+            position: relative;
+        }
+
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: pingPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes pingPulse {
+            0%         { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+            75%, 100%  { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+        }
+
+        .status-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--danger-soft);
+            opacity: 0.85;
+        }
+
+        /* ── Actions ── */
+        .action-container {
+            margin-top: 2rem;
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: staggerIn 1s ease-out 1.45s forwards;
+        }
+
+        .btn {
+            padding: 11px 28px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--forest-700), var(--forest-800));
+            color: #fff;
+            border: 1px solid rgba(107,158,107,0.25);
+            box-shadow: 0 4px 15px rgba(26,46,26,0.4);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212,170,92,0.18), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(26,46,26,0.55);
+            background: linear-gradient(135deg, var(--forest-600), var(--forest-700));
+        }
+
+        .btn-primary:hover::before { left: 100%; }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-on-dark-muted);
+            border: 1px solid rgba(163,184,163,0.2);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-on-dark);
+            border-color: rgba(212,170,92,0.4);
+            background: rgba(212,170,92,0.05);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost:active { transform: translateY(0); }
+
+        /* ── Stagger Entrance ── */
+        @keyframes staggerIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Footer ── */
+        .footer {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: var(--text-on-dark-muted);
+            opacity: 0;
+            animation: staggerIn 1s ease-out 2s forwards;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .footer span {
+            color: var(--gold-400);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 520px) {
+            .error-code { font-size: 3.8rem; }
+            .error-title { font-size: 1.3rem; }
+            .icon-container { width: 150px; height: 150px; }
+            .icon-glow { width: 150px; height: 150px; }
+            .icon-ring { width: 138px; height: 138px; }
+            .icon-ring-outer { width: 158px; height: 158px; }
+            .lock-icon { width: 60px; height: 60px; }
+            .splash-container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Background Glow -->
+    <div class="bg-glow"></div>
+
+    <!-- Floating Leaf Particles -->
+    <div class="particles">
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+        <div class="leaf"></div>
+    </div>
+
+    <div class="splash-container">
+        <!-- Lock icon with animated glow ring -->
+        <div class="icon-container">
+            <div class="icon-glow"></div>
+            <div class="icon-ring-outer"></div>
+            <div class="icon-ring"></div>
+            <div class="lock-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="10.5" width="16" height="11" rx="2.2"/>
+                    <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5"/>
+                    <circle cx="12" cy="15.5" r="1.3" fill="currentColor" stroke="none" style="color: var(--gold-300);"/>
+                    <line x1="12" y1="16.3" x2="12" y2="18.5"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="error-code">403</div>
+        <h1 class="error-title">Access Forbidden</h1>
+        <div class="error-label">Kalyan Smart Student System</div>
+        <div class="divider"></div>
+
+        <p class="error-description">
+            You don't have permission to view this resource. Your credentials may be insufficient, or this area is restricted to authorized personnel only.
+        </p>
+
+        <!-- Status Indicator -->
+        <div class="status-indicator">
+            <div class="pulse-dot"></div>
+            <span class="status-label">Access Denied</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-container">
+            <a href="javascript:history.back()" class="btn btn-primary">Go Back</a>
+            <a href="/" class="btn btn-ghost">Home</a>
+        </div>
+    </div>
+
+    <!-- <div class="footer">Powered by <span>Kalyan Technologies</span></div> -->
+
+</body>
+</html>

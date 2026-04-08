@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Kalyan College Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* ═══ SETTINGS-SPECIFIC STYLES ═══ */
+
+        /* Mode Toggle */
+        .mode-toggle-track {
+            display: flex;
+            gap: 4px;
+            background: var(--ivory-200);
+            padding: 5px;
+            border-radius: 14px;
+            width: fit-content;
+            position: relative;
+        }
+        [data-theme="dark"] .mode-toggle-track {
+            background: rgba(255,255,255,0.06);
+        }
+        .mode-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 22px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            z-index: 1;
+        }
+        .mode-toggle-btn i {
+            font-size: 1.1rem;
+        }
+        .mode-toggle-btn.active {
+            background: var(--primary-500);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+        }
+        .mode-toggle-btn:not(.active):hover {
+            color: var(--text-dark);
+            background: rgba(0,0,0,0.04);
+        }
+        [data-theme="dark"] .mode-toggle-btn:not(.active):hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* Theme Grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .theme-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px;
+            }
+        }
+
+        /* Theme Card */
+        .theme-card {
+            position: relative;
+            padding: 16px 14px 14px;
+            border-radius: 14px;
+            border: 2px solid var(--ivory-300);
+            background: var(--card-bg, #fff);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            overflow: hidden;
+        }
+        [data-theme="dark"] .theme-card {
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+        }
+        .theme-card:hover:not(.active) {
+            border-color: var(--primary-300);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        [data-theme="dark"] .theme-card:hover:not(.active) {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .theme-card.active {
+            border-color: var(--primary-500);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .theme-card.active {
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        }
+
+        /* Active badge */
+        .theme-card.active::after {
+            content: '\2713';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-500);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        /* Color swatches */
+        .theme-swatches {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 0 auto 10px;
+            width: fit-content;
+        }
+        .swatch-primary {
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 0 0 50%;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            position: relative;
+            z-index: 2;
+        }
+        .swatch-accent {
+            width: 36px;
+            height: 36px;
+            border-radius: 0 50% 50% 0;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            margin-left: -4px;
+            position: relative;
+            z-index: 1;
+        }
+        [data-theme="dark"] .swatch-primary,
+        [data-theme="dark"] .swatch-accent {
+            border-color: rgba(0,0,0,0.3);
+        }
+
+        .theme-emoji {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .theme-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+        .theme-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Live Preview Card */
+        .preview-card {
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+            border: 2px solid var(--ivory-300);
+            background: var(--card-bg, #fff);
+            transition: all 0.3s ease;
+        }
+        [data-theme="dark"] .preview-card {
+            border-color: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+        }
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .preview-header h4 {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .preview-swatch-strip {
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 40px;
+            flex: 1;
+            min-width: 180px;
+        }
+        [data-theme="dark"] .preview-swatch-strip {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .preview-swatch-strip div {
+            flex: 1;
+            min-width: 0;
+        }
+        .preview-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .preview-btn {
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+        .preview-input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .preview-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .preview-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .preview-shadow-card {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Section label */
+        .settings-label {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .settings-label i {
+            font-size: 1.15rem;
+            opacity: 0.8;
+        }
+        .settings-sublabel {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+            <i class="ph ph-caret-left" id="toggle-icon"></i>
+        </button>
+        <div class="sidebar-header">
+            <div class="sidebar-logo"><img src="/static/media/kalyan_college_logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+            <div class="sidebar-brand-text">
+                <h1>Kalyan PG College</h1>
+                <p>Bhilai Nagar</p>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-group-label"><span>Main</span></div>
+            <a href="/#dashboard" class="nav-item">
+                <i class="ph ph-squares-four icon"></i> <span>Dashboard</span>
+            </a>
+
+            <div class="nav-group-label"><span>Admission</span></div>
+            <a href="/#add-student" class="nav-item">
+                <i class="ph ph-user-plus icon"></i> <span>Add Student</span>
+            </a>
+            <a href="/#search-students" class="nav-item">
+                <i class="ph ph-users icon"></i> <span>Search & View</span>
+            </a>
+
+
+            <div class="nav-group-label"><span>Fees</span></div>
+            <a href="/#fee-structure" class="nav-item">
+                <i class="ph ph-list-numbers icon"></i> <span>Fee Structure</span>
+            </a>
+            <a href="/#fee-payment" class="nav-item">
+                <i class="ph ph-currency-inr icon"></i> <span>Record Payment</span>
+            </a>
+            <a href="/#fee-status" class="nav-item">
+                <i class="ph ph-receipt icon"></i> <span>Fee Status</span>
+            </a>
+
+            <div class="nav-group-label"><span>System</span></div>
+            <a href="/settings" class="nav-item active">
+                <i class="ph ph-gear icon"></i> <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Sidebar mobile overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+    <!-- ═══ MAIN ═══ -->
+    <div class="main">
+        <header class="top-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <button class="mobile-toggle" onclick="openMobileSidebar()"><i class="ph ph-list"></i></button>
+                <h2 id="page-title">Settings</h2>
+            </div>
+            <div class="header-actions"></div>
+        </header>
+
+        <div class="content">
+
+            <div class="tabs" style="margin-bottom: 24px;">
+                <button class="tab-btn active" id="tab-appearance" onclick="showSettingsSection('appearance')">
+                    <i class="ph ph-palette"></i> Appearance
+                </button>
+                <button class="tab-btn" id="tab-upi" onclick="showSettingsSection('upi')">
+                    <i class="ph ph-qr-code"></i> UPI Payments
+                </button>
+                <button class="tab-btn" id="tab-fees" onclick="showSettingsSection('fees')">
+                    <i class="ph ph-list-numbers"></i> Legacy Fee Structure
+                </button>
+                <button class="tab-btn" id="tab-ai" onclick="showSettingsSection('ai')">
+                    <i class="ph ph-brain"></i> AI Configuration
+                </button>
+                <button class="tab-btn" id="tab-data" onclick="showSettingsSection('data')">
+                    <i class="ph ph-cloud-arrow-down"></i> Data & Backups
+                </button>
+            </div>
+
+            <!-- ════ APPEARANCE SETTINGS ════ -->
+            <div class="section active" id="sec-appearance">
+                <div class="page-intro">
+                    <p>Customize the look and feel of your management system</p>
+                </div>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-title"><i class="ph ph-palette"></i> Personalization</div>
+                    
+                    <!-- Interface Mode -->
+                    <div style="margin-bottom: 32px;">
+                        <div class="settings-label">
+                            <i class="ph ph-moon-stars"></i> Interface Mode
+                        </div>
+                        <div class="mode-toggle-track">
+                            <button id="mode-light-btn" class="mode-toggle-btn active" onclick="setMode('light')">
+                                <i class="ph-fill ph-sun-dim"></i> Light
+                            </button>
+                            <button id="mode-dark-btn" class="mode-toggle-btn" onclick="setMode('dark')">
+                                <i class="ph-fill ph-moon-stars"></i> Dark
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Theme Color -->
+                    <div>
+                        <div class="settings-label">
+                            <i class="ph ph-paint-brush"></i> Theme Color
+                        </div>
+                        <p class="settings-sublabel">Choose a color palette that suits your style. Each theme includes a full light & dark mode.</p>
+                        <div class="theme-grid" id="theme-grid">
+                            <!-- Dynamic themes rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="card" id="preview-card">
+                    <div class="card-title"><i class="ph ph-eye"></i> Live Preview</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 18px;">See how your current theme looks across UI elements</p>
+
+                    <!-- Primary palette strip -->
+                    <div style="margin-bottom: 18px;">
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:6px;">Primary Palette</div>
+                        <div class="preview-swatch-strip" id="preview-primary-strip"></div>
+                    </div>
+
+                    <!-- Accent palette strip -->
+                    <div style="margin-bottom: 22px;">
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:6px;">Accent Palette</div>
+                        <div class="preview-swatch-strip" id="preview-accent-strip"></div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;">Buttons & Actions</div>
+                    <div class="preview-btns" id="preview-buttons"></div>
+
+                    <!-- Inputs -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:6px;">Inputs & Badges</div>
+                    <div class="preview-input-row" id="preview-inputs"></div>
+
+                    <!-- Shadows -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:18px;">Shadows & Elevation</div>
+                    <div class="preview-row" id="preview-shadows"></div>
+
+                    <!-- Gradient -->
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);margin-bottom:8px;margin-top:6px;">Hero Gradient</div>
+                    <div id="preview-gradient" style="height:48px;border-radius:12px;margin-bottom:4px;transition:all 0.3s ease;"></div>
+                </div>
+
+            </div>
+
+            <!-- ════ UPI SETTINGS ════ -->
+            <div class="section" id="sec-upi-settings">
+                <div class="page-intro">
+                    <p>Manage payment gateway and UPI configurations for fee collection</p>
+                </div>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-title"><i class="ph ph-qr-code"></i> UPI Payment Configuration</div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-dark);">1. Add New UPI ID</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">UPI Label (e.g. SBI Account)</label>
+                                <input type="text" id="new-upi-label" class="form-input" placeholder="College Main Account">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">UPI ID / VPA</label>
+                                <input type="text" id="new-upi-id" class="form-input" placeholder="college@upi">
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="addUPIOption()">
+                                <i class="ph ph-plus-circle"></i> Add UPI Option
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title"><i class="ph ph-list-checks"></i> Available UPI Options</div>
+                    <div class="table-wrapper">
+                        <table class="data-table" id="upi-table">
+                            <thead>
+                                <tr>
+                                    <th>Label</th>
+                                    <th>UPI ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="upi-list">
+                                <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════ AI CONFIGURATION SETTINGS ════ -->
+            <div class="section" id="sec-ai-settings">
+                <div class="page-intro">
+                    <p>Manage Gemini AI API keys for document scanning and auto-fill features</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="ph ph-key"></i> Gemini API Management</div>
+
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-dark);">Add New API Key</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Key Label (e.g. Personal, College)</label>
+                                <input type="text" id="new-gemini-label" class="form-input" placeholder="Main API Key">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <input type="password" id="new-gemini-key" class="form-input" placeholder="AIza...">
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="addGeminiKey()">
+                                <i class="ph ph-plus-circle"></i> Add Key
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title"><i class="ph ph-list-numbers"></i> Stored Keys</div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Label</th>
+                                    <th>Key Snippet</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gemini-key-list">
+                                <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title"><i class="ph ph-robot"></i> Model Selection</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 20px;">
+                        Choose which Gemini model is used for document scanning. Faster models cost fewer quota tokens; smarter models give better extraction accuracy.
+                    </p>
+                    <div class="form-grid" style="align-items: flex-end;">
+                        <div class="form-group">
+                            <label class="form-label">Active Model</label>
+                            <select id="gemini-model-select" class="form-input">
+                                <optgroup label="Gemini 2.5">
+                                    <option value="gemini-2.5-pro-preview-03-25">gemini-2.5-pro-preview ✦ Most Intelligent</option>
+                                </optgroup>
+                                <optgroup label="Gemini 2.0">
+                                    <option value="gemini-2.0-flash">gemini-2.0-flash ⚡ Fast &amp; Smart</option>
+                                    <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite 🪶 Lightweight</option>
+                                </optgroup>
+                                <optgroup label="Gemini 1.5">
+                                    <option value="gemini-1.5-pro">gemini-1.5-pro 🧠 Balanced</option>
+                                    <option value="gemini-1.5-flash">gemini-1.5-flash ⚡ Fast</option>
+                                    <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b 🪶 Tiny</option>
+                                </optgroup>
+                                <optgroup label="Legacy / Preview">
+                                    <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Legacy Default)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 0 0 auto;">
+                            <button class="btn btn-primary" onclick="saveGeminiModel()">
+                                <i class="ph ph-floppy-disk"></i> Save Model
+                            </button>
+                        </div>
+                    </div>
+                    <div id="gemini-model-info" style="margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; background: var(--ivory-100); color: var(--text-muted); border: 1px solid var(--ivory-300);"></div>
+                </div>
+            </div>
+
+            <!-- ════ DATA MANAGEMENT SETTINGS ════ -->
+            <div class="section" id="sec-data-settings">
+                <div class="page-intro">
+                    <p>Manage cloud synchronization for your database and configurations.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="ph ph-cloud-check"></i> Google Drive Sync</div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                        Your database, fee structure, and settings are automatically backed up to Google Drive on every change. 
+                        If your server restarts or you suspect your local data is out of date, you can manually pull the latest data from the cloud here.
+                    </p>
+                    
+                    <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: var(--radius-sm); margin-bottom: 20px;">
+                        <strong style="color: var(--text-dark); display: block; margin-bottom: 5px;">Warning:</strong>
+                        <span style="font-size: 0.85rem; color: var(--text-body);">Pulling data will overwrite your current local files with whatever is stored in Google Drive. Any unsaved recent local changes that haven't synced yet will be lost.</span>
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-pull-data" onclick="pullDriveBackup()">
+                        <i class="ph ph-cloud-arrow-down"></i> Restore Latest Data from Drive
+                    </button>
+                </div>
+            </div>
+
+            <!-- ════ FEES STRUCTURE SETTINGS ════ -->
+            <div class="section" id="sec-fees">
+                <div class="page-intro">
+                    <p>Manage the Legacy 2024 Fee Structure configurations</p>
+                </div>
+                
+                <div class="tabs" style="font-size: 0.85rem; margin-bottom: 20px;">
+                    <button class="tab-btn active" id="subtab-courses" onclick="showFeeSubtab('courses')">Courses</button>
+                    <button class="tab-btn" id="subtab-installments" onclick="showFeeSubtab('installments')">Installments</button>
+                    <button class="tab-btn" id="subtab-heads" onclick="showFeeSubtab('heads')">Detailed Heads</button>
+                </div>
+
+                <div class="card" style="margin-bottom: 24px;">
+                    <!-- Courses Subtab -->
+                    <div id="fee-courses-container" style="display: block;">
+                        <div class="card-title"><i class="ph ph-books"></i> Manage Courses</div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <input type="text" id="new-course-name" class="form-input" placeholder="Enter new course name" style="max-width: 300px;">
+                            <button class="btn btn-primary" onclick="addCourse()"><i class="ph ph-plus"></i> Add</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead><tr><th>Course Name</th><th style="width: 100px;">Actions</th></tr></thead>
+                                <tbody id="courses-list-tbody"><tr><td colspan="2">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Installments Subtab -->
+                    <div id="fee-installments-container" style="display: none;">
+                        <div class="card-title"><i class="ph ph-money"></i> Manage Installments</div>
+                        <div style="margin-bottom: 20px;">
+                            <label class="form-label">Select Course</label>
+                            <select id="inst-course-select" class="form-input" style="max-width: 300px;" onchange="renderInstallmentInputs()"></select>
+                            <button class="btn btn-secondary" onclick="initCourseInstallment()" style="margin-top: 10px;" id="btn-init-inst"><i class="ph ph-plus"></i> Initialize Data for Selected Course</button>
+                        </div>
+                        <div id="installment-forms" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div style="padding: 16px; border: 1px solid var(--ivory-300); border-radius: 8px;">
+                                    <h4 style="margin-bottom: 12px;">First Installment</h4>
+                                    <div class="form-group">
+                                        <label class="form-label">Various / Extra</label>
+                                        <input type="number" class="form-input" id="inst-1-various" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tuition</label>
+                                        <input type="number" class="form-input" id="inst-1-tuition" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Practical</label>
+                                        <input type="number" class="form-input" id="inst-1-practical" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" style="font-weight: bold;">First Total (Auto)</label>
+                                        <input type="number" class="form-input" id="inst-1-total" placeholder="0" readonly style="background: var(--ivory-200);">
+                                    </div>
+                                </div>
+                                <div style="padding: 16px; border: 1px solid var(--ivory-300); border-radius: 8px;">
+                                    <h4 style="margin-bottom: 12px;">Second Installment</h4>
+                                    <div class="form-group">
+                                        <label class="form-label">Various / Extra</label>
+                                        <input type="number" class="form-input" id="inst-2-various" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tuition</label>
+                                        <input type="number" class="form-input" id="inst-2-tuition" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Practical</label>
+                                        <input type="number" class="form-input" id="inst-2-practical" placeholder="0" oninput="updateInstallments()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" style="font-weight: bold;">Second Total (Auto)</label>
+                                        <input type="number" class="form-input" id="inst-2-total" placeholder="0" readonly style="background: var(--ivory-200);">
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px; text-align: right;">
+                                <h3 style="color: var(--text-dark);">Year Total: ₹<span id="inst-year-total">0</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Heads Subtab -->
+                    <div id="fee-heads-container" style="display: none;">
+                        <div class="card-title"><i class="ph ph-receipt"></i> Detailed Fee Heads</div>
+                         <div style="margin-bottom: 20px;">
+                            <label class="form-label">Select Group</label>
+                            <select id="heads-group-select" class="form-input" style="max-width: 300px;" onchange="renderHeadsInputs()"></select>
+                            <button class="btn btn-secondary" onclick="addHeadGroup()" style="margin-top: 10px;"><i class="ph ph-plus"></i> Add New Group Here</button>
+                        </div>
+                        <div id="heads-forms" style="display: none;">
+                            <div style="margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-end;">
+                                <div class="form-group" style="margin: 0; flex: 1; max-width: 200px;">
+                                    <label class="form-label">Add New Field</label>
+                                    <input type="text" id="new-head-field-name" class="form-input" placeholder="Field name">
+                                </div>
+                                <button class="btn btn-secondary" onclick="addHeadField()">Add Field</button>
+                            </div>
+                            <div class="form-grid" id="heads-inputs-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                                <!-- Generated -->
+                            </div>
+                             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--ivory-300); text-align: right;">
+                                <h3 style="color: var(--text-dark);">Total: ₹<span id="heads-total">0</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; display: flex; justify-content: flex-end; padding-top: 16px; border-top: 2px solid var(--ivory-200);">
+                        <button class="btn btn-primary" onclick="saveFeeStructure()">
+                            <i class="ph ph-floppy-disk"></i> Save Fee Structure
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/static/theme.js"></script>
+<script>
+let upiSettings = { upi_options: [], active_upi: null };
+
+// ═══ THEME LOGIC ═══
+
+function renderThemeOptions() {
+    const container = document.getElementById('theme-grid');
+    if (!container) return;
+
+    container.innerHTML = themeSettings.themes.map(t => {
+        const primary500 = t.primary || t.colors?.primary?.['500'] || '#4a7c4a';
+        const accent500 = t.accent || t.colors?.accent?.['500'] || '#b8944a';
+        const emoji = t.emoji || '';
+        const desc = t.description || '';
+
+        return `
+            <div class="theme-card" onclick="setThemeColor('${t.id}')" data-theme-val="${t.id}">
+                ${emoji ? `<span class="theme-emoji">${emoji}</span>` : ''}
+                <div class="theme-swatches">
+                    <div class="swatch-primary" style="background:${primary500};" title="Primary"></div>
+                    <div class="swatch-accent" style="background:${accent500};" title="Accent"></div>
+                </div>
+                <div class="theme-name">${t.name}</div>
+                ${desc ? `<div class="theme-desc">${desc}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Functions moved to static/theme.js
+
+function renderPreview(theme, mode) {
+    const primary = theme.generated_primary || theme.colors?.primary;
+    const accent = theme.generated_accent || theme.colors?.accent;
+    if (!primary || !accent) return;
+
+    const tokens = theme[mode] || {};
+
+    // Primary strip
+    const primaryStrip = document.getElementById('preview-primary-strip');
+    if (primaryStrip && primary) {
+        primaryStrip.innerHTML = ['50','100','200','300','400','500','600','700','800','900']
+            .map(s => `<div style="background:${primary[s]}" title="primary-${s}"></div>`).join('');
+    }
+
+    // Accent strip
+    const accentStrip = document.getElementById('preview-accent-strip');
+    if (accentStrip && accent) {
+        accentStrip.innerHTML = ['50','100','200','300','400','500','600','700','800','900']
+            .map(s => `<div style="background:${accent[s]}" title="accent-${s}"></div>`).join('');
+    }
+
+    // Buttons
+    const btnsEl = document.getElementById('preview-buttons');
+    if (btnsEl) {
+        btnsEl.innerHTML = `
+            <span class="preview-btn" style="background:${primary['500']};color:${tokens.text_on_primary || '#fff'};">Primary</span>
+            <span class="preview-btn" style="background:${accent['500']};color:${tokens.text_on_accent || '#fff'};">Accent</span>
+            <span class="preview-btn" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};border:1.5px solid ${tokens.border_default || '#ddd'};">Surface</span>
+            <span class="preview-btn" style="background:transparent;color:${primary['500']};border:1.5px solid ${primary['500']};">Outline</span>
+        `;
+    }
+
+    // Inputs & badges
+    const inputsEl = document.getElementById('preview-inputs');
+    if (inputsEl) {
+        const sem = theme.colors?.semantic || {};
+        inputsEl.innerHTML = `
+            <input class="preview-input" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};border:1.5px solid ${tokens.border_default || '#ddd'};" value="Sample input" readonly>
+            <span class="preview-badge" style="background:${sem.success_light || '#d5f5e3'};color:${sem.success || '#27ae60'};">Success</span>
+            <span class="preview-badge" style="background:${sem.warning_light || '#fff3cd'};color:${sem.warning || '#f39c12'};">Warning</span>
+            <span class="preview-badge" style="background:${sem.error_light || '#f8d7da'};color:${sem.error || '#e74c3c'};">Error</span>
+            <span class="preview-badge" style="background:${sem.info_light || '#d1ecf1'};color:${sem.info || '#2980b9'};">Info</span>
+        `;
+    }
+
+    // Shadows
+    const shadowsEl = document.getElementById('preview-shadows');
+    if (shadowsEl) {
+        shadowsEl.innerHTML = ['sm','md','lg','glow'].map(s => {
+            const shadow = tokens[`shadow_${s}`] || 'none';
+            return `<div class="preview-shadow-card" style="background:${tokens.surface || '#fff'};color:${tokens.text_primary || '#000'};box-shadow:${shadow};">${s.toUpperCase()}</div>`;
+        }).join('');
+    }
+
+    // Gradient
+    const gradientEl = document.getElementById('preview-gradient');
+    if (gradientEl) {
+        gradientEl.style.background = tokens.gradient_hero || `linear-gradient(135deg, ${primary['500']}, ${accent['500']})`;
+    }
+}
+
+// saveThemeSettings moved to static/theme.js
+
+
+// ═══ SETTINGS TAB NAV ═══
+function showSettingsSection(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const sectionMap = { 
+        'upi': 'sec-upi-settings', 
+        'ai': 'sec-ai-settings', 
+        'data': 'sec-data-settings' 
+    };
+    const sectionId = sectionMap[section] || ('sec-' + section);
+    document.getElementById(sectionId).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + section).classList.add('active');
+}
+
+
+// ═══ INIT ═══
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    loadSettings();
+    loadFeeStructure();
+    loadGeminiSettings();
+});
+
+document.addEventListener('themeLoaded', () => {
+    renderThemeOptions();
+});
+
+
+// ═══ SIDEBAR ═══
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const icon = document.getElementById('toggle-icon');
+    sidebar.classList.toggle('collapsed');
+    icon.className = sidebar.classList.contains('collapsed') ? 'ph ph-caret-right' : 'ph ph-caret-left';
+}
+
+function openMobileSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('active');
+}
+function closeMobileSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('active');
+}
+
+// ═══ API HELPERS ═══
+async function api(path, options = {}) {
+    const res = await fetch(path, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...options.headers }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'API Error');
+    return data;
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = {
+        success:'<i class="ph-fill ph-check-circle" style="color:var(--success)"></i>',
+        error:'<i class="ph-fill ph-x-circle" style="color:var(--danger)"></i>',
+        info:'<i class="ph-fill ph-info" style="color:var(--info)"></i>'
+    };
+    toast.innerHTML = `<span>${icons[type]||icons.info}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+// ═══ DATA SYNC LOGIC ═══
+async function pullDriveBackup() {
+    const btn = document.getElementById('btn-pull-data');
+    if (!confirm("Are you sure? This will replace the local database with the cloud version.")) return;
+    
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Syncing...';
+
+    try {
+        const result = await api('/api/system/pull-backup', { method: 'POST' });
+        showToast(result.message, 'success');
+        
+        // Reload settings so the UI updates
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    } catch(e) {
+        showToast(e.message || 'Failed to sync with Drive', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// ═══ UPI LOGIC ═══
+async function loadSettings() {
+    try {
+        const data = await api('/api/settings/upi');
+        upiSettings = data;
+        renderUPIList();
+    } catch (e) {
+        showToast('Failed to load settings', 'error');
+    }
+}
+
+function renderUPIList() {
+    const container = document.getElementById('upi-list');
+    if (upiSettings.upi_options.length === 0) {
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">No UPI options added yet</td></tr>';
+        return;
+    }
+    
+    container.innerHTML = upiSettings.upi_options.map(opt => `
+        <tr>
+            <td><strong>${opt.label}</strong></td>
+            <td><code>${opt.id}</code></td>
+            <td>
+                ${upiSettings.active_upi === opt.id 
+                    ? '<span class="badge badge-success">ACTIVE</span>' 
+                    : `<span class="badge badge-info" style="cursor:pointer;" onclick="setActiveUPI('${opt.id}')">SET AS ACTIVE</span>`}
+            </td>
+            <td>
+                <button class="action-btn delete" onclick="deleteUPI('${opt.id}')" title="Delete">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function addUPIOption() {
+    const label = document.getElementById('new-upi-label').value.trim();
+    const upiId = document.getElementById('new-upi-id').value.trim();
+    
+    if (!label || !upiId) {
+        showToast('Label and UPI ID are required', 'error');
+        return;
+    }
+    
+    if (upiSettings.upi_options.find(o => o.id === upiId)) {
+        showToast('UPI ID already exists', 'error');
+        return;
+    }
+    
+    upiSettings.upi_options.push({ label, id: upiId });
+    if (!upiSettings.active_upi) upiSettings.active_upi = upiId;
+    
+    try {
+        await saveSettings();
+        document.getElementById('new-upi-label').value = '';
+        document.getElementById('new-upi-id').value = '';
+        showToast('UPI option added', 'success');
+    } catch (e) {
+        showToast('Failed to save settings', 'error');
+    }
+}
+
+async function setActiveUPI(upiId) {
+    upiSettings.active_upi = upiId;
+    try {
+        await saveSettings();
+        showToast('Active UPI updated', 'success');
+    } catch (e) {
+        showToast('Failed to update active UPI', 'error');
+    }
+}
+
+async function deleteUPI(upiId) {
+    if (!confirm('Are you sure you want to delete this UPI option?')) return;
+    
+    upiSettings.upi_options = upiSettings.upi_options.filter(o => o.id !== upiId);
+    if (upiSettings.active_upi === upiId) {
+        upiSettings.active_upi = upiSettings.upi_options.length > 0 ? upiSettings.upi_options[0].id : null;
+    }
+    
+    try {
+        await saveSettings();
+        showToast('UPI option deleted', 'success');
+    } catch (e) {
+        showToast('Failed to delete UPI option', 'error');
+    }
+}
+
+async function saveSettings() {
+    await api('/api/settings/upi', {
+        method: 'POST',
+        body: JSON.stringify(upiSettings)
+    });
+    renderUPIList();
+}
+
+// ═══ FEE STRUCTURE LOGIC ═══
+let feeStructureData = { COURSES: [], FEE_INSTALLMENTS: {}, FEE_HEADS_DETAIL: {} };
+
+async function loadFeeStructure() {
+    try {
+        feeStructureData = await api('/api/settings/fee-structure');
+        if(!feeStructureData.COURSES) feeStructureData.COURSES = [];
+        if(!feeStructureData.FEE_INSTALLMENTS) feeStructureData.FEE_INSTALLMENTS = {};
+        if(!feeStructureData.FEE_HEADS_DETAIL) feeStructureData.FEE_HEADS_DETAIL = {};
+        renderFeeCourses();
+        populateSelectors();
+    } catch (e) {
+        showToast('Failed to load fee structure', 'error');
+    }
+}
+
+function showFeeSubtab(tab) {
+    document.getElementById('subtab-courses').classList.remove('active');
+    document.getElementById('subtab-installments').classList.remove('active');
+    document.getElementById('subtab-heads').classList.remove('active');
+    document.getElementById(`subtab-${tab}`).classList.add('active');
+
+    document.getElementById('fee-courses-container').style.display = 'none';
+    document.getElementById('fee-installments-container').style.display = 'none';
+    document.getElementById('fee-heads-container').style.display = 'none';
+    document.getElementById(`fee-${tab}-container`).style.display = 'block';
+    
+    if (tab === 'installments' || tab === 'heads') {
+        populateSelectors();
+    }
+}
+
+function renderFeeCourses() {
+    const tbody = document.getElementById('courses-list-tbody');
+    if (!feeStructureData.COURSES.length) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;">No courses added</td></tr>';
+        return;
+    }
+    tbody.innerHTML = feeStructureData.COURSES.map((c, i) => `
+        <tr>
+            <td><strong>${c}</strong></td>
+            <td><button class="action-btn delete" onclick="deleteCourse(${i})"><i class="ph ph-trash"></i></button></td>
+        </tr>
+    `).join('');
+}
+
+function addCourse() {
+    const input = document.getElementById('new-course-name');
+    const name = input.value.trim();
+    if (name && !feeStructureData.COURSES.includes(name)) {
+        feeStructureData.COURSES.push(name);
+        input.value = '';
+        renderFeeCourses();
+    }
+}
+
+function deleteCourse(index) {
+    const course = feeStructureData.COURSES[index];
+    if (confirm(`Remove course: ${course}?`)) {
+        feeStructureData.COURSES.splice(index, 1);
+        renderFeeCourses();
+    }
+}
+
+function populateSelectors() {
+    // Installments Selector
+    const instSelect = document.getElementById('inst-course-select');
+    const savedInstCourse = instSelect.value;
+    instSelect.innerHTML = '<option value="">-- Select Course --</option>' + 
+        feeStructureData.COURSES.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (feeStructureData.COURSES.includes(savedInstCourse)) instSelect.value = savedInstCourse;
+    renderInstallmentInputs();
+
+    // Heads Selector
+    const headsSelect = document.getElementById('heads-group-select');
+    const savedHeadGroup = headsSelect.value;
+    const groups = Object.keys(feeStructureData.FEE_HEADS_DETAIL);
+    headsSelect.innerHTML = '<option value="">-- Select Group --</option>' + 
+        groups.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (groups.includes(savedHeadGroup)) headsSelect.value = savedHeadGroup;
+    renderHeadsInputs();
+}
+
+function renderInstallmentInputs() {
+    const course = document.getElementById('inst-course-select').value;
+    const formsDiv = document.getElementById('installment-forms');
+    const initBtn = document.getElementById('btn-init-inst');
+    
+    if (!course) {
+        formsDiv.style.display = 'none';
+        initBtn.style.display = 'none';
+        return;
+    }
+    
+    if (!feeStructureData.FEE_INSTALLMENTS[course]) {
+        formsDiv.style.display = 'none';
+        initBtn.style.display = 'inline-block';
+        return;
+    }
+    
+    initBtn.style.display = 'none';
+    formsDiv.style.display = 'block';
+    
+    const data = feeStructureData.FEE_INSTALLMENTS[course];
+    const populate = (prefix, instData) => {
+        document.getElementById(`${prefix}-various`).value = instData?.various || 0;
+        document.getElementById(`${prefix}-tuition`).value = instData?.tuition || 0;
+        document.getElementById(`${prefix}-practical`).value = instData?.practical || 0;
+        document.getElementById(`${prefix}-total`).value = instData?.total || 0;
+    };
+    
+    populate('inst-1', data.first);
+    populate('inst-2', data.second);
+    document.getElementById('inst-year-total').innerText = data.year_total || 0;
+}
+
+function initCourseInstallment() {
+    const course = document.getElementById('inst-course-select').value;
+    if (!course) return;
+    feeStructureData.FEE_INSTALLMENTS[course] = {
+        first: { various: 0, tuition: 0, practical: 0, total: 0 },
+        second: { various: 0, tuition: 0, practical: 0, total: 0 },
+        year_total: 0
+    };
+    renderInstallmentInputs();
+}
+
+function updateInstallments() {
+    const course = document.getElementById('inst-course-select').value;
+    if (!course || !feeStructureData.FEE_INSTALLMENTS[course]) return;
+    
+    const readTotal = (prefix) => {
+        const various = parseFloat(document.getElementById(`${prefix}-various`).value) || 0;
+        const tuition = parseFloat(document.getElementById(`${prefix}-tuition`).value) || 0;
+        const practical = parseFloat(document.getElementById(`${prefix}-practical`).value) || 0;
+        const total = various + tuition + practical;
+        document.getElementById(`${prefix}-total`).value = total;
+        
+        feeStructureData.FEE_INSTALLMENTS[course][prefix === 'inst-1' ? 'first' : 'second'] = {
+            various, tuition, practical, total
+        };
+        return total;
+    };
+    
+    const t1 = readTotal('inst-1');
+    const t2 = readTotal('inst-2');
+    const year_total = t1 + t2;
+    document.getElementById('inst-year-total').innerText = year_total;
+    feeStructureData.FEE_INSTALLMENTS[course].year_total = year_total;
+}
+
+function addHeadGroup() {
+    const course = prompt("Enter a group map key (e.g. M.Sc. or B.A.):");
+    if (course && !feeStructureData.FEE_HEADS_DETAIL[course]) {
+        feeStructureData.FEE_HEADS_DETAIL[course] = { "TOTAL": 0 };
+        populateSelectors();
+        document.getElementById('heads-group-select').value = course;
+        renderHeadsInputs();
+    }
+}
+
+function addHeadField() {
+    const group = document.getElementById('heads-group-select').value;
+    const fieldNode = document.getElementById('new-head-field-name');
+    const field = fieldNode.value.trim();
+    if (!group || !field) return;
+    
+    if (feeStructureData.FEE_HEADS_DETAIL[group][field] === undefined) {
+        feeStructureData.FEE_HEADS_DETAIL[group][field] = 0;
+        fieldNode.value = '';
+        renderHeadsInputs();
+    }
+}
+
+function renderHeadsInputs() {
+    const group = document.getElementById('heads-group-select').value;
+    const formsDiv = document.getElementById('heads-forms');
+    const grid = document.getElementById('heads-inputs-grid');
+    
+    if (!group) {
+        formsDiv.style.display = 'none';
+        return;
+    }
+    
+    formsDiv.style.display = 'block';
+    const data = feeStructureData.FEE_HEADS_DETAIL[group];
+    
+    grid.innerHTML = Object.keys(data).filter(k => k !== 'TOTAL').map(k => `
+        <div class="form-group" style="position:relative;">
+            <label class="form-label">${k}</label>
+            <input type="number" class="form-input" value="${data[k]}" oninput="updateHeads('${k.replace(/'/g, "\\'")}', this.value)">
+            <button onclick="removeHeadField('${k.replace(/'/g, "\\'")}')" style="position:absolute; top: 0; right: 0; background:none; border:none; color:var(--danger); cursor:pointer;"><i class="ph ph-x"></i></button>
+        </div>
+    `).join('');
+    
+    document.getElementById('heads-total').innerText = data.TOTAL || 0;
+}
+
+function updateHeads(key, val) {
+    const group = document.getElementById('heads-group-select').value;
+    feeStructureData.FEE_HEADS_DETAIL[group][key] = parseFloat(val) || 0;
+    
+    let total = 0;
+    for (let k in feeStructureData.FEE_HEADS_DETAIL[group]) {
+        if (k !== 'TOTAL') total += feeStructureData.FEE_HEADS_DETAIL[group][k];
+    }
+    feeStructureData.FEE_HEADS_DETAIL[group].TOTAL = total;
+    document.getElementById('heads-total').innerText = total;
+}
+
+function removeHeadField(key) {
+    const group = document.getElementById('heads-group-select').value;
+    if (confirm(`Remove field [ ${key} ] ?`)) {
+        delete feeStructureData.FEE_HEADS_DETAIL[group][key];
+        updateHeads('', 0); // triggers total recalc
+        renderHeadsInputs();
+    }
+}
+
+async function saveFeeStructure() {
+    try {
+        await api('/api/settings/fee-structure', {
+            method: 'POST',
+            body: JSON.stringify(feeStructureData)
+        });
+        showToast('Fee structure saved successfully!', 'success');
+    } catch (e) {
+        showToast(e.message || 'Failed to save fee structure', 'error');
+    }
+}
+
+// ═══ GEMINI AI CONFIGURATION LOGIC ═══
+let geminiSettings = { keys: [], active_key_id: null };
+
+async function loadGeminiSettings() {
+    try {
+        geminiSettings = await api('/api/settings/gemini');
+        renderGeminiList();
+        updateModelUI();
+    } catch (e) {
+        console.error('Failed to load Gemini settings', e);
+        const container = document.getElementById('gemini-key-list');
+        if (container) container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--danger);">Failed to load keys</td></tr>';
+    }
+}
+
+function renderGeminiList() {
+    const container = document.getElementById('gemini-key-list');
+    if (!container) return;
+    if (!geminiSettings.keys || geminiSettings.keys.length === 0) {
+        container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">No API keys added yet</td></tr>';
+        return;
+    }
+    container.innerHTML = geminiSettings.keys.map(k => `
+        <tr>
+            <td><strong>${k.label}</strong></td>
+            <td><code>${k.key.substring(0, 8)}...</code></td>
+            <td>
+                ${geminiSettings.active_key_id === k.id
+                    ? '<span class="badge badge-success">ACTIVE</span>'
+                    : `<span class="badge badge-info" style="cursor:pointer;" onclick="setActiveGeminiKey('${k.id}')">USE THIS</span>`}
+            </td>
+            <td>
+                <button class="action-btn delete" onclick="deleteGeminiKey('${k.id}')" title="Delete">
+                    <i class="ph ph-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function addGeminiKey() {
+    const label = document.getElementById('new-gemini-label').value.trim();
+    const key = document.getElementById('new-gemini-key').value.trim();
+    if (!label || !key) return showToast('Please fill in both the label and API key', 'error');
+
+    const id = 'key_' + Date.now();
+    geminiSettings.keys.push({ id, label, key });
+    if (!geminiSettings.active_key_id) geminiSettings.active_key_id = id;
+
+    try {
+        await saveGeminiSettings();
+        document.getElementById('new-gemini-label').value = '';
+        document.getElementById('new-gemini-key').value = '';
+        showToast('API key added successfully', 'success');
+    } catch (e) {
+        geminiSettings.keys.pop();
+        showToast('Failed to save key', 'error');
+    }
+}
+
+async function setActiveGeminiKey(id) {
+    geminiSettings.active_key_id = id;
+    try {
+        await saveGeminiSettings();
+        showToast('Active key updated', 'success');
+    } catch (e) {
+        showToast('Failed to update active key', 'error');
+    }
+}
+
+async function deleteGeminiKey(id) {
+    if (!confirm('Delete this API key?')) return;
+    const prev = [...geminiSettings.keys];
+    const prevActive = geminiSettings.active_key_id;
+    geminiSettings.keys = geminiSettings.keys.filter(k => k.id !== id);
+    if (geminiSettings.active_key_id === id) {
+        geminiSettings.active_key_id = geminiSettings.keys.length > 0 ? geminiSettings.keys[0].id : null;
+    }
+    try {
+        await saveGeminiSettings();
+        showToast('Key deleted', 'success');
+    } catch (e) {
+        geminiSettings.keys = prev;
+        geminiSettings.active_key_id = prevActive;
+        renderGeminiList();
+        showToast('Failed to delete key', 'error');
+    }
+}
+
+async function saveGeminiSettings() {
+    await api('/api/settings/gemini', {
+        method: 'POST',
+        body: JSON.stringify(geminiSettings)
+    });
+    renderGeminiList();
+}
+
+const GEMINI_MODEL_INFO = {
+    'gemini-2.5-pro-preview-03-25': { badge: '✦ Most Intelligent', desc: 'Best reasoning and accuracy. Ideal for complex, multi-page forms. Higher quota usage.' },
+    'gemini-2.0-flash':             { badge: '⚡ Fast & Smart',     desc: 'Excellent balance of speed and intelligence. Recommended for most use cases.' },
+    'gemini-2.0-flash-lite':        { badge: '🪶 Lightweight',      desc: 'Fastest and cheapest. Good for simple, clearly-printed forms.' },
+    'gemini-1.5-pro':               { badge: '🧠 Balanced',         desc: 'Reliable and capable. Good alternative if 2.0 models are unavailable.' },
+    'gemini-1.5-flash':             { badge: '⚡ Fast',             desc: 'Quick extraction with solid accuracy. A proven workhorse.' },
+    'gemini-1.5-flash-8b':          { badge: '🪶 Tiny',             desc: 'Smallest 1.5 model. Very fast but may miss complex handwritten fields.' },
+    'gemini-3.1-flash-lite-preview':{ badge: '(Legacy)',            desc: 'Original default model. Kept for backward compatibility.' },
+};
+
+function updateModelUI() {
+    const sel = document.getElementById('gemini-model-select');
+    const info = document.getElementById('gemini-model-info');
+    if (!sel) return;
+    const saved = geminiSettings.model || 'gemini-3.1-flash-lite-preview';
+    sel.value = saved;
+    if (info) {
+        const m = GEMINI_MODEL_INFO[saved];
+        info.textContent = m ? `${m.badge} — ${m.desc}` : '';
+    }
+    sel.onchange = () => {
+        const m = GEMINI_MODEL_INFO[sel.value];
+        if (info) info.textContent = m ? `${m.badge} — ${m.desc}` : '';
+    };
+}
+
+async function saveGeminiModel() {
+    const sel = document.getElementById('gemini-model-select');
+    if (!sel) return;
+    geminiSettings.model = sel.value;
+    try {
+        await saveGeminiSettings();
+        showToast(`Model set to: ${sel.value}`, 'success');
+    } catch (e) {
+        showToast('Failed to save model', 'error');
+    }
+}
+</script>
+</body>
+</html>
