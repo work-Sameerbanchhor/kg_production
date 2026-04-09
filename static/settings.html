@@ -513,82 +513,46 @@
             <!-- ════ AI CONFIGURATION SETTINGS ════ -->
             <div class="section" id="sec-ai-settings">
                 <div class="page-intro">
-                    <p>Manage Gemini AI API keys for document scanning and auto-fill features</p>
+                    <p>Select which Environment Variable key to use for AI features. Keys must be defined in the server's .env file.</p>
                 </div>
 
                 <div class="card">
-                    <div class="card-title"><i class="ph ph-key"></i> Gemini API Management</div>
+                    <div class="card-title"><i class="ph ph-shield-check"></i> Security Mode: Environment Variables</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 20px;">
+                        To ensure maximum security, raw API keys are no longer stored in the database. 
+                        Please select which pre-configured key role to activate.
+                    </p>
 
-                    <div style="margin-bottom: 24px;">
-                        <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-dark);">Add New API Key</h4>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Key Label (e.g. Personal, College)</label>
-                                <input type="text" id="new-gemini-label" class="form-input" placeholder="Main API Key">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">API Key</label>
-                                <input type="password" id="new-gemini-key" class="form-input" placeholder="AIza...">
-                            </div>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-primary" onclick="addGeminiKey()">
-                                <i class="ph ph-plus-circle"></i> Add Key
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-section-title"><i class="ph ph-list-numbers"></i> Stored Keys</div>
                     <div class="table-wrapper">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Label</th>
-                                    <th>Key Snippet</th>
+                                    <th>Key Role</th>
+                                    <th>ENV Variable Name</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="gemini-key-list">
-                                <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">Loading...</td></tr>
-                            </tbody>
+                            <tbody id="gemini-role-list">
+                                </tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
                     <div class="card-title"><i class="ph ph-robot"></i> Model Selection</div>
-                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 20px;">
-                        Choose which Gemini model is used for document scanning. Faster models cost fewer quota tokens; smarter models give better extraction accuracy.
-                    </p>
                     <div class="form-grid" style="align-items: flex-end;">
                         <div class="form-group">
                             <label class="form-label">Active Model</label>
                             <select id="gemini-model-select" class="form-input">
-                                <optgroup label="Gemini 2.5">
-                                    <option value="gemini-2.5-pro-preview-03-25">gemini-2.5-pro-preview ✦ Most Intelligent</option>
-                                </optgroup>
-                                <optgroup label="Gemini 2.0">
-                                    <option value="gemini-2.0-flash">gemini-2.0-flash ⚡ Fast &amp; Smart</option>
-                                    <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite 🪶 Lightweight</option>
-                                </optgroup>
-                                <optgroup label="Gemini 1.5">
-                                    <option value="gemini-1.5-pro">gemini-1.5-pro 🧠 Balanced</option>
-                                    <option value="gemini-1.5-flash">gemini-1.5-flash ⚡ Fast</option>
-                                    <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b 🪶 Tiny</option>
-                                </optgroup>
-                                <optgroup label="Legacy / Preview">
-                                    <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Legacy Default)</option>
-                                </optgroup>
-                            </select>
+                                </select>
                         </div>
-                        <div class="form-group" style="flex: 0 0 auto;">
+                        <div class="form-group">
                             <button class="btn btn-primary" onclick="saveGeminiModel()">
-                                <i class="ph ph-floppy-disk"></i> Save Model
+                                <i class="ph ph-floppy-disk"></i> Save Selection
                             </button>
                         </div>
                     </div>
-                    <div id="gemini-model-info" style="margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; background: var(--ivory-100); color: var(--text-muted); border: 1px solid var(--ivory-300);"></div>
                 </div>
             </div>
 
@@ -1258,139 +1222,92 @@ async function saveFeeStructure() {
     }
 }
 
-// ═══ GEMINI AI CONFIGURATION LOGIC ═══
-let geminiSettings = { keys: [], active_key_id: null };
+// ═══ UPDATED GEMINI AI CONFIGURATION LOGIC ═══
+let geminiSettings = { roles: [], active_role: 'COLLEGE', model: 'gemini-2.0-flash' };
 
 async function loadGeminiSettings() {
     try {
         geminiSettings = await api('/api/settings/gemini');
-        renderGeminiList();
+        renderGeminiRoleList();
         updateModelUI();
     } catch (e) {
         console.error('Failed to load Gemini settings', e);
-        const container = document.getElementById('gemini-key-list');
-        if (container) container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--danger);">Failed to load keys</td></tr>';
     }
 }
 
-function renderGeminiList() {
-    const container = document.getElementById('gemini-key-list');
+function renderGeminiRoleList() {
+    const container = document.getElementById('gemini-role-list');
     if (!container) return;
-    if (!geminiSettings.keys || geminiSettings.keys.length === 0) {
-        container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted);">No API keys added yet</td></tr>';
-        return;
-    }
-    container.innerHTML = geminiSettings.keys.map(k => `
+
+    container.innerHTML = geminiSettings.roles.map(role => `
         <tr>
-            <td><strong>${k.label}</strong></td>
-            <td><code>${k.key.substring(0, 8)}...</code></td>
+            <td><strong>${role.label}</strong></td>
+            <td><code>${role.id}_GEMINI_KEY</code></td>
             <td>
-                ${geminiSettings.active_key_id === k.id
-                    ? '<span class="badge badge-success">ACTIVE</span>'
-                    : `<span class="badge badge-info" style="cursor:pointer;" onclick="setActiveGeminiKey('${k.id}')">USE THIS</span>`}
+                ${role.configured 
+                    ? '<span class="badge badge-success">Available in .env</span>' 
+                    : '<span class="badge badge-danger">Not found in .env</span>'}
             </td>
             <td>
-                <button class="action-btn delete" onclick="deleteGeminiKey('${k.id}')" title="Delete">
-                    <i class="ph ph-trash"></i>
-                </button>
+                ${geminiSettings.active_role === role.id
+                    ? '<span class="badge badge-info">CURRENTLY ACTIVE</span>'
+                    : `<button class="btn btn-secondary btn-sm" ${!role.configured ? 'disabled' : ''} onclick="setActiveGeminiRole('${role.id}')">Activate</button>`}
             </td>
         </tr>
     `).join('');
 }
 
-async function addGeminiKey() {
-    const label = document.getElementById('new-gemini-label').value.trim();
-    const key = document.getElementById('new-gemini-key').value.trim();
-    if (!label || !key) return showToast('Please fill in both the label and API key', 'error');
-
-    const id = 'key_' + Date.now();
-    geminiSettings.keys.push({ id, label, key });
-    if (!geminiSettings.active_key_id) geminiSettings.active_key_id = id;
-
+async function setActiveGeminiRole(roleId) {
+    geminiSettings.active_role = roleId;
     try {
-        await saveGeminiSettings();
-        document.getElementById('new-gemini-label').value = '';
-        document.getElementById('new-gemini-key').value = '';
-        showToast('API key added successfully', 'success');
+        await api('/api/settings/gemini', {
+            method: 'POST',
+            body: JSON.stringify({
+                active_role: geminiSettings.active_role,
+                model: geminiSettings.model
+            })
+        });
+        showToast(`Activated ${roleId} Key Role`, 'success');
+        renderGeminiRoleList();
     } catch (e) {
-        geminiSettings.keys.pop();
-        showToast('Failed to save key', 'error');
+        showToast('Failed to update active key role', 'error');
     }
-}
-
-async function setActiveGeminiKey(id) {
-    geminiSettings.active_key_id = id;
-    try {
-        await saveGeminiSettings();
-        showToast('Active key updated', 'success');
-    } catch (e) {
-        showToast('Failed to update active key', 'error');
-    }
-}
-
-async function deleteGeminiKey(id) {
-    if (!confirm('Delete this API key?')) return;
-    const prev = [...geminiSettings.keys];
-    const prevActive = geminiSettings.active_key_id;
-    geminiSettings.keys = geminiSettings.keys.filter(k => k.id !== id);
-    if (geminiSettings.active_key_id === id) {
-        geminiSettings.active_key_id = geminiSettings.keys.length > 0 ? geminiSettings.keys[0].id : null;
-    }
-    try {
-        await saveGeminiSettings();
-        showToast('Key deleted', 'success');
-    } catch (e) {
-        geminiSettings.keys = prev;
-        geminiSettings.active_key_id = prevActive;
-        renderGeminiList();
-        showToast('Failed to delete key', 'error');
-    }
-}
-
-async function saveGeminiSettings() {
-    await api('/api/settings/gemini', {
-        method: 'POST',
-        body: JSON.stringify(geminiSettings)
-    });
-    renderGeminiList();
-}
-
-const GEMINI_MODEL_INFO = {
-    'gemini-2.5-pro-preview-03-25': { badge: '✦ Most Intelligent', desc: 'Best reasoning and accuracy. Ideal for complex, multi-page forms. Higher quota usage.' },
-    'gemini-2.0-flash':             { badge: '⚡ Fast & Smart',     desc: 'Excellent balance of speed and intelligence. Recommended for most use cases.' },
-    'gemini-2.0-flash-lite':        { badge: '🪶 Lightweight',      desc: 'Fastest and cheapest. Good for simple, clearly-printed forms.' },
-    'gemini-1.5-pro':               { badge: '🧠 Balanced',         desc: 'Reliable and capable. Good alternative if 2.0 models are unavailable.' },
-    'gemini-1.5-flash':             { badge: '⚡ Fast',             desc: 'Quick extraction with solid accuracy. A proven workhorse.' },
-    'gemini-1.5-flash-8b':          { badge: '🪶 Tiny',             desc: 'Smallest 1.5 model. Very fast but may miss complex handwritten fields.' },
-    'gemini-3.1-flash-lite-preview':{ badge: '(Legacy)',            desc: 'Original default model. Kept for backward compatibility.' },
-};
-
-function updateModelUI() {
-    const sel = document.getElementById('gemini-model-select');
-    const info = document.getElementById('gemini-model-info');
-    if (!sel) return;
-    const saved = geminiSettings.model || 'gemini-3.1-flash-lite-preview';
-    sel.value = saved;
-    if (info) {
-        const m = GEMINI_MODEL_INFO[saved];
-        info.textContent = m ? `${m.badge} — ${m.desc}` : '';
-    }
-    sel.onchange = () => {
-        const m = GEMINI_MODEL_INFO[sel.value];
-        if (info) info.textContent = m ? `${m.badge} — ${m.desc}` : '';
-    };
 }
 
 async function saveGeminiModel() {
     const sel = document.getElementById('gemini-model-select');
-    if (!sel) return;
     geminiSettings.model = sel.value;
     try {
-        await saveGeminiSettings();
-        showToast(`Model set to: ${sel.value}`, 'success');
+        await api('/api/settings/gemini', {
+            method: 'POST',
+            body: JSON.stringify({
+                active_role: geminiSettings.active_role,
+                model: geminiSettings.model
+            })
+        });
+        showToast(`Model saved: ${sel.value}`, 'success');
     } catch (e) {
         showToast('Failed to save model', 'error');
     }
+}
+
+const GEMINI_MODELS = [
+    { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash ⚡ Fast & Smart' },
+    { value: 'gemini-2.0-flash-lite', label: 'gemini-2.0-flash-lite 🪶 Lightweight' },
+    { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro 🧠 Balanced' },
+    { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash ⚡ Fast' },
+    { value: 'gemini-1.5-flash-8b', label: 'gemini-1.5-flash-8b 🪶 Tiny' }
+];
+
+function updateModelUI() {
+    const sel = document.getElementById('gemini-model-select');
+    if (!sel) return;
+    
+    sel.innerHTML = GEMINI_MODELS.map(m => `
+        <option value="${m.value}" ${geminiSettings.model === m.value ? 'selected' : ''}>${m.label}</option>
+    `).join('');
+    
+    sel.value = geminiSettings.model;
 }
 </script>
 </body>

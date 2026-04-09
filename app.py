@@ -1200,16 +1200,18 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
     if not HAS_GENAI:
         raise HTTPException(status_code=500, detail="Google GenAI SDK not installed or configured.")
         
-    # Fetch active key from JSON settings instead of .env
-    gemini_settings = get_gemini_settings()
-    active_id = gemini_settings.get("active_key_id")
-    api_key = None
-
-    if active_id:
-        api_key = next((k["key"] for k in gemini_settings["keys"] if k["id"] == active_id), None)
+    settings = get_gemini_settings()
+    active_role = settings.get("active_role", "COLLEGE")
+    
+    # Map the role ID to the actual Environment Variable name
+    env_var_name = f"{active_role}_GEMINI_KEY"
+    api_key = os.getenv(env_var_name)
 
     if not api_key:
-        raise HTTPException(status_code=500, detail="No active Gemini API Key found in settings. Please configure one in Settings > AI Configuration.")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"The environment variable {env_var_name} is not set on the server."
+        )
         
     try:
         client = genai.Client(api_key=api_key)
@@ -1658,14 +1660,31 @@ def manual_pull_backup():
 GEMINI_SETTINGS_FILE = "settings/gemini_api_keys.json"
 
 def get_gemini_settings():
-    default = {"keys": [], "active_key_id": None, "model": "gemini-2.0-flash"}
-    if not os.path.exists(GEMINI_SETTINGS_FILE):
-        return default
-    with open(GEMINI_SETTINGS_FILE, "r", encoding="utf-8") as f:
-        try:
-            return json.load(f)
-        except:
-            return default
+    """
+    Returns the active selection and the availability status of keys in .env.
+    Does NOT return the actual keys to the frontend for security.
+    """
+    default = {"active_role": "COLLEGE", "model": "gemini-2.0-flash"}
+    settings = default
+    if os.path.exists(GEMINI_SETTINGS_FILE):
+        with open(GEMINI_SETTINGS_FILE, "r", encoding="utf-8") as f:
+            try:
+                settings = json.load(f)
+            except:
+                pass
+
+    # Check which keys are actually present in the environment
+    roles_status = [
+        {"id": "COLLEGE", "label": "College Main Key", "configured": bool(os.getenv("COLLEGE_GEMINI_KEY"))},
+        {"id": "ADMIN", "label": "Admin Key", "configured": bool(os.getenv("ADMIN_GEMINI_KEY"))},
+        {"id": "ADMISSION", "label": "Admission Office Key", "configured": bool(os.getenv("ADMISSION_GEMINI_KEY"))},
+    ]
+    
+    return {
+        "roles": roles_status,
+        "active_role": settings.get("active_role", "COLLEGE"),
+        "model": settings.get("model", "gemini-2.0-flash")
+    }
 
 @app.get("/api/settings/gemini")
 def get_gemini_keys():
@@ -1673,11 +1692,17 @@ def get_gemini_keys():
 
 @app.post("/api/settings/gemini")
 async def save_gemini_keys(data: dict):
+    """Saves the selection of which ENV variable to use."""
     os.makedirs("settings", exist_ok=True)
+    # We only save the ID of the role and the model
+    clean_data = {
+        "active_role": data.get("active_role"),
+        "model": data.get("model")
+    }
     with open(GEMINI_SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+        json.dump(clean_data, f, indent=4, ensure_ascii=False)
     trigger_drive_backup(GEMINI_SETTINGS_FILE)
-    return {"message": "Gemini settings saved successfully"}
+    return {"message": "AI configuration updated"}
 
 
 @app.get("/api/settings/fee-structure")
