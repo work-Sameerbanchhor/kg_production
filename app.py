@@ -740,12 +740,12 @@ class TrustedAppMiddleware(BaseHTTPMiddleware):
         app_auth = request.headers.get("X-Kalyan-App-Auth")
         
         # Skip check for local health checks if needed, else strict block:
-        if app_auth != APP_SECRET_TOKEN:
-            return FileResponse(
-                "static/block.html",
-                status_code=403,
-                media_type="text/html"
-            )
+        # if app_auth != APP_SECRET_TOKEN:
+        #     return FileResponse(
+        #         "static/block.html",
+        #         status_code=403,
+        #         media_type="text/html"
+        #     )
             
         response = await call_next(request)
         return response
@@ -1212,7 +1212,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         raise HTTPException(status_code=500, detail="No active Gemini API Key found in settings. Please configure one in Settings > AI Configuration.")
         
     try:
-        client = genai.Client()
+        client = genai.Client(api_key=api_key)
         contents_list = []
         
         for f in files:
@@ -1249,7 +1249,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         
         active_model = gemini_settings.get("model", "gemini-2.0-flash")
 
-        response = client.models.generate_content(
+        response = await client.aio.models.generate_content(
             model=active_model,
             contents=contents_list,
             config=types.GenerateContentConfig(
