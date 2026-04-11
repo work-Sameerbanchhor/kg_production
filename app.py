@@ -1627,6 +1627,22 @@ def get_recent_pdfs():
     # Return the 10 most recent instead of 5 for better visibility
     return {"pdfs": files[:10]}
 
+@app.delete("/api/delete-pdf/{filename}")
+def delete_uploaded_pdf(filename: str):
+    # Security: Use os.path.basename to prevent directory traversal attacks (e.g., ../../)
+    safe_filename = os.path.basename(filename)
+    file_path = os.path.join("Uploaded_pdfs", safe_filename)
+    
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            trigger_drive_backup()  # Sync deletion to Google Drive
+            return {"message": "PDF deleted successfully"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
+
 # ═══════════════════════════════════════════════════════════
 #  DASHBOARD STATS
 # ═══════════════════════════════════════════════════════════

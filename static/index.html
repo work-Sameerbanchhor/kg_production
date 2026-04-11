@@ -1618,7 +1618,7 @@ async function loadRecentPDFs() {
             container.style.display = 'block';
             list.innerHTML = data.pdfs.map((pdf, index) => `
                 <div class="recent-pdf-item" 
-                     style="cursor:pointer; padding:8px 12px; background:${index === 0 ? 'var(--forest-200)' : 'var(--forest-100)'}; 
+                     style="position:relative; padding-right: 35px; cursor:pointer; padding:8px 12px; background:${index === 0 ? 'var(--forest-200)' : 'var(--forest-100)'}; 
                             color:var(--forest-900); border-radius:6px; font-size:0.85em; display:flex; 
                             flex-direction:column; gap:2px; min-width:140px; border:1px solid var(--forest-300); 
                             transition:background 0.2s;" 
@@ -1626,13 +1626,20 @@ async function loadRecentPDFs() {
                     
                     <div style="display:flex; align-items:center; gap:6px;">
                         <i class="ph-fill ph-file-pdf" style="color:#d32f2f;"></i>
-                        <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <span style="font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 150px;">
                             ${pdf.filename}
                         </span>
                     </div>
                     <span style="font-size:0.7rem; color:var(--text-muted); opacity:0.8;">
                         ${index === 0 ? '✨ Newest • ' : ''}${timeAgo(pdf.time)}
                     </span>
+                    
+                    <button onclick="deleteRecentPDF(event, '${pdf.filename}')" 
+                            style="position:absolute; right:8px; top:50%; transform:translateY(-50%); 
+                                   background:none; border:none; color:var(--danger); cursor:pointer; padding:4px;" 
+                            title="Delete PDF">
+                        <i class="ph ph-trash" style="font-size: 1.2em;"></i>
+                    </button>
                 </div>
             `).join('');
         } else {
@@ -1670,6 +1677,33 @@ async function scanRecentPDF(url, filename) {
             alert(`Error scanning PDF: ${e.message}`);
         }
         if (progressDiv) progressDiv.style.display = 'none';
+    }
+}
+
+// ═══ DELETE RECENT PDF ═══
+async function deleteRecentPDF(event, filename) {
+    // Stop the click from triggering the parent div's "scan" function
+    event.stopPropagation(); 
+    
+    if (!confirm(`Are you sure you want to permanently delete "${filename}"?`)) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`/api/delete-pdf/${encodeURIComponent(filename)}`, { 
+            method: 'DELETE' 
+        });
+        
+        if (res.ok) {
+            showToast('PDF deleted successfully!', 'success');
+            loadRecentPDFs(); // Refresh the list instantly
+        } else {
+            const data = await res.json();
+            showToast(data.detail || 'Failed to delete PDF', 'error');
+        }
+    } catch(e) {
+        showToast('Error deleting PDF', 'error');
+        console.error(e);
     }
 }
 
