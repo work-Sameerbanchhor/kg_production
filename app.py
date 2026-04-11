@@ -814,7 +814,7 @@ STUDENT_FIELDS = [
     "abc_id", "blood_group", "father_mobile_no", "religion", "mother_tongue",
     "bank_name_address", "bank_ac_no", "ifsc_code", "guardian_annual_income",
     "extra_curricular", "medium_of_exam", "is_convicted", "academic_history_json",
-    "photo_path"
+    "photo_path", "form_pdf_path"
 ]
 
 
@@ -1265,6 +1265,26 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         
         data = json.loads(response.text)
         
+        # --- Save the scanned PDF permanently ---
+        if len(files) > 0:
+            first_file = files[0]
+            mime_type = first_file.content_type
+            if mime_type == "application/pdf" or (first_file.filename and first_file.filename.lower().endswith(".pdf")):
+                os.makedirs("Uploaded_pdfs", exist_ok=True)
+                filename = f"scanned_form_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.pdf"
+                filepath = os.path.join("Uploaded_pdfs", filename)
+                
+                # Rewind and read the file to save it
+                await first_file.seek(0)
+                file_bytes = await first_file.read()
+                with open(filepath, "wb") as out_f:
+                    out_f.write(file_bytes)
+                
+                # Append the path to the returned data
+                data["form_pdf_path"] = f"/{filepath}"
+                trigger_drive_backup()
+        # ------------------------------------------
+
         # Process photo cropping
         photo_box = data.get("photo_box", [])
         if photo_box and len(photo_box) == 4 and len(files) > 0:

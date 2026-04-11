@@ -222,6 +222,10 @@
                                         <i class="ph ph-crop"></i> Adjust
                                     </button>
                                 </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px; margin-left: 15px; margin-top: 15px;">
+                                    <input type="hidden" name="form_pdf_path" id="hidden-pdf-path">
+                                    <div id="attached-pdf-link"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -823,6 +827,12 @@ function resetFormExtras() {
     if (hiddenInput) hiddenInput.value = '';
     originalImageUrl = null;
 
+    // Reset PDF UI
+    const hiddenPdf = document.getElementById('hidden-pdf-path');
+    const attachedPdf = document.getElementById('attached-pdf-link');
+    if (hiddenPdf) hiddenPdf.value = '';
+    if (attachedPdf) attachedPdf.innerHTML = '';
+
     const statuses = ['principal', 'prof', 'parent', 'student'];
     statuses.forEach(s => {
         const el = document.getElementById(`sign_${s}_status`);
@@ -885,6 +895,7 @@ function renderStudentTable(students) {
                     <td>${s.gender||''}</td>
                     <td>
                         <div class="action-btns">
+                            ${s.form_pdf_path ? `<a href="${s.form_pdf_path}" target="_blank" class="action-btn" title="View Original Form" style="color:var(--info); border-color:rgba(41,128,185,.2);"><i class="ph ph-file-pdf"></i></a>` : ''}
                             <button class="action-btn edit" title="Edit" onclick="editStudent(${s.id})"><i class="ph ph-pencil-simple"></i></button>
                             <button class="action-btn fee" title="Fee" onclick="goToFeePayment(${s.id})"><i class="ph ph-currency-circle-dollar"></i></button>
                             <button class="action-btn delete" title="Delete" onclick="deleteStudent(${s.id})"><i class="ph ph-trash"></i></button>
@@ -925,6 +936,16 @@ async function editStudent(id) {
             if (key === 'photo_path' && s[key]) {
                 updatePhotoPreview(s[key]);
                 originalImageUrl = s[key]; // allow re-cropping when editing
+                continue;
+            }
+            // Load PDF in Edit Mode
+            if (key === 'form_pdf_path' && s[key]) {
+                const hiddenPdf = document.getElementById('hidden-pdf-path');
+                const attachedPdf = document.getElementById('attached-pdf-link');
+                if (hiddenPdf) hiddenPdf.value = s[key];
+                if (attachedPdf) {
+                    attachedPdf.innerHTML = `<a href="${s[key]}" target="_blank" class="badge badge-info" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none;"><i class="ph ph-file-pdf" style="font-size:1.1em;"></i> View Scanned Form</a>`;
+                }
                 continue;
             }
             if (form.elements[key]) {
@@ -1444,6 +1465,16 @@ async function processScannerFile(event) {
         // Auto-fill form fields
         for (const [key, value] of Object.entries(data)) {
             if (!value) continue; // Skip empty strings
+            // Handle the PDF Path from scan
+            if (key === 'form_pdf_path') {
+                document.getElementById('hidden-pdf-path').value = value;
+                const pdfLinkContainer = document.getElementById('attached-pdf-link');
+                if (pdfLinkContainer) {
+                    pdfLinkContainer.innerHTML = `<a href="${value}" target="_blank" class="badge badge-info" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none;"><i class="ph ph-file-pdf" style="font-size:1.1em;"></i> View Scanned Form</a>`;
+                }
+                continue;
+            }
+
             if (key === 'photo_url') {
                 // Store original full-page URL for manual re-crop, then show the cropped photo
                 originalImageUrl = data.original_page_url || value;
