@@ -740,12 +740,12 @@ class TrustedAppMiddleware(BaseHTTPMiddleware):
         app_auth = request.headers.get("X-Kalyan-App-Auth")
         
         # Skip check for local health checks if needed, else strict block:
-        # if app_auth != APP_SECRET_TOKEN:
-        #     return FileResponse(
-        #         "static/block.html",
-        #         status_code=403,
-        #         media_type="text/html"
-        #     )
+        if app_auth != APP_SECRET_TOKEN:
+            return FileResponse(
+                "static/block.html",
+                status_code=403,
+                media_type="text/html"
+            )
             
         response = await call_next(request)
         return response
@@ -1249,7 +1249,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         )
         contents_list.append(prompt)
         
-        active_model = gemini_settings.get("model", "gemini-2.0-flash")
+        active_model = settings.get("model", "gemini-3.1-flash-lite-preview")
 
         response = await client.aio.models.generate_content(
             model=active_model,
@@ -1258,7 +1258,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                 response_mime_type="application/json",
                 response_json_schema=StudentFormExtract.model_json_schema(),
                 thinking_config=types.ThinkingConfig(
-                    thinking_level="medium"
+                    thinking_level="minimal"
                 )
             )
         )
@@ -1664,7 +1664,7 @@ def get_gemini_settings():
     Returns the active selection and the availability status of keys in .env.
     Does NOT return the actual keys to the frontend for security.
     """
-    default = {"active_role": "COLLEGE", "model": "gemini-2.0-flash"}
+    default = {"active_role": "COLLEGE", "model": "gemini-3.1-flash-lite-preview"}
     settings = default
     if os.path.exists(GEMINI_SETTINGS_FILE):
         with open(GEMINI_SETTINGS_FILE, "r", encoding="utf-8") as f:
@@ -1683,7 +1683,7 @@ def get_gemini_settings():
     return {
         "roles": roles_status,
         "active_role": settings.get("active_role", "COLLEGE"),
-        "model": settings.get("model", "gemini-2.0-flash")
+        "model": settings.get("model", "gemini-3.1-flash-lite-preview")
     }
 
 @app.get("/api/settings/gemini")
