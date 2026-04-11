@@ -1258,7 +1258,7 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                 response_mime_type="application/json",
                 response_json_schema=StudentFormExtract.model_json_schema(),
                 thinking_config=types.ThinkingConfig(
-                    thinking_level="minimal"
+                    thinking_level="medium"
                 )
             )
         )
