@@ -1609,7 +1609,7 @@ def get_recent_pdfs():
         
     files = []
     for f in os.listdir(upload_dir):
-        if f.lower().endswith(".pdf"):
+        if f.lower().endswith(".pdf") and not f.startswith("scanned_form_"):
             path = os.path.join(upload_dir, f)
             # Get the last modification time
             mtime = os.path.getmtime(path)
