@@ -1460,57 +1460,73 @@ async function processScannerFile(event) {
             throw new Error(errData.detail || 'Failed to scan form');
         }
         
-        const data = await response.json();
-        
-        // Auto-fill form fields
-        for (const [key, value] of Object.entries(data)) {
-            if (!value) continue; // Skip empty strings
-            // Handle the PDF Path from scan
-            if (key === 'form_pdf_path') {
-                document.getElementById('hidden-pdf-path').value = value;
-                const pdfLinkContainer = document.getElementById('attached-pdf-link');
-                if (pdfLinkContainer) {
-                    pdfLinkContainer.innerHTML = `<a href="${value}" target="_blank" class="badge badge-info" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none;"><i class="ph ph-file-pdf" style="font-size:1.1em;"></i> View Scanned Form</a>`;
-                }
-                continue;
-            }
-
-            if (key === 'photo_url') {
-                // Store original full-page URL for manual re-crop, then show the cropped photo
-                originalImageUrl = data.original_page_url || value;
-                updatePhotoPreview(value);
-                showToast('AI detected a photo. Click "Adjust" if it needs fixing.', 'info');
-                continue;
-            }
-            if (key === 'original_page_url') continue; // Handled above
-            if (key === 'photo_box') continue; // Do not map coordinate array to input
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
             
-            // Signature approval logic
-            if (key.startsWith('sign_')) {
-                const sigDiv = document.getElementById(key + '_status');
-                if (sigDiv && value === true) {
-                    sigDiv.innerHTML = '<span style="color: #28a745;">Seen and Approved</span>';
-                }
-                continue;
-            }
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n').filter(line => line.trim() !== '');
+            for (const line of lines) {
+                try {
+                    const parsed = JSON.parse(line);
+                    const data = parsed.data;
+                    
+                    // Auto-fill form fields
+                    for (const [key, val] of Object.entries(data)) {
+                        if (!val) continue; // Skip empty strings
+                        // Handle the PDF Path from scan
+                        if (key === 'form_pdf_path') {
+                            document.getElementById('hidden-pdf-path').value = val;
+                            const pdfLinkContainer = document.getElementById('attached-pdf-link');
+                            if (pdfLinkContainer) {
+                                pdfLinkContainer.innerHTML = `<a href="${val}" target="_blank" class="badge badge-info" style="display:inline-flex; align-items:center; gap:5px; text-decoration:none;"><i class="ph ph-file-pdf" style="font-size:1.1em;"></i> View Scanned Form</a>`;
+                            }
+                            continue;
+                        }
 
-            const elements = document.querySelectorAll(`[name="${key}"]`);
-            if (elements.length > 0) {
-                if (elements[0].type === 'checkbox') {
-                    if (Array.isArray(value)) {
-                        elements.forEach(el => {
-                            if (value.includes(el.value)) el.checked = true;
-                        });
-                    } else {
-                        elements[0].checked = value;
+                        if (key === 'photo_url') {
+                            // Store original full-page URL for manual re-crop, then show the cropped photo
+                            originalImageUrl = data.original_page_url || val;
+                            updatePhotoPreview(val);
+                            showToast('AI detected a photo. Click "Adjust" if it needs fixing.', 'info');
+                            continue;
+                        }
+                        if (key === 'original_page_url') continue; // Handled above
+                        if (key === 'photo_box') continue; // Do not map coordinate array to input
+                        
+                        // Signature approval logic
+                        if (key.startsWith('sign_')) {
+                            const sigDiv = document.getElementById(key + '_status');
+                            if (sigDiv && val === true) {
+                                sigDiv.innerHTML = '<span style="color: #28a745;">Seen and Approved</span>';
+                            }
+                            continue;
+                        }
+
+                        const elements = document.querySelectorAll(`[name="${key}"]`);
+                        if (elements.length > 0) {
+                            if (elements[0].type === 'checkbox') {
+                                if (Array.isArray(val)) {
+                                    elements.forEach(el => {
+                                        if (val.includes(el.value)) el.checked = true;
+                                    });
+                                } else {
+                                    elements[0].checked = val;
+                                }
+                            } else if (elements[0].type === 'radio') {
+                                elements.forEach(el => {
+                                    if (el.value === String(val)) el.checked = true;
+                                });
+                            } else {
+                                elements[0].value = val;
+                                elements[0].dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }
                     }
-                } else if (elements[0].type === 'radio') {
-                    elements.forEach(el => {
-                        if (el.value === String(value)) el.checked = true;
-                    });
-                } else {
-                    elements[0].value = value;
-                    elements[0].dispatchEvent(new Event('change', { bubbles: true }));
+                } catch(e) {
+                    console.error("Error parsing chunk:", e);
                 }
             }
         }

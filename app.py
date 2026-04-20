@@ -1165,6 +1165,7 @@ if HAS_GENAI:
 @app.post("/api/students/scan-form")
 async def scan_student_form(files: list[UploadFile] = File(...)):
     import json
+    from fastapi.responses import StreamingResponse
     if not HAS_GENAI:
         raise HTTPException(status_code=500, detail="Google GenAI SDK not installed or configured.")
         
@@ -1217,10 +1218,8 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         )
         contents_list.append(prompt)
         
-        # Force the model to your specified ultra-fast model
         active_model = "gemma-4-31b-it"
 
-        # Helper function to generate an async task
         async def fetch_batch(schema_class, custom_prompt):
             res = await client.aio.models.generate_content(
                 model=active_model,
@@ -1228,106 +1227,122 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_json_schema=schema_class.model_json_schema(),
-                    temperature=0.1 # Keep it low for strict data extraction
+                    temperature=0.1
                 )
             )
             return json.loads(res.text)
 
-        # Fire off all 6 requests concurrently to maximize speed 
-        # (This uses 6 RPM out of your 15 RPM limit per scan)
-        tasks = [
-            fetch_batch(PhotoExtraction, "Locate the student's passport photo on the first page and extract the bounding box coordinates."),
-            fetch_batch(TextBatch1_BasicInfo, "Extract basic student profile information. Correct spelling if needed."),
-            fetch_batch(TextBatch2_CourseInfo, "Extract the course, faculty, and subject details carefully."),
-            fetch_batch(TextBatch3_PersonalInfo, "Extract parent details, religion, caste, and income info."),
-            fetch_batch(TextBatch4_AddressAndMisc, "Extract local/permanent addresses, bank details, and Aadhaar info."),
-            fetch_batch(TextBatch5_AcademicAndSigns, "Extract the academic history table and detect if signatures are present.")
-        ]
-
-        # Wait for all 6 micro-batches to finish
-        batch_results = await asyncio.gather(*tasks)
-
-        # Merge all 6 dictionaries into one master dictionary
-        data = {}
-        for result in batch_results:
-            data.update(result)
-        
-        # --- Save the scanned PDF permanently ---
-        if len(files) > 0:
-            first_file = files[0]
-            mime_type = first_file.content_type
-            if mime_type == "application/pdf" or (first_file.filename and first_file.filename.lower().endswith(".pdf")):
-                os.makedirs("Uploaded_pdfs", exist_ok=True)
-                filename = f"scanned_form_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.pdf"
-                filepath = os.path.join("Uploaded_pdfs", filename)
-                
-                # Rewind and read the file to save it
-                await first_file.seek(0)
-                file_bytes = await first_file.read()
-                with open(filepath, "wb") as out_f:
-                    out_f.write(file_bytes)
-                
-                # Append the path to the returned data
-                data["form_pdf_path"] = f"/{filepath}"
-                trigger_drive_backup()
-        # ------------------------------------------
-
-        # Process photo cropping
-        photo_box = data.get("photo_box", [])
-        if photo_box and len(photo_box) == 4 and len(files) > 0:
-            try:
-                import io
-                from PIL import Image
-                
-                f = files[0]
-                await f.seek(0)
-                content = await f.read()
-                
-                img = None
-                if f.content_type == "application/pdf" or (f.filename and f.filename.lower().endswith(".pdf")):
-                    import fitz # PyMuPDF
-                    doc = fitz.open(stream=content, filetype="pdf")
-                    if len(doc) > 0:
-                        page = doc[0]
-                        pix = page.get_pixmap(dpi=150)
-                        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                    doc.close()
-                else:
-                    img = Image.open(io.BytesIO(content))
+        async def event_generator():
+            # --- Save the scanned PDF permanently first ---
+            pdf_data = {}
+            if len(files) > 0:
+                first_file = files[0]
+                mime_type = first_file.content_type
+                if mime_type == "application/pdf" or (first_file.filename and first_file.filename.lower().endswith(".pdf")):
+                    os.makedirs("Uploaded_pdfs", exist_ok=True)
+                    filename = f"scanned_form_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.pdf"
+                    filepath = os.path.join("Uploaded_pdfs", filename)
                     
-                if img:
-                    width, height = img.size
-                    ymin, xmin, ymax, xmax = photo_box
+                    await first_file.seek(0)
+                    file_bytes = await first_file.read()
+                    with open(filepath, "wb") as out_f:
+                        out_f.write(file_bytes)
                     
-                    # Save full-page image for manual re-cropping in the browser
-                    os.makedirs("student_passport_photos", exist_ok=True)
-                    full_page_filename = f"full_page_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
-                    full_page_path = f"student_passport_photos/{full_page_filename}"
-                    img.convert("RGB").save(full_page_path, format="JPEG", quality=80)
-                    data["original_page_url"] = f"/{full_page_path}"
-                    
-                    crop_box = (
-                        int(xmin * width / 1000),
-                        int(ymin * height / 1000),
-                        int(xmax * width / 1000),
-                        int(ymax * height / 1000)
-                    )
-                    
-                    if crop_box[2] > crop_box[0] and crop_box[3] > crop_box[1]:
-                        cropped = img.crop(crop_box)
-                        
-                        os.makedirs("student_passport_photos", exist_ok=True)
-                        filename = f"photo_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
-                        filepath = f"student_passport_photos/{filename}"
-                        cropped.convert("RGB").save(filepath, format="JPEG", quality=85)
-                        data["photo_url"] = f"/{filepath}"
+                    pdf_data["form_pdf_path"] = f"/{filepath}"
+                    try:
                         trigger_drive_backup()
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                print(f"Error extracting photo: {e}")
+                    except:
+                        pass
+                    yield json.dumps({"priority": True, "data": pdf_data}) + "\n"
+
+            # STEP 1: DEFINE THE PRIORITY PROMPT
+            priority_prompt = """
+            EXTRACT PRIORITY FIELDS ONLY:
+            1. faculty: From '1. Faculty of'
+            2. annual_semester: Is it Annual or Semester?
+            3. course_type: Term/Year (I, II, III, IV, V, or VI)
+            4. course_level: Is it UG, PG, Diploma, or Ph.D?
+            5. class_name: Exact text from 'CLASS (कक्षा)'
+            Correct all spellings. Return as JSON immediately.
+            """
+
+            # STEP 2: START ALL TASKS (Don't wait yet)
+            priority_task = asyncio.create_task(fetch_batch(TextBatch2_CourseInfo, priority_prompt))
+            
+            other_tasks = [
+                asyncio.create_task(fetch_batch(PhotoExtraction, "Locate the student's passport photo on the first page and extract the bounding box coordinates.")),
+                asyncio.create_task(fetch_batch(TextBatch1_BasicInfo, "Extract basic student profile information. Correct spelling if needed.")),
+                asyncio.create_task(fetch_batch(TextBatch3_PersonalInfo, "Extract parent details, religion, caste, and income info.")),
+                asyncio.create_task(fetch_batch(TextBatch4_AddressAndMisc, "Extract local/permanent addresses, bank details, and Aadhaar info.")),
+                asyncio.create_task(fetch_batch(TextBatch5_AcademicAndSigns, "Extract the academic history table and detect if signatures are present."))
+            ]
+
+            # STEP 3: YIELD THE PRIORITY DATA IMMEDIATELY
+            priority_data = await priority_task
+            yield json.dumps({"priority": True, "data": priority_data}) + "\n"
+
+            # STEP 4: YIELD OTHERS AS THEY FINISH
+            for task in asyncio.as_completed(other_tasks):
+                result = await task
                 
-        return data
+                # --- PROCESS PHOTO CROPPING ---
+                photo_box = result.get("photo_box", [])
+                if photo_box and len(photo_box) == 4 and len(files) > 0:
+                    try:
+                        import io
+                        from PIL import Image
+                        
+                        f = files[0]
+                        await f.seek(0)
+                        content = await f.read()
+                        
+                        img = None
+                        if f.content_type == "application/pdf" or (f.filename and f.filename.lower().endswith(".pdf")):
+                            import fitz # PyMuPDF
+                            doc = fitz.open(stream=content, filetype="pdf")
+                            if len(doc) > 0:
+                                page = doc[0]
+                                pix = page.get_pixmap(dpi=150)
+                                img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                            doc.close()
+                        else:
+                            img = Image.open(io.BytesIO(content))
+                            
+                        if img:
+                            width, height = img.size
+                            ymin, xmin, ymax, xmax = photo_box
+                            
+                            os.makedirs("student_passport_photos", exist_ok=True)
+                            full_page_filename = f"full_page_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
+                            full_page_path = f"student_passport_photos/{full_page_filename}"
+                            img.convert("RGB").save(full_page_path, format="JPEG", quality=80)
+                            result["original_page_url"] = f"/{full_page_path}"
+                            
+                            crop_box = (
+                                int(xmin * width / 1000),
+                                int(ymin * height / 1000),
+                                int(xmax * width / 1000),
+                                int(ymax * height / 1000)
+                            )
+                            
+                            if crop_box[2] > crop_box[0] and crop_box[3] > crop_box[1]:
+                                cropped = img.crop(crop_box)
+                                filename = f"photo_{int(datetime.utcnow().timestamp())}_{random.randint(100, 999)}.jpg"
+                                filepath = f"student_passport_photos/{filename}"
+                                cropped.convert("RGB").save(filepath, format="JPEG", quality=85)
+                                result["photo_url"] = f"/{filepath}"
+                                try:
+                                    trigger_drive_backup()
+                                except:
+                                    pass
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        print(f"Error extracting photo: {e}")
+
+                yield json.dumps({"priority": False, "data": result}) + "\n"
+
+        return StreamingResponse(event_generator(), media_type="application/x-ndjson")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
 
