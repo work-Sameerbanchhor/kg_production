@@ -1083,116 +1083,84 @@ def delete_student(student_id: int, db: dict = Depends(get_db)):
 # ═══════════════════════════════════════════════════════════
 
 if HAS_GENAI:
-    class StudentFormExtract(BaseModel):
+    import asyncio
+
+    class PhotoExtraction(BaseModel):
+        photo_box: list[int] = Field(
+            default_factory=list,
+            description="IMPORTANT: Bounding box [ymin, xmin, ymax, xmax] of the student's passport photo on the first page, using normalized coordinates (0 to 1000). Return empty list [] if no photo attached."
+        )
+
+    class TextBatch1_BasicInfo(BaseModel):
         admission_no: str = Field(description="Admission No.")
         university_enrolment_no: str = Field(description="University Enrolment No.")
         admission_date: str = Field(description="Date of Admission")
         receipt_no_date: str = Field(description="Receipt No. & Date")
-        cast_class: str = Field(description="Cast & Class")
-        percentage: str = Field(description="% of the Previous Exam")
         student_name: str = Field(description="Name")
         abc_id: str = Field(description="ABC ID")
         mobile_no: str = Field(description="Mobile Number")
         email: str = Field(description="E-mail ID")
         dob: str = Field(description="Date of Birth in YYYY-MM-DD")
         blood_group: str = Field(description="Blood Group")
+
+    class TextBatch2_CourseInfo(BaseModel):
         faculty: str = Field(description="1. Faculty of")
-        annual_semester: str = Field(description="""
-Look at line '2. Annual/Semester (वार्षिक / मेमेस्टर)' on the form. A tick, circle, or underline may appear on either the English word OR its Hindi equivalent. Apply this exact mapping:
-- If 'Annual' OR 'वार्षिक' is marked → return exactly 'Annual'
-- If 'Semester' OR 'मेमेस्टर' OR 'सेमेस्टर' is marked → return exactly 'Semester'
-Return ONLY 'Annual' or 'Semester'. If nothing is clearly marked, return ''.
-""")
-        course_type: str = Field(description="""
-Look at the bracketed options next to line '2. Annual/Semester' on the form, e.g. '(First / Second / Third / Forth / Fifth / Sixth / प्रथम / द्वितीय / तृतीय / चतुर्थ / पंचम / षष्टम)'. Identify which word (English OR Hindi) has a tick, circle, or underline and return its Roman numeral using this exact mapping:
-- 'First' or 'प्रथम'   → 'I'
-- 'Second' or 'द्वितीय' → 'II'
-- 'Third' or 'तृतीय'   → 'III'
-- 'Forth' or 'Fourth' or 'चतुर्थ' → 'IV'
-- 'Fifth' or 'पंचम'   → 'V'
-- 'Sixth' or 'षष्टम'  → 'VI'
-Return ONLY the Roman numeral (e.g. 'I', 'II', 'III'). If nothing is clearly marked, return ''.
-""")
+        annual_semester: str = Field(description="Return 'Annual' or 'Semester' based on what is ticked.")
+        course_type: str = Field(description="Return the Roman numeral (e.g. 'I', 'II', 'III') of the term ticked.")
         course_level: str = Field(description="3. Courses (UG / PG / Diploma / Ph.D)")
-        course: str = Field(description="""
-Look at the 'CLASS (कक्षा)' field on the form. You MUST map what the student wrote to the closest official course name from this list:
-'B.A.', 'B.Com.', 'B.Sc.', 'B.Sc. Computer Science', 'B.Sc. Biotechnology', 'B.Sc. Home Science',
-'BCA (Bachelor of Computer Applications)', 'PGDCA',
-'M.A. (Hindi)', 'M.A. (English)', 'M.A. (Economics)', 'M.A. (Political Science)', 'M.A. (History)',
-'M.A. (Sociology)', 'M.A. (Geography)', 'M.A. (Journalism & Mass Communication)',
-'M.Com.', 'M.Com. (Finance & Control)', 'M.Com. (Business Management)',
-'M.Sc. (Computer Science - Previous)', 'M.Sc. (Computer Science - Final)',
-'M.Sc. (Biotechnology - Previous)', 'M.Sc. (Biotechnology - Final)',
-'M.Sc. (Chemistry - Previous)', 'M.Sc. (Chemistry - Final)',
-'M.Sc. (Mathematics - Previous)', 'M.Sc. (Mathematics - Final)',
-'M.Sc. (Physics - Previous)', 'M.Sc. (Physics - Final)',
-'M.Sc. (Botany - Previous)', 'M.Sc. (Botany - Final)'.
-Mapping examples: 'bca' or 'BCA' → 'BCA (Bachelor of Computer Applications)'; 'msc cs' or 'M.Sc(CS)' → 'M.Sc. (Computer Science - Previous)'; 'ba' → 'B.A.'; 'mca' → 'BCA (Bachelor of Computer Applications)'; 'pgdca' → 'PGDCA'.
-Return the exact official name from the list. If unclear, return the closest match.
-""")
-        class_name: str = Field(description="Extract the exact raw text the student wrote in the 'CLASS (कक्षा)' field, without any corrections. This is a verbatim backup of their handwriting.")
+        course: str = Field(description="Map to official course name (e.g., 'BCA (Bachelor of Computer Applications)', 'B.Sc. Computer Science', 'M.A. (Hindi)').")
+        class_name: str = Field(description="Exact raw text written in 'CLASS (कक्षा)'.")
         dsc_1: str = Field(description="DSC - 1")
         dsc_2: str = Field(description="DSC - 2")
         dsc_3: str = Field(description="DSC - 3")
         vac_sec: str = Field(description="VAC / SEC")
         ge_dse: str = Field(description="GE / DSE")
         aec: str = Field(description="AEC")
-        research_project: list[str] = Field(default_factory=list, description="List of checked items in: Research / Internship / Project / Ph.D")
+        research_project: list[str] = Field(default_factory=list, description="Checked items in: Research/Internship/Project/Ph.D")
+
+    class TextBatch3_PersonalInfo(BaseModel):
         father_name: str = Field(description="4. Fathers Name")
-        father_occupation: str = Field(description="Occupation of the Father") # Add this line
+        father_occupation: str = Field(description="Occupation of the Father")
         father_mobile_no: str = Field(description="Mobile No. (Fathers)")
         mother_name: str = Field(description="5. Mothers Name")
         mother_tongue: str = Field(description="Mother Tongue")
         religion: str = Field(description="6. Religion")
+        cast_class: str = Field(description="Cast & Class")
+        category: str = Field(description="10. Category (GEN/OBC/SC/ST...)")
+        domicile: str = Field(description="9. C.G. Domicile (YES/NO)")
+        guardian_annual_income: str = Field(description="8. Annual Income of Guardian")
+
+    class TextBatch4_AddressAndMisc(BaseModel):
+        present_address: str = Field(description="7. Local Address")
+        permanent_address: str = Field(description="Permanent Address")
         bank_ac_no: str = Field(description="Bank A/c No.")
         aadhaar_no: str = Field(description="Aadhar No.")
         ifsc_code: str = Field(description="IFSC Code / Bank Name")
-        present_address: str = Field(description="7. Local Address")
-        permanent_address: str = Field(description="Permanent Address")
-        guardian_annual_income: str = Field(description="8. Annual Income of Guardian")
-        domicile: str = Field(description="9. C.G. Domicile (YES/NO)")
-        category: str = Field(description="10. Category (GEN/OBC/SC/ST...)")
-        extra_curricular: list[str] = Field(default_factory=list, description="11. List of checked items in: Extra Curricular Activities (NCC / NSS / SPORTS / CULTURAL...)")
+        extra_curricular: list[str] = Field(default_factory=list, description="Checked items in Extra Curricular Activities.")
         medium_of_exam: str = Field(description="13. Medium of Exam")
         is_convicted: str = Field(description="14. Convicted by court of law")
-        ex_name_1: str = Field(description="Exam 1 name")
-        ex_roll_1: str = Field(description="Exam 1 roll")
-        ex_year_1: str = Field(description="Exam 1 year")
-        ex_col_1: str = Field(description="Exam 1 college")
-        ex_res_1: str = Field(description="Exam 1 result")
-        ex_per_1: str = Field(description="Exam 1 percentage")
-        ex_name_2: str = Field(description="Exam 2 name")
-        ex_roll_2: str = Field(description="Exam 2 roll")
-        ex_year_2: str = Field(description="Exam 2 year")
-        ex_col_2: str = Field(description="Exam 2 college")
-        ex_res_2: str = Field(description="Exam 2 result")
-        ex_per_2: str = Field(description="Exam 2 percentage")
-        ex_name_3: str = Field(description="Exam 3 name")
-        ex_roll_3: str = Field(description="Exam 3 roll")
-        ex_year_3: str = Field(description="Exam 3 year")
-        ex_col_3: str = Field(description="Exam 3 college")
-        ex_res_3: str = Field(description="Exam 3 result")
-        ex_per_3: str = Field(description="Exam 3 percentage")
-        ex_name_4: str = Field(description="Exam 4 name")
-        ex_roll_4: str = Field(description="Exam 4 roll")
-        ex_year_4: str = Field(description="Exam 4 year")
-        ex_col_4: str = Field(description="Exam 4 college")
-        ex_res_4: str = Field(description="Exam 4 result")
-        ex_per_4: str = Field(description="Exam 4 percentage")
-        ex_name_5: str = Field(description="Exam 5 name")
-        ex_roll_5: str = Field(description="Exam 5 roll")
-        ex_year_5: str = Field(description="Exam 5 year")
-        ex_col_5: str = Field(description="Exam 5 college")
-        ex_res_5: str = Field(description="Exam 5 result")
-        ex_per_5: str = Field(description="Exam 5 percentage")
-        sign_principal: bool = Field(default=False, description="True if Signature of Principal is present")
-        sign_prof: bool = Field(default=False, description="True if Signature of Professor In-charge is present")
-        sign_parent: bool = Field(default=False, description="True if Signature of Parent is present")
-        sign_student: bool = Field(default=False, description="True if Signature of Student is present")
-        photo_box: list[int] = Field(
-            default_factory=list,
-            description="IMPORTANT: Bounding box [ymin, xmin, ymax, xmax] of the student's passport photo on the first page, using normalized coordinates (0 to 1000). Return empty list [] if no photo attached."
-        )
+        percentage: str = Field(description="% of the Previous Exam")
+
+    class TextBatch5_AcademicAndSigns(BaseModel):
+        ex_name_1: str = Field(description="Exam 1 name"); ex_roll_1: str = Field(description="Exam 1 roll")
+        ex_year_1: str = Field(description="Exam 1 year"); ex_col_1: str = Field(description="Exam 1 college")
+        ex_res_1: str = Field(description="Exam 1 result"); ex_per_1: str = Field(description="Exam 1 percentage")
+        ex_name_2: str = Field(description="Exam 2 name"); ex_roll_2: str = Field(description="Exam 2 roll")
+        ex_year_2: str = Field(description="Exam 2 year"); ex_col_2: str = Field(description="Exam 2 college")
+        ex_res_2: str = Field(description="Exam 2 result"); ex_per_2: str = Field(description="Exam 2 percentage")
+        ex_name_3: str = Field(description="Exam 3 name"); ex_roll_3: str = Field(description="Exam 3 roll")
+        ex_year_3: str = Field(description="Exam 3 year"); ex_col_3: str = Field(description="Exam 3 college")
+        ex_res_3: str = Field(description="Exam 3 result"); ex_per_3: str = Field(description="Exam 3 percentage")
+        ex_name_4: str = Field(description="Exam 4 name"); ex_roll_4: str = Field(description="Exam 4 roll")
+        ex_year_4: str = Field(description="Exam 4 year"); ex_col_4: str = Field(description="Exam 4 college")
+        ex_res_4: str = Field(description="Exam 4 result"); ex_per_4: str = Field(description="Exam 4 percentage")
+        ex_name_5: str = Field(description="Exam 5 name"); ex_roll_5: str = Field(description="Exam 5 roll")
+        ex_year_5: str = Field(description="Exam 5 year"); ex_col_5: str = Field(description="Exam 5 college")
+        ex_res_5: str = Field(description="Exam 5 result"); ex_per_5: str = Field(description="Exam 5 percentage")
+        sign_principal: bool = Field(default=False, description="Signature of Principal present?")
+        sign_prof: bool = Field(default=False, description="Signature of Professor In-charge present?")
+        sign_parent: bool = Field(default=False, description="Signature of Parent present?")
+        sign_student: bool = Field(default=False, description="Signature of Student present?")
 
 @app.post("/api/students/scan-form")
 async def scan_student_form(files: list[UploadFile] = File(...)):
@@ -1249,21 +1217,40 @@ async def scan_student_form(files: list[UploadFile] = File(...)):
         )
         contents_list.append(prompt)
         
-        active_model = settings.get("model", "gemini-3.1-flash-lite-preview")
+        # Force the model to your specified ultra-fast model
+        active_model = "gemma-4-31b-it"
 
-        response = await client.aio.models.generate_content(
-            model=active_model,
-            contents=contents_list,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_json_schema=StudentFormExtract.model_json_schema(),
-                thinking_config=types.ThinkingConfig(
-                    thinking_level="medium"
+        # Helper function to generate an async task
+        async def fetch_batch(schema_class, custom_prompt):
+            res = await client.aio.models.generate_content(
+                model=active_model,
+                contents=contents_list + [custom_prompt],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_json_schema=schema_class.model_json_schema(),
+                    temperature=0.1 # Keep it low for strict data extraction
                 )
             )
-        )
-        
-        data = json.loads(response.text)
+            return json.loads(res.text)
+
+        # Fire off all 6 requests concurrently to maximize speed 
+        # (This uses 6 RPM out of your 15 RPM limit per scan)
+        tasks = [
+            fetch_batch(PhotoExtraction, "Locate the student's passport photo on the first page and extract the bounding box coordinates."),
+            fetch_batch(TextBatch1_BasicInfo, "Extract basic student profile information. Correct spelling if needed."),
+            fetch_batch(TextBatch2_CourseInfo, "Extract the course, faculty, and subject details carefully."),
+            fetch_batch(TextBatch3_PersonalInfo, "Extract parent details, religion, caste, and income info."),
+            fetch_batch(TextBatch4_AddressAndMisc, "Extract local/permanent addresses, bank details, and Aadhaar info."),
+            fetch_batch(TextBatch5_AcademicAndSigns, "Extract the academic history table and detect if signatures are present.")
+        ]
+
+        # Wait for all 6 micro-batches to finish
+        batch_results = await asyncio.gather(*tasks)
+
+        # Merge all 6 dictionaries into one master dictionary
+        data = {}
+        for result in batch_results:
+            data.update(result)
         
         # --- Save the scanned PDF permanently ---
         if len(files) > 0:
